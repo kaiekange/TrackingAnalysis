@@ -1,46 +1,28 @@
-# Prerequisites
+*.log
 *.d
 *.pcm
 *.cxx
-# Compiled Object files
 *.slo
 *.lo
 *.o
 *.obj
-
-# Precompiled Headers
 *.gch
 *.pch
-
-# Linker files
 *.ilk
-
-# Debugger Files
 *.pdb
-
-# Compiled Dynamic libraries
 *.so
 *.dylib
 *.dll
-
-# Fortran module files
 *.mod
 *.smod
-
-# Compiled Static libraries
 *.lai
 *.la
 *.a
 *.lib
-
-# Executables
 *.exe
 *.out
 *.app
-
-# debug information files
 *.dwo
-
 EDAnalyzers/crab/crab_*
 EDAnalyzers/crab/crabConfig.py
 EDAnalyzers/crab/__pycache__
