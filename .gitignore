@@ -46,3 +46,4 @@ EDAnalyzers/crab/__pycache__
 EDAnalyzers/python/__pycache__
 EDAnalyzers/python/__init__.py
 EDAnalyzers/test/__init__.py
+EDAnalyzers/test/__pycache__
