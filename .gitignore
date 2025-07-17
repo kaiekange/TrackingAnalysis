@@ -1,6 +1,7 @@
 # Prerequisites
 *.d
-
+*.pcm
+*.cxx
 # Compiled Object files
 *.slo
 *.lo
@@ -47,3 +48,7 @@ EDAnalyzers/python/__pycache__
 EDAnalyzers/python/__init__.py
 EDAnalyzers/test/__init__.py
 EDAnalyzers/test/__pycache__
+scripts/figures
+scripts/logs
+scripts/obsolete
+scripts/tuples
