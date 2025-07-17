@@ -39,3 +39,10 @@
 
 # debug information files
 *.dwo
+
+EDAnalyzers/crab/crab_*
+EDAnalyzers/crab/crabConfig.py
+EDAnalyzers/crab/__pycache__
+EDAnalyzers/python/__pycache__
+EDAnalyzers/python/__init__.py
+EDAnalyzers/test/__init__.py
