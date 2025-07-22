@@ -1,6 +1,6 @@
 # ip_res_analysis.sub -- submit job to run prepare simplified tuples
 
-datatype = ZeroBias_withBS
+datatype = ZeroBias
 
 executable = ip_res_analysis.sh
 arguments = $(Process) $(datatype)
@@ -15,4 +15,4 @@ should_transfer_files = NO
 
 max_retries = 5
 
-queue 4
+queue 12

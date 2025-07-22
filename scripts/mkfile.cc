@@ -1,8 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <TString.h>
-#include "input_list.c"
-#include "fill_file_vector.c"
+#include "input_list.cc"
+#include "fill_file_vector.cc"
 
 int mkfile( int idx ) {
 
@@ -11,7 +11,7 @@ int mkfile( int idx ) {
 
     std::vector<TString> file_vector = fill_file_vector(filepath[idx] + "*/*.root");
     
-    TFile *outfile = new TFile(Form("%s_analysis.root", filepath[idx].c_str()), "RECREATE");
+    TFile *outfile = new TFile(Form("%sanalysis.root", filepath[idx].c_str()), "RECREATE");
     TTree *outtree = new TTree("mytree", "");
     
     float bs_x0;
@@ -41,15 +41,15 @@ int mkfile( int idx ) {
     float pv_xError_p2;
     float pv_yError_p2;
     float pv_zError_p2;
-    /* vector<float> * pv_trk_d0_pvunbiased = new vector<float>(); */
-    /* vector<float> * pv_trk_dz_pvunbiased = new vector<float>(); */
-    /* vector<float> * pv_trk_pvunbiased_NTracks = new vector<float>(); */
-    /* vector<float> * pv_trk_pvunbiased_SumTrackPt2 = new vector<float>(); */
-    /* vector<float> * pv_trk_d0_bs = new vector<float>(); */
-    /* vector<float> * pv_trk_dz_bs = new vector<float>(); */
-    /* vector<float> * pv_trk_pt = new vector<float>(); */
-    /* vector<float> * pv_trk_eta = new vector<float>(); */
-    /* vector<float> * pv_trk_phi = new vector<float>(); */
+    vector<float> * pv_trk_d0_pvunbiased = new vector<float>();
+    vector<float> * pv_trk_dz_pvunbiased = new vector<float>();
+    vector<float> * pv_trk_pvunbiased_NTracks = new vector<float>();
+    vector<float> * pv_trk_pvunbiased_SumTrackPt2 = new vector<float>();
+    vector<float> * pv_trk_d0_bs = new vector<float>();
+    vector<float> * pv_trk_dz_bs = new vector<float>();
+    vector<float> * pv_trk_pt = new vector<float>();
+    vector<float> * pv_trk_eta = new vector<float>();
+    vector<float> * pv_trk_phi = new vector<float>();
 
     outtree->Branch("pv_x", &pv_x);
     outtree->Branch("pv_y", &pv_y); 
@@ -78,18 +78,18 @@ int mkfile( int idx ) {
     outtree->Branch("pv_xError_p2", &pv_xError_p2);
     outtree->Branch("pv_yError_p2", &pv_yError_p2);
     outtree->Branch("pv_zError_p2", &pv_zError_p2);
-    /* outtree->Branch("pv_trk_d0_pvunbiased", &pv_trk_d0_pvunbiased); */
-    /* outtree->Branch("pv_trk_dz_pvunbiased", &pv_trk_dz_pvunbiased); */
-    /* outtree->Branch("pv_trk_pvunbiased_NTracks", &pv_trk_pvunbiased_NTracks); */
-    /* outtree->Branch("pv_trk_pvunbiased_SumTrackPt2", &pv_trk_pvunbiased_SumTrackPt2); */
-    /* outtree->Branch("pv_trk_d0_bs", &pv_trk_d0_bs); */
-    /* outtree->Branch("pv_trk_dz_bs", &pv_trk_dz_bs); */
-    /* outtree->Branch("pv_trk_pt", &pv_trk_pt); */
-    /* outtree->Branch("pv_trk_eta", &pv_trk_eta); */
-    /* outtree->Branch("pv_trk_phi", &pv_trk_phi); */
+    outtree->Branch("pv_trk_d0_pvunbiased", &pv_trk_d0_pvunbiased);
+    outtree->Branch("pv_trk_dz_pvunbiased", &pv_trk_dz_pvunbiased);
+    outtree->Branch("pv_trk_pvunbiased_NTracks", &pv_trk_pvunbiased_NTracks);
+    outtree->Branch("pv_trk_pvunbiased_SumTrackPt2", &pv_trk_pvunbiased_SumTrackPt2);
+    outtree->Branch("pv_trk_d0_bs", &pv_trk_d0_bs);
+    outtree->Branch("pv_trk_dz_bs", &pv_trk_dz_bs);
+    outtree->Branch("pv_trk_pt", &pv_trk_pt);
+    outtree->Branch("pv_trk_eta", &pv_trk_eta);
+    outtree->Branch("pv_trk_phi", &pv_trk_phi);
 
-    int nfile = 5; 
-    /* int nfile = file_vector.size(); */
+    /* int nfile = 5; */ 
+    int nfile = file_vector.size();
     for(int i=0; i<nfile; i++){ 
 
         TString filename = file_vector[i];
@@ -133,15 +133,15 @@ int mkfile( int idx ) {
         vector<float> *mypv_xError_p2 = nullptr;
         vector<float> *mypv_yError_p2 = nullptr;
         vector<float> *mypv_zError_p2 = nullptr;
-        /* vector<vector<float>> *mypv_trk_d0_pvunbiased = nullptr; */
-        /* vector<vector<float>> *mypv_trk_dz_pvunbiased = nullptr; */
-        /* vector<vector<float>> *mypv_trk_pvunbiased_NTracks = nullptr; */
-        /* vector<vector<float>> *mypv_trk_pvunbiased_SumTrackPt2 = nullptr; */
-        /* vector<vector<float>> *mypv_trk_d0_bs = nullptr; */
-        /* vector<vector<float>> *mypv_trk_dz_bs = nullptr; */
-        /* vector<vector<float>> *mypv_trk_pt = nullptr; */
-        /* vector<vector<float>> *mypv_trk_eta = nullptr; */
-        /* vector<vector<float>> *mypv_trk_phi = nullptr; */
+        vector<vector<float>> *mypv_trk_d0_pvunbiased = nullptr;
+        vector<vector<float>> *mypv_trk_dz_pvunbiased = nullptr;
+        vector<vector<float>> *mypv_trk_pvunbiased_NTracks = nullptr;
+        vector<vector<float>> *mypv_trk_pvunbiased_SumTrackPt2 = nullptr;
+        vector<vector<float>> *mypv_trk_d0_bs = nullptr;
+        vector<vector<float>> *mypv_trk_dz_bs = nullptr;
+        vector<vector<float>> *mypv_trk_pt = nullptr;
+        vector<vector<float>> *mypv_trk_eta = nullptr;
+        vector<vector<float>> *mypv_trk_phi = nullptr;
         
         intree->SetBranchAddress("bs_x0", &mybs_x0);
         intree->SetBranchAddress("bs_y0", &mybs_y0);
@@ -170,19 +170,18 @@ int mkfile( int idx ) {
         intree->SetBranchAddress("pv_xError_p2", &mypv_xError_p2);
         intree->SetBranchAddress("pv_yError_p2", &mypv_yError_p2);
         intree->SetBranchAddress("pv_zError_p2", &mypv_zError_p2);
-        /* intree->SetBranchAddress("pv_trk_d0_pvunbiased", &mypv_trk_d0_pvunbiased); */
-        /* intree->SetBranchAddress("pv_trk_dz_pvunbiased", &mypv_trk_dz_pvunbiased); */
-        /* intree->SetBranchAddress("pv_trk_pvunbiased_NTracks", &mypv_trk_pvunbiased_NTracks); */
-        /* intree->SetBranchAddress("pv_trk_pvunbiased_SumTrackPt2", &mypv_trk_pvunbiased_SumTrackPt2); */
-        /* intree->SetBranchAddress("pv_trk_d0_bs", &mypv_trk_d0_bs); */
-        /* intree->SetBranchAddress("pv_trk_dz_bs", &mypv_trk_dz_bs); */
-        /* intree->SetBranchAddress("pv_trk_pt", &mypv_trk_pt); */
-        /* intree->SetBranchAddress("pv_trk_eta", &mypv_trk_eta); */
-        /* intree->SetBranchAddress("pv_trk_phi", &mypv_trk_phi); */
-
+        intree->SetBranchAddress("pv_trk_d0_pvunbiased", &mypv_trk_d0_pvunbiased);
+        intree->SetBranchAddress("pv_trk_dz_pvunbiased", &mypv_trk_dz_pvunbiased);
+        intree->SetBranchAddress("pv_trk_pvunbiased_NTracks", &mypv_trk_pvunbiased_NTracks);
+        intree->SetBranchAddress("pv_trk_pvunbiased_SumTrackPt2", &mypv_trk_pvunbiased_SumTrackPt2);
+        intree->SetBranchAddress("pv_trk_d0_bs", &mypv_trk_d0_bs);
+        intree->SetBranchAddress("pv_trk_dz_bs", &mypv_trk_dz_bs);
+        intree->SetBranchAddress("pv_trk_pt", &mypv_trk_pt);
+        intree->SetBranchAddress("pv_trk_eta", &mypv_trk_eta);
+        intree->SetBranchAddress("pv_trk_phi", &mypv_trk_phi);
         int nentries = intree->GetEntries();
-        for(int j=0; j<5; j++){
-        /* for(int j=0; j<nentries; j++){ */
+        /* for(int j=0; j<5; j++){ */
+        for(int j=0; j<nentries; j++){
             
             intree->GetEntry(j);
 
@@ -204,50 +203,47 @@ int mkfile( int idx ) {
             bs_z0Error = mybs_z0Error;
             ev_run = myev_run;
             ev_lumi = myev_lumi;
-            /* pv_x = mypv_x->at(0); */
-            /* pv_y = mypv_y->at(0); */
-            /* pv_z = mypv_z->at(0); */
-            /* pv_xError = mypv_xError->at(0); */
-            /* pv_yError = mypv_yError->at(0); */
-            /* pv_zError = mypv_zError->at(0); */
-            /* pv_SumTrackPt2 = mypv_SumTrackPt2->at(0); */
-            /* pv_x_p1 = mypv_x_p1->at(0); */
-            /* pv_y_p1 = mypv_y_p1->at(0); */
-            /* pv_z_p1 = mypv_z_p1->at(0); */
-            /* pv_x_p2 = mypv_x_p2->at(0); */
-            /* pv_y_p2 = mypv_y_p2->at(0); */
-            /* pv_z_p2 = mypv_z_p2->at(0); */
-            /* pv_xError_p1 = mypv_xError_p1->at(0); */
-            /* pv_yError_p1 = mypv_yError_p1->at(0); */
-            /* pv_zError_p1 = mypv_zError_p1->at(0); */
-            /* pv_xError_p2 = mypv_xError_p2->at(0); */
-            /* pv_yError_p2 = mypv_yError_p2->at(0); */
-            /* pv_zError_p2 = mypv_zError_p2->at(0); */
+            pv_x = mypv_x->at(0);
+            pv_y = mypv_y->at(0);
+            pv_z = mypv_z->at(0);
+            pv_xError = mypv_xError->at(0);
+            pv_yError = mypv_yError->at(0);
+            pv_zError = mypv_zError->at(0);
+            pv_SumTrackPt2 = mypv_SumTrackPt2->at(0);
+            pv_x_p1 = mypv_x_p1->at(0);
+            pv_y_p1 = mypv_y_p1->at(0);
+            pv_z_p1 = mypv_z_p1->at(0);
+            pv_x_p2 = mypv_x_p2->at(0);
+            pv_y_p2 = mypv_y_p2->at(0);
+            pv_z_p2 = mypv_z_p2->at(0);
+            pv_xError_p1 = mypv_xError_p1->at(0);
+            pv_yError_p1 = mypv_yError_p1->at(0);
+            pv_zError_p1 = mypv_zError_p1->at(0);
+            pv_xError_p2 = mypv_xError_p2->at(0);
+            pv_yError_p2 = mypv_yError_p2->at(0);
+            pv_zError_p2 = mypv_zError_p2->at(0);
 
-            /* int pv_track_size = (*mypv_trk_d0_pvunbiased)[0].size(); */
-            /* for(int k=0; k<pv_track_size; k++){ */
-            /*     pv_trk_d0_pvunbiased->push_back( (*mypv_trk_d0_pvunbiased)[0][k] ); */
-            /*     pv_trk_dz_pvunbiased->push_back( (*mypv_trk_dz_pvunbiased)[0][k] ); */
-            /*     pv_trk_pvunbiased_NTracks->push_back( (*mypv_trk_pvunbiased_NTracks)[0][k] ); */ 
-            /*     pv_trk_pvunbiased_SumTrackPt2->push_back( (*mypv_trk_pvunbiased_SumTrackPt2)[0][k] ); */ 
-            /*     pv_trk_d0_bs->push_back( (*mypv_trk_d0_bs)[0][k] ); */
-            /*     pv_trk_dz_bs->push_back( (*mypv_trk_dz_bs)[0][k] ); */
-            /*     pv_trk_pt->push_back( (*mypv_trk_pt)[0][k] ); */
-            /*     pv_trk_eta->push_back( (*mypv_trk_eta)[0][k] ); */
-            /*     pv_trk_phi->push_back( (*mypv_trk_phi)[0][k] ); */
-            /* } */
+            int pv_track_size = (*mypv_trk_d0_pvunbiased)[0].size();
+            for(int k=0; k<pv_track_size; k++){
+                pv_trk_d0_pvunbiased->push_back( (*mypv_trk_d0_pvunbiased)[0][k] );
+                pv_trk_dz_pvunbiased->push_back( (*mypv_trk_dz_pvunbiased)[0][k] );
+                pv_trk_pvunbiased_NTracks->push_back( (*mypv_trk_pvunbiased_NTracks)[0][k] ); 
+                pv_trk_pvunbiased_SumTrackPt2->push_back( (*mypv_trk_pvunbiased_SumTrackPt2)[0][k] ); 
+                pv_trk_d0_bs->push_back( (*mypv_trk_d0_bs)[0][k] );
+                pv_trk_dz_bs->push_back( (*mypv_trk_dz_bs)[0][k] );
+                pv_trk_pt->push_back( (*mypv_trk_pt)[0][k] );
+                pv_trk_eta->push_back( (*mypv_trk_eta)[0][k] );
+                pv_trk_phi->push_back( (*mypv_trk_phi)[0][k] );
+            }
 
             outtree->Fill();
         }
 
-        delete intree;
-        infile->Close();
-        delete infile;
         if( (i+1) % int(nfile/5.0) == 0 ) std::cout << "Processed " << (100 * (i+1)) / nfile << "% (" << i+1 << "/" << nfile << ")" << std::endl;
         if( (i+1) == nfile) std::cout << "Processed all files, now writing to output files" << std::endl;
     
     }
-    
+    outfile->cd(); 
     outtree->Write();
     outfile->Close();
 

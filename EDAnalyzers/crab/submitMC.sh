@@ -5,7 +5,11 @@ source /cvmfs/cms.cern.ch/crab3/crab.sh
 datasetlist="mc.txt"
 configtemplate="crabConfigTemplate.py"
 ver="Track-v20250717"
+<<<<<<< HEAD
 prodv="/eos/home-k/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
+=======
+prodv="/store/user/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
+>>>>>>> b9b8ce0 (ip resolution)
 pver="0"
 
 rm -f crabConfig.py*
@@ -38,8 +42,13 @@ do
         | sed "s|OUTLFN|${OUTLFN}|g" \
         > "crabConfig.py"
 
+<<<<<<< HEAD
     crab submit -c crabConfig.py --dryrun
     # crab submit -c crabConfig.py
+=======
+    # crab submit -c crabConfig.py --dryrun
+    crab submit -c crabConfig.py
+>>>>>>> b9b8ce0 (ip resolution)
 
 done
 

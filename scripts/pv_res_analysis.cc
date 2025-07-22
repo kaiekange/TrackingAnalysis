@@ -12,7 +12,7 @@
 #include <RooFitResult.h>
 #include <RooGaussian.h>
 
-#include "input_list.c"
+#include "input_list.cc"
 #include "CMSplots/tdrStyle.c"
 #include "CMSplots/CMS_lumi.c"
 #include "CMSplots/draw_funcs.c"

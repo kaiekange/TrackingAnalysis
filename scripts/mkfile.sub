@@ -1,6 +1,6 @@
 # mkfile.sub -- submit job to run prepare simplified tuples
 
-datatype = ZeroBias_noBS
+datatype = ZeroBias
 
 executable = mkfile.sh
 arguments = $(Process) $(datatype)

@@ -1,9 +1,9 @@
 # mkfile.sub -- submit job to run prepare simplified tuples
 
-datatype = ZeroBias_noBS
+datatype = ZeroBias
 
 executable = vertex_analysis.sh
-arguments = $(datatype)
+arguments = $(Process) $(datatype)
 
 log = logs/condor/$(datatype)_vertex_analysis.log
 
@@ -15,4 +15,4 @@ max_retries = 5
 
 should_transfer_files = NO
 
-queue 1
+queue 7 

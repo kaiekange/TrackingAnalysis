@@ -28,7 +28,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 if options.isData: process.GlobalTag.globaltag = '130X_dataRun3_v2'
 # elif options.is2022: process.GlobalTag.globaltag = '130X_mcRun3_2022_realistic_v5' # jet ht
-elif options.is2022: process.GlobalTag.globaltag = 'mcRun3_2022_realistic_v12' #min bias
+elif options.is2022: process.GlobalTag.globaltag = '124X_mcRun3_2022_realistic_v12' #min bias
 elif options.is2023: process.GlobalTag.globaltag = '126X_mcRun3_2023_forPU65_v4'
 elif options.is2024: process.GlobalTag.globaltag = '133X_mcRun3_2024_realistic_v9'
 
