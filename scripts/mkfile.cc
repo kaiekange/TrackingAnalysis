@@ -13,7 +13,8 @@ int mkfile( int idx ) {
     
     TFile *outfile = new TFile(Form("%sanalysis.root", filepath[idx].c_str()), "RECREATE");
     TTree *outtree = new TTree("mytree", "");
-    
+   
+    int ev_nPV;
     float bs_x0;
     float bs_y0;
     float bs_z0;
@@ -51,6 +52,7 @@ int mkfile( int idx ) {
     vector<float> * pv_trk_eta = new vector<float>();
     vector<float> * pv_trk_phi = new vector<float>();
 
+    outtree->Branch("ev_nPV", &ev_nPV);
     outtree->Branch("pv_x", &pv_x);
     outtree->Branch("pv_y", &pv_y); 
     outtree->Branch("pv_z", &pv_z);
@@ -106,6 +108,7 @@ int mkfile( int idx ) {
             continue;
         }
 
+        int myev_nPV = -1;
         float mybs_x0 = 0.;
         float mybs_y0 = 0.; 
         float mybs_z0 = 0.;
@@ -143,6 +146,7 @@ int mkfile( int idx ) {
         vector<vector<float>> *mypv_trk_eta = nullptr;
         vector<vector<float>> *mypv_trk_phi = nullptr;
         
+        intree->SetBranchAddress("ev_nPV", &myev_nPV);
         intree->SetBranchAddress("bs_x0", &mybs_x0);
         intree->SetBranchAddress("bs_y0", &mybs_y0);
         intree->SetBranchAddress("bs_z0", &mybs_z0);
@@ -194,7 +198,9 @@ int mkfile( int idx ) {
             pv_trk_pt->clear();
             pv_trk_eta->clear();
             pv_trk_phi->clear();
-            
+           
+            ev_nPV = myev_nPV;
+
             bs_x0 = mybs_x0;
             bs_y0 = mybs_y0;
             bs_z0 = mybs_z0;

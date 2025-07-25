@@ -1,6 +1,6 @@
 # pv_res_analysis.sub -- submit job to run prepare simplified tuples
 
-datatype = ZeroBias_noBS
+datatype = JetHT 
 
 executable = pv_res_analysis.sh
 arguments = $(Process) $(datatype)
@@ -15,4 +15,4 @@ max_retries = 5
 
 should_transfer_files = NO
 
-queue 3
+queue 50 

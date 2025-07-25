@@ -5,7 +5,11 @@ dataset=$2
 
 export HOME=/user/kakang/
 mkdir -p ./logs/${dataset}/ip_res_analysis/
-mkdir -p ./figures/${dataset}/ip_res_analysis/
+mkdir -p ./figures/${dataset}/ip_res_analysis/ippv_xy_fit
+mkdir -p ./figures/${dataset}/ip_res_analysis/ippv_z_fit
+mkdir -p ./figures/${dataset}/ip_res_analysis/ipbs_xy_fit
+mkdir -p ./figures/${dataset}/ip_res_analysis/ipbs_z_fit
+mkdir -p ./json/${dataset}/ip_res
 
 {
     source /cvmfs/cms.cern.ch/cmsset_default.sh
