@@ -7,13 +7,14 @@
 #include <nlohmann/json.hpp>
 #include "TFile.h"
 #include "TTree.h"
-#include "input_list.cc"
 
+const int nbins = 20;
+    
 int splitbin() {
 
     if(gSystem->AccessPathName("../../json")) gSystem->MakeDirectory("../../json");
-    if(gSystem->AccessPathName("../../json/"+datatype)) gSystem->MakeDirectory("../../json/"+datatype);
-    TFile *myfile = TFile::Open(anaroot);
+    if(gSystem->AccessPathName("../../json/JetHTMC")) gSystem->MakeDirectory("../../json/JetHTMC");
+    TFile *myfile = TFile::Open("/user/kakang/IPres/CMSSW_14_0_10/src/TrackingAnalysis/analysis/tuples/JetHT_mc2022.root");
 
     TTree *mytree = (TTree*)myfile->Get("mytree");
 
@@ -40,12 +41,12 @@ int splitbin() {
     for (Long64_t i=0; i<nentries; ++i) {
         mytree->GetEntry(i);
         
-        if ( (std::sqrt(mypv_SumTrackPt2)) >= 3 && (std::sqrt(mypv_SumTrackPt2) <= 25) ){
+        if ( (std::sqrt(mypv_SumTrackPt2)) >= 5 && (std::sqrt(mypv_SumTrackPt2) <= 300) ){
             pv_SumTrackPt_vec.push_back(std::sqrt(mypv_SumTrackPt2));
         }
 
         for(Long64_t j=0; j<mypv_trk_pt->size(); ++j){
-            if ( (mypv_trk_pt->at(j)) >= 0.1 && (mypv_trk_pt->at(j) <= 5) ){
+            if ( (mypv_trk_pt->at(j)) >= 0.1 && (mypv_trk_pt->at(j) <= 15) ){
                 pv_trk_pt_vec.push_back(mypv_trk_pt->at(j));
             }
         }
@@ -63,17 +64,15 @@ int splitbin() {
         }
     }
 
-    const int nbins = 100;
-    
     std::sort(pv_SumTrackPt_vec.begin(), pv_SumTrackPt_vec.end());
     std::vector<float> pv_SumTrackPt_binedges;
     pv_SumTrackPt_binedges.reserve(nbins + 1);
-    pv_SumTrackPt_binedges.push_back(3.0f);
+    pv_SumTrackPt_binedges.push_back(5.0f);
     for (int i=1; i<nbins; ++i) {
         size_t idx = static_cast<size_t>(i * (pv_SumTrackPt_vec.size() - 1) / nbins);
         pv_SumTrackPt_binedges.push_back(pv_SumTrackPt_vec[idx]);
     }
-    pv_SumTrackPt_binedges.push_back(25.0f);
+    pv_SumTrackPt_binedges.push_back(300.0f);
 
     /* std::sort(ev_nPV_vec.begin(), ev_nPV_vec.end()); */
     /* std::vector<int> ev_nPV_binedges; */
@@ -93,7 +92,7 @@ int splitbin() {
         size_t idx = static_cast<size_t>(i * (pv_trk_pt_vec.size() - 1) / nbins);
         pv_trk_pt_binedges.push_back(pv_trk_pt_vec[idx]);
     }
-    pv_trk_pt_binedges.push_back(5.0f);
+    pv_trk_pt_binedges.push_back(15.0f);
 
     std::sort(pv_trk_eta_vec.begin(), pv_trk_eta_vec.end());
     std::vector<float> pv_trk_eta_binedges;
@@ -121,7 +120,7 @@ int splitbin() {
     splitparams["pv_trk_eta"] = pv_trk_eta_binedges;
     splitparams["pv_trk_phi"] = pv_trk_phi_binedges;
 
-    std::ofstream outfile("../../json/"+datatype+"/binning.json");
+    std::ofstream outfile("../../json/JetHTMC/binning.json");
     outfile << splitparams.dump(4);
     outfile.close();
     std::cout << "Binning saved to binning.json\n";

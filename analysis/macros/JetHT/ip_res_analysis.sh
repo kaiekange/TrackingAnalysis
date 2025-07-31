@@ -1,14 +1,12 @@
 #!/bin/bash
 
 idx=$1
-datatype=$2
+datatype=JetHT
 
 export HOME=/user/kakang/
 mkdir -p ../../logs/${datatype}/ip_res_analysis/
 mkdir -p ../../figures/${datatype}/ip_res_analysis/ippv_xy_fit
 mkdir -p ../../figures/${datatype}/ip_res_analysis/ippv_z_fit
-mkdir -p ../../figures/${datatype}/ip_res_analysis/ipbs_xy_fit
-mkdir -p ../../figures/${datatype}/ip_res_analysis/ipbs_z_fit
 mkdir -p ../../json/${datatype}/ip_res
 
 {
