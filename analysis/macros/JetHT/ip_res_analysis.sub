@@ -1,7 +1,7 @@
 # ip_res_analysis.sub -- submit job to run prepare simplified tuples
 
 executable = ip_res_analysis.sh
-arguments = $(Process) JetHT
+arguments = $(Process)
 
 log = ../../logs/condor/JetHT_ip_res_analysis.log
 
@@ -13,4 +13,4 @@ should_transfer_files = NO
 
 max_retries = 5
 
-queue 20 
+queue 100

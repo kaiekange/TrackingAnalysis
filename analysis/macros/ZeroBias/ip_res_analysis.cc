@@ -20,8 +20,8 @@
 #include "input_list.cc"
 #include "../../functions/fit_res.cc"
 
-const TString figdir = "../../figures/"+datatype+"/ip_res_analysis/";
-const int nbins = 100;
+const TString figdir = "../../figures/"+datatype+"/ip_res/"+sampletype+"/";
+const int nbins = 500;
 
 int ip_res_analysis(int idx) {
 
@@ -120,8 +120,6 @@ int ip_res_analysis(int idx) {
     delete h_d0_phi_hipt_tmp;
     delete h_dz_phi_hipt_tmp;
 
-    std::cout << 6 << std::endl;
-
     TH1F *h_d0_pt_loeta = new TH1F("h_d0_pt_loeta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<1.4};Track IP #it{d_{xy}} (IPPV) [#mum];# tracks", 500, d0_pt_loeta_mean-8*d0_pt_loeta_stddev, d0_pt_loeta_mean+8*d0_pt_loeta_stddev);
     TH1F *h_dz_pt_loeta = new TH1F("h_dz_pt_loeta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<1.4};Track IP #it{d_{z}} (IPPV) [mm];# tracks", 500, dz_pt_loeta_mean-8*dz_pt_loeta_stddev, dz_pt_loeta_mean+8*dz_pt_loeta_stddev);
     TH1F *h_d0_pt_hieta = new TH1F("h_d0_pt_hieta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<3.0};Track IP #it{d_{xy}} (IPPV) [#mum];# tracks", 500, d0_pt_hieta_mean-8*d0_pt_hieta_stddev, d0_pt_hieta_mean+8*d0_pt_hieta_stddev);
@@ -202,7 +200,7 @@ int ip_res_analysis(int idx) {
     resojson["reso2_d0_phi_hipt"] = result_d0_phi_hipt.second;
     resojson["reso2_dz_phi_hipt"] = result_dz_phi_hipt.second;
 
-    std::ofstream outFile("../../json/"+datatype+Form("/ip_res/fit_%d.json",idx));
+    std::ofstream outFile("../../json/"+datatype+"/ip_res/"+sampletype+Form("/fit_%d.json",idx));
     outFile << resojson.dump(4);
     outFile.close();
 

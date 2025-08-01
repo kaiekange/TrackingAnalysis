@@ -3,7 +3,7 @@
 executable = pv_res_analysis.sh
 arguments = $(Process)
 
-log = logs/condor/JetHT_pv_res_analysis.log
+log = ../../logs/condor/JetHT_pv_res_analysis.log
 
 request_cpus = 4
 request_memory = 8G

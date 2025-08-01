@@ -20,7 +20,7 @@
 #include "input_list.cc"
 #include "../../functions/fit_res.cc"
 
-const TString figdir = "../../figures/"+datatype+"/pv_res_analysis/";
+const TString figdir = "../../figures/"+datatype+"/pv_res/"+sampletype+"/";
 const int nbins = 20;
 
 int pv_res_analysis(int idx) {
@@ -35,7 +35,7 @@ int pv_res_analysis(int idx) {
     nlohmann::json binning;
     infile >> binning;
 
-    std::vector<float> pv_SumTrackPt2_sqrt_edges = binning["pv_sumTrackPt2_sqrt"].get<std::vector<float>>();
+    std::vector<float> pv_SumTrackPt2_sqrt_edges = binning["pv_SumTrackPt2_sqrt"].get<std::vector<float>>();
 
     TString ptcut_title = Form("%.2f<#sqrt{#sum#it{p_{T}}^{2}}<%.2f GeV", pv_SumTrackPt2_sqrt_edges[idx], pv_SumTrackPt2_sqrt_edges[idx+1]);
     TCut ptcut = Form("sqrt(pv_SumTrackPt2) > %f && sqrt(pv_SumTrackPt2) < %f", pv_SumTrackPt2_sqrt_edges[idx], pv_SumTrackPt2_sqrt_edges[idx+1]);
@@ -110,7 +110,7 @@ int pv_res_analysis(int idx) {
     resojson["reso2_pully"] = result_reso_pully.second;
     resojson["reso2_pullz"] = result_reso_pullz.second;
 
-    std::ofstream outFile("../../json/"+datatype+Form("/pv_res/fit_%d.json",idx));
+    std::ofstream outFile("../../json/"+datatype+"/pv_res/"+sampletype+Form("/fit_%d.json",idx));
     outFile << resojson.dump(4);
     outFile.close();
 

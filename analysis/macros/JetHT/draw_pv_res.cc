@@ -19,7 +19,7 @@
 #include "../../functions/draw_funcs.cc"
 #include "input_list.cc"
 
-const TString figdir = "../../figures/"+datatype+"/pv_res_analysis/";
+const TString figdir = "../../figures/"+datatype+"/pv_res/";
 const TString jsondir = "../../json/"+datatype+"/pv_res/";
 const int nbins = 20;
 

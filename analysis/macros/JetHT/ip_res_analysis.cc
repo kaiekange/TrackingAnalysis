@@ -20,8 +20,8 @@
 #include "input_list.cc"
 #include "../../functions/fit_res.cc"
 
-const TString figdir = "../../figures/"+datatype+"/ip_res_analysis/";
-const int nbins = 20;
+const TString figdir = "../../figures/"+datatype+"/ip_res/"+sampletype+"/";
+const int nbins = 100;
 
 int ip_res_analysis(int idx) {
 
@@ -240,7 +240,7 @@ int ip_res_analysis(int idx) {
     resojson["reso2_d0_phi_ulpt"] = result_d0_phi_ulpt.second;
     resojson["reso2_dz_phi_ulpt"] = result_dz_phi_ulpt.second;
 
-    std::ofstream outFile("../../json/"+datatype+Form("/ip_res/fit_%d.json",idx));
+    std::ofstream outFile("../../json/"+datatype+"/ip_res/"+sampletype+Form("/fit_%d.json",idx));
     outFile << resojson.dump(4);
     outFile.close();
 

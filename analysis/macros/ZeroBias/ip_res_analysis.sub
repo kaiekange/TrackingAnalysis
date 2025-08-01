@@ -1,11 +1,9 @@
 # ip_res_analysis.sub -- submit job to run prepare simplified tuples
 
-datatype = ZeroBias 
-
 executable = ip_res_analysis.sh
 arguments = $(Process)
 
-log = ../../logs/condor/$(datatype)_ip_res_analysis.log
+log = ../../logs/condor/ZeroBias_ip_res_analysis.log
 
 request_cpus = 4
 request_memory = 8G
@@ -15,4 +13,4 @@ should_transfer_files = NO
 
 max_retries = 5
 
-queue 100
+queue 500
