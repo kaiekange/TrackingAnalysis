@@ -10,9 +10,10 @@ std::pair<float, float> fit_draw(TH1F* hist, TString figpath, float tolerance = 
     RooGaussian gauss1("gauss1", "gauss1", pv_var, mu, sigma1);
     RooGaussian gauss2("gauss2", "gauss2", pv_var, mu, sigma2);
     RooGaussian gauss3("gauss3", "gauss3", pv_var, mu, sigma3);
-    RooRealVar f1("f1", "f1", 0.5, 0.0, 1.0);
-    RooRealVar f2("f2", "f2", 0.5, 0.0, 1.0);
-    RooAddPdf triGauss("triGauss", "triGauss", RooArgList(gauss1, gauss2, gauss3), RooArgList(f1, f2));
+    RooRealVar f1("f1", "f1", 0.3, 0.0, 1.0);
+    RooRealVar f2("f2", "f2", 0.3, 0.0, 1.0);
+    RooFormulaVar f3("f3", "1 - f1 - f2", RooArgList(f1, f2));
+    RooAddPdf triGauss("triGauss", "triGauss", RooArgList(gauss1, gauss2, gauss3), RooArgList(f1, f2, f3));
 
     RooDataHist hdatahist("hdatahist", "", pv_var, hist);
     RooFitResult *fitResult = triGauss.fitTo(hdatahist, RooFit::Save(true));
@@ -99,8 +100,9 @@ std::pair<float, float> fit_draw(TH1F* hist, TString figpath, float tolerance = 
     write_text(0.68, 0.5, Form("#sigma_{3} = %.*f #pm %.*f", std::max(0, 2-(int)floor(log10(sigma3.getVal()))), sigma3.getVal(), std::max(0, 2-(int)floor(log10(sigma3.getVal()))), sigma3.getError()));
     write_text(0.68, 0.45, Form("f_{1} = %.*f #pm %.*f", std::max(0, 2-(int)floor(log10(f1.getVal()))), f1.getVal(), std::max(0, 2-(int)floor(log10(f1.getVal()))), f1.getError()));
     write_text(0.68, 0.4, Form("f_{2} = %.*f #pm %.*f", std::max(0, 2-(int)floor(log10(f2.getVal()))), f2.getVal(), std::max(0, 2-(int)floor(log10(f2.getVal()))), f2.getError()));
-    write_text(0.68, 0.35, Form("reso = %.*f", std::max(0, 2-(int)floor(log10(reso))), reso));
-    write_text(0.68, 0.3, Form("FWHM/2.36 = %.*f", std::max(0, 2-(int)floor(log10(reso2))), reso2));
+    write_text(0.68, 0.35, Form("f_{3} = %.*f", std::max(0, 2-(int)floor(log10(f3.getVal()))), f3.getVal()));
+    write_text(0.68, 0.3, Form("reso = %.*f", std::max(0, 2-(int)floor(log10(reso))), reso));
+    write_text(0.68, 0.25, Form("FWHM/2.36 = %.*f", std::max(0, 2-(int)floor(log10(reso2))), reso2));
     CMS_lumi_sub(c1);
 
     canvas->cd(2);

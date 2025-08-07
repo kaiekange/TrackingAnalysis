@@ -5,6 +5,9 @@ std::pair<float, float> fit_compare(TH1F * hist_data, TH1F * hist_mc, TString fi
     hist_data->Scale(1./hist_data->Integral());
     hist_mc->Scale(1./hist_mc->Integral());
 
+    TH1F * hist_ratio = (TH1F*)hist_data->Clone("hist_ratio");
+    hist_ratio->Divide(hist_mc);
+
     RooRealVar pv_var("pv_var", "pv_var", hist_data->GetXaxis()->GetXmin(), hist_data->GetXaxis()->GetXmax());
 
     RooRealVar mu_data("mu_data", "mu_data", hist_data->GetMean(), hist_data->GetXaxis()->GetXmin(), hist_data->GetXaxis()->GetXmax());
@@ -15,9 +18,8 @@ std::pair<float, float> fit_compare(TH1F * hist_data, TH1F * hist_mc, TString fi
     RooGaussian gauss2_data("gauss2_data", "gauss2_data", pv_var, mu_data, sigma2_data);
     RooGaussian gauss3_data("gauss3_data", "gauss3_data", pv_var, mu_data, sigma3_data);
     RooRealVar f1_data("f1_data", "f1_data", 0.3, 0.0, 1.0);
-    RooRealVar f2_data("f2_data", "f2_data", 0.3, 0.0, 1.0);
-    RooFormulaVar f3_data("f3_data", "1 - f1_data - f2_data", RooArgList(f1_data, f2_data));
-    RooAddPdf triGauss_data("triGauss_data", "triGauss_data", RooArgList(gauss1_data, gauss2_data, gauss3_data), RooArgList(f1_data, f2_data, f3_data));
+    RooRealVar f2_data("f2_data", "f2_data", 0.6, 0.0, 1.0);
+    RooAddPdf triGauss_data("triGauss_data", "triGauss_data", RooArgList(gauss1_data, gauss2_data, gauss3_data), RooArgList(f1_data, f2_data));
 
     RooDataHist hdatahist_data("hdatahist_data", "", pv_var, hist_data);
     RooFitResult *fitResult_data = triGauss_data.fitTo(hdatahist_data, RooFit::Save(true));
@@ -30,10 +32,9 @@ std::pair<float, float> fit_compare(TH1F * hist_data, TH1F * hist_mc, TString fi
     RooGaussian gauss1_mc("gauss1_mc", "gauss1_mc", pv_var, mu_mc, sigma1_mc);
     RooGaussian gauss2_mc("gauss2_mc", "gauss2_mc", pv_var, mu_mc, sigma2_mc);
     RooGaussian gauss3_mc("gauss3_mc", "gauss3_mc", pv_var, mu_mc, sigma3_mc);
-    RooRealVar f1_mc("f1_mc", "f1_mc", 0.3, 0.0, 1.0);
-    RooRealVar f2_mc("f2_mc", "f2_mc", 0.3, 0.0, 1.0);
-    RooFormulaVar f3_mc("f3_mc", "1 - f1_mc - f2_mc", RooArgList(f1_mc, f2_mc));
-    RooAddPdf triGauss_mc("triGauss_mc", "triGauss_mc", RooArgList(gauss1_mc, gauss2_mc, gauss3_mc), RooArgList(f1_mc, f2_mc, f3_mc));
+    RooRealVar f1_mc("f1_mc", "f1_mc", 0.5, 0.0, 1.0);
+    RooRealVar f2_mc("f2_mc", "f2_mc", 0.5, 0.0, 1.0);
+    RooAddPdf triGauss_mc("triGauss_mc", "triGauss_mc", RooArgList(gauss1_mc, gauss2_mc, gauss3_mc), RooArgList(f1_mc, f2_mc));
 
     RooDataHist hdatahist_mc("hdatahist_mc", "", pv_var, hist_mc);
     RooFitResult *fitResult_mc = triGauss_mc.fitTo(hdatahist_mc, RooFit::Save(true));
@@ -101,13 +102,17 @@ std::pair<float, float> fit_compare(TH1F * hist_data, TH1F * hist_mc, TString fi
 
     /* float reso2 = (right - left) / 2.36; */
 
-    TCanvas *canvas = new TCanvas("canvas", "canvas", 800, 600);
-    canvas_setup(canvas);
-    canvas->SetBottomMargin(0.15);
-    canvas->SetRightMargin(0.05);
-    canvas->SetLogy(0);
-    canvas->SetFillColor(0);
-    canvas->SetFrameFillColor(0);
+    TCanvas *canvas = new TCanvas("canvas", "canvas", 800, 700);
+    canvas->Divide(1,2);
+    canvas->cd(1);
+    TVirtualPad* c1 = canvas->GetPad(1);
+    canvas_setup_sub(c1);
+    c1->SetPad(0,0.3,1,1);
+    c1->SetBottomMargin(0.0);
+    c1->SetRightMargin(0.05);
+    c1->SetLogy(0);
+    c1->SetFillColor(0);
+    c1->SetFrameFillColor(0);
     RooPlot *frame = pv_var.frame();
 
     hdatahist_mc.plotOn(frame, RooFit::Name("mc"), RooFit::FillColor(kOrange-9), RooFit::LineWidth(0), RooFit::Binning(100), RooFit::DrawOption("F"));
@@ -116,9 +121,7 @@ std::pair<float, float> fit_compare(TH1F * hist_data, TH1F * hist_mc, TString fi
     triGauss_data.plotOn(frame, RooFit::Name("triGauss_data"), RooFit::Components("triGauss_data"), RooFit::LineStyle(9), RooFit::LineColor(kBlack), RooFit::LineWidth(2.0), RooFit::DrawOption("L"));
     frame->Draw("");
     frame->GetYaxis()->SetTitle(hist_data->GetYaxis()->GetTitle());
-    frame->GetXaxis()->SetTitle(hist_data->GetXaxis()->GetTitle());
     frame->GetYaxis()->SetNdivisions(810);
-    frame->GetXaxis()->SetNdivisions(810);
     frame->SetMinimum(0);
     frame->SetMaximum(frame->GetMaximum()*1.3);
     TLegend *legend = new TLegend(0.2, 0.5, 0.4, 0.7, NULL, "brNDC");
@@ -137,7 +140,6 @@ std::pair<float, float> fit_compare(TH1F * hist_data, TH1F * hist_mc, TString fi
     write_text(0.6, 0.65, Form("data reso = %.*f", std::max(0, 2-(int)floor(log10(reso_data))), reso_data));
     write_text(0.6, 0.6, Form("simulation reso = %.*f", std::max(0, 2-(int)floor(log10(reso_mc))), reso_mc));
     
-    
     /* write_text(0.68, 0.65, Form("#mu = %.*f #pm %.*f", std::max(0, 2-(int)floor(log10(abs(mu.getVal())))), mu.getVal(), std::max(0, 2-(int)floor(log10(abs(mu.getVal())))), mu.getError())); */
     /* write_text(0.68, 0.6, Form("#sigma_{1} = %.*f #pm %.*f", std::max(0, 2-(int)floor(log10(sigma1.getVal()))), sigma1.getVal(), std::max(0, 2-(int)floor(log10(sigma1.getVal()))), sigma1.getError())); */
     /* write_text(0.68, 0.55, Form("#sigma_{2} = %.*f #pm %.*f", std::max(0, 2-(int)floor(log10(sigma2.getVal()))), sigma2.getVal(), std::max(0, 2-(int)floor(log10(sigma2.getVal()))), sigma2.getError())); */
@@ -146,7 +148,23 @@ std::pair<float, float> fit_compare(TH1F * hist_data, TH1F * hist_mc, TString fi
     /* write_text(0.68, 0.4, Form("f_{2} = %.*f #pm %.*f", std::max(0, 2-(int)floor(log10(f2.getVal()))), f2.getVal(), std::max(0, 2-(int)floor(log10(f2.getVal()))), f2.getError())); */
     /* write_text(0.68, 0.35, Form("reso = %.*f", std::max(0, 2-(int)floor(log10(reso))), reso)); */
     /* write_text(0.68, 0.3, Form("FWHM/2.36 = %.*f", std::max(0, 2-(int)floor(log10(reso2))), reso2)); */
-    CMS_lumi(canvas);
+    CMS_lumi_sub(c1);
+
+    canvas->cd(2);
+    TVirtualPad* c2 = canvas->GetPad(2);
+    /* canvas_setup_sub(c2); */
+    c2->SetPad(0,0,1,0.3);
+    c2->SetRightMargin(0.05);
+    c2->SetTopMargin(0.05);
+    c2->SetBottomMargin(0.4);
+    hist_ratio->SetMarkerColor(kBlack);
+    hist_ratio->SetMarkerSize(0.7);
+    hist_ratio->GetXaxis()->SetTitle(hist_data->GetXaxis()->GetTitle());
+    hist_ratio->GetXaxis()->SetNdivisions(810);
+    hist_ratio->GetYaxis()->SetTitle("data / mc ratio");
+    hist_ratio->SetMaximum(2);
+    hist_ratio->SetMinimum(0.5);
+    hist_ratio->Draw("ep");
 
     canvas->Update();
     canvas->SaveAs(figpath+".png");

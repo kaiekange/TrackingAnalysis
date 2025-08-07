@@ -27,7 +27,7 @@ const int nbins = 100;
 int draw_ip_res(){
 
     setTDRStyle();
-    lumi_sqrtS = "13.6 TeV, 2022"+all_era;
+    lumi_sqrtS = "13.6 TeV, 2022";
 
     float eta[nbins];
     float phi[nbins];
@@ -91,55 +91,51 @@ int draw_ip_res(){
     float div_reso_dz_phi_ulpt[nbins];
 
     for(int i=0; i<nbins; i++){
-        nlohmann::json data_results;
-        std::ifstream data_infile(jsondir + Form("/data/fit_%d.json",i));
-        data_infile >> data_results;
+        nlohmann::json results;
+        std::ifstream infile(jsondir + Form("/compare/fit_%d.json",i));
+        infile >> results;
 
-        nlohmann::json mc_results;
-        std::ifstream mc_infile(jsondir + Form("/mc/fit_%d.json",i));
-        mc_infile >> mc_results;
+        eta[i] = results["eta"];
+        phi[i] = results["phi"];
+        pt[i] = results["pt"];
 
-        eta[i] = data_results["eta"];
-        phi[i] = data_results["phi"];
-        pt[i] = data_results["pt"];
+        data_reso_d0_pt_loeta[i] = results["reso_d0_pt_loeta_data"];
+        data_reso_dz_pt_loeta[i] = results["reso_dz_pt_loeta_data"];
+        data_reso_d0_pt_hieta[i] = results["reso_d0_pt_hieta_data"];
+        data_reso_dz_pt_hieta[i] = results["reso_dz_pt_hieta_data"];
 
-        data_reso_d0_pt_loeta[i] = data_results["reso_d0_pt_loeta"];
-        data_reso_dz_pt_loeta[i] = data_results["reso_dz_pt_loeta"];
-        data_reso_d0_pt_hieta[i] = data_results["reso_d0_pt_hieta"];
-        data_reso_dz_pt_hieta[i] = data_results["reso_dz_pt_hieta"];
+        data_reso_d0_eta_lopt[i] = results["reso_d0_eta_lopt_data"];
+        data_reso_dz_eta_lopt[i] = results["reso_dz_eta_lopt_data"];
+        data_reso_d0_eta_hipt[i] = results["reso_d0_eta_hipt_data"];
+        data_reso_dz_eta_hipt[i] = results["reso_dz_eta_hipt_data"];
+        data_reso_d0_eta_ulpt[i] = results["reso_d0_eta_ulpt_data"];
+        data_reso_dz_eta_ulpt[i] = results["reso_dz_eta_ulpt_data"];
 
-        data_reso_d0_eta_lopt[i] = data_results["reso_d0_eta_lopt"];
-        data_reso_dz_eta_lopt[i] = data_results["reso_dz_eta_lopt"];
-        data_reso_d0_eta_hipt[i] = data_results["reso_d0_eta_hipt"];
-        data_reso_dz_eta_hipt[i] = data_results["reso_dz_eta_hipt"];
-        data_reso_d0_eta_ulpt[i] = data_results["reso_d0_eta_ulpt"];
-        data_reso_dz_eta_ulpt[i] = data_results["reso_dz_eta_ulpt"];
+        data_reso_d0_phi_lopt[i] = results["reso_d0_phi_lopt_data"];
+        data_reso_dz_phi_lopt[i] = results["reso_dz_phi_lopt_data"];
+        data_reso_d0_phi_hipt[i] = results["reso_d0_phi_hipt_data"];
+        data_reso_dz_phi_hipt[i] = results["reso_dz_phi_hipt_data"];
+        data_reso_d0_phi_ulpt[i] = results["reso_d0_phi_ulpt_data"];
+        data_reso_dz_phi_ulpt[i] = results["reso_dz_phi_ulpt_data"];
 
-        data_reso_d0_phi_lopt[i] = data_results["reso_d0_phi_lopt"];
-        data_reso_dz_phi_lopt[i] = data_results["reso_dz_phi_lopt"];
-        data_reso_d0_phi_hipt[i] = data_results["reso_d0_phi_hipt"];
-        data_reso_dz_phi_hipt[i] = data_results["reso_dz_phi_hipt"];
-        data_reso_d0_phi_ulpt[i] = data_results["reso_d0_phi_ulpt"];
-        data_reso_dz_phi_ulpt[i] = data_results["reso_dz_phi_ulpt"];
+        mc_reso_d0_pt_loeta[i] = results["reso_d0_pt_loeta_mc"];
+        mc_reso_dz_pt_loeta[i] = results["reso_dz_pt_loeta_mc"];
+        mc_reso_d0_pt_hieta[i] = results["reso_d0_pt_hieta_mc"];
+        mc_reso_dz_pt_hieta[i] = results["reso_dz_pt_hieta_mc"];
 
-        mc_reso_d0_pt_loeta[i] = mc_results["reso_d0_pt_loeta"];
-        mc_reso_dz_pt_loeta[i] = mc_results["reso_dz_pt_loeta"];
-        mc_reso_d0_pt_hieta[i] = mc_results["reso_d0_pt_hieta"];
-        mc_reso_dz_pt_hieta[i] = mc_results["reso_dz_pt_hieta"];
+        mc_reso_d0_eta_lopt[i] = results["reso_d0_eta_lopt_mc"];
+        mc_reso_dz_eta_lopt[i] = results["reso_dz_eta_lopt_mc"];
+        mc_reso_d0_eta_hipt[i] = results["reso_d0_eta_hipt_mc"];
+        mc_reso_dz_eta_hipt[i] = results["reso_dz_eta_hipt_mc"];
+        mc_reso_d0_eta_ulpt[i] = results["reso_d0_eta_ulpt_mc"];
+        mc_reso_dz_eta_ulpt[i] = results["reso_dz_eta_ulpt_mc"];
 
-        mc_reso_d0_eta_lopt[i] = mc_results["reso_d0_eta_lopt"];
-        mc_reso_dz_eta_lopt[i] = mc_results["reso_dz_eta_lopt"];
-        mc_reso_d0_eta_hipt[i] = mc_results["reso_d0_eta_hipt"];
-        mc_reso_dz_eta_hipt[i] = mc_results["reso_dz_eta_hipt"];
-        mc_reso_d0_eta_ulpt[i] = mc_results["reso_d0_eta_ulpt"];
-        mc_reso_dz_eta_ulpt[i] = mc_results["reso_dz_eta_ulpt"];
-
-        mc_reso_d0_phi_lopt[i] = mc_results["reso_d0_phi_lopt"];
-        mc_reso_dz_phi_lopt[i] = mc_results["reso_dz_phi_lopt"];
-        mc_reso_d0_phi_hipt[i] = mc_results["reso_d0_phi_hipt"];
-        mc_reso_dz_phi_hipt[i] = mc_results["reso_dz_phi_hipt"];
-        mc_reso_d0_phi_ulpt[i] = mc_results["reso_d0_phi_ulpt"];
-        mc_reso_dz_phi_ulpt[i] = mc_results["reso_dz_phi_ulpt"];
+        mc_reso_d0_phi_lopt[i] = results["reso_d0_phi_lopt_mc"];
+        mc_reso_dz_phi_lopt[i] = results["reso_dz_phi_lopt_mc"];
+        mc_reso_d0_phi_hipt[i] = results["reso_d0_phi_hipt_mc"];
+        mc_reso_dz_phi_hipt[i] = results["reso_dz_phi_hipt_mc"];
+        mc_reso_d0_phi_ulpt[i] = results["reso_d0_phi_ulpt_mc"];
+        mc_reso_dz_phi_ulpt[i] = results["reso_dz_phi_ulpt_mc"];
 
         div_reso_d0_pt_loeta[i] = data_reso_d0_pt_loeta[i] / mc_reso_d0_pt_loeta[i];
         div_reso_dz_pt_loeta[i] = data_reso_dz_pt_loeta[i] / mc_reso_dz_pt_loeta[i];

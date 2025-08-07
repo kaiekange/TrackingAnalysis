@@ -8,7 +8,7 @@ void compare_gr(TGraph * gr1, TGraph * gr2, TGraph * div_gr, float height, float
     TVirtualPad* c1 = canvas->GetPad(1);
     canvas_setup_sub(c1);
     c1->SetPad(0,0.3,1,1);
-    c1->SetBottomMargin(0.0);
+    c1->SetBottomMargin(0.01);
     c1->SetRightMargin(0.05);
     c1->SetLogy(0);
     c1->SetFillColor(0);
@@ -23,7 +23,7 @@ void compare_gr(TGraph * gr1, TGraph * gr2, TGraph * div_gr, float height, float
     gr1->GetYaxis()->SetTitle(ylabel);
     write_text(0.55, 0.85, given_text);
     gr1->SetMaximum(height*1.5);
-    gr1->SetMinimum(0.01);
+    gr1->SetMinimum(0.0);
     gr1->GetYaxis()->SetNdivisions(810);
     /* gr1->GetXaxis()->SetTitleSize(0.035); */
     /* gr1->GetXaxis()->SetTitleOffset(1.5); */
@@ -69,10 +69,10 @@ void compare_gr(TGraph * gr1, TGraph * gr2, TGraph * div_gr, float height, float
     canvas->Update();
     canvas->SaveAs(figpath+".png");
 
-    gr1->SetMaximum(height*100.);
-    gr1->SetMinimum(ground/100.);
-    c1->SetLogy(1);
-    canvas->Update();
-    canvas->RedrawAxis();
-    canvas->SaveAs(figpath + "_log.png");
+    /* gr1->SetMaximum(height*100.); */
+    /* gr1->SetMinimum(ground/100.); */
+    /* c1->SetLogy(1); */
+    /* canvas->Update(); */
+    /* canvas->RedrawAxis(); */
+    /* canvas->SaveAs(figpath + "_log.png"); */
 }
