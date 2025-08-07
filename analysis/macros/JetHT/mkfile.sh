@@ -2,7 +2,6 @@
 
 idx=$1
 
-export HOME=/user/kakang/
 mkdir -p ../../logs/JetHT/mkfile
 eras=("eraB" "eraC" "sim")
 

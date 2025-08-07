@@ -21,7 +21,7 @@
 #include "../../functions/fit_res.cc"
 
 const TString figdir = "../../figures/"+datatype+"/pv_res/"+sampletype+"/";
-const int nbins = 20;
+const int nbins = 40;
 
 int pv_res_analysis(int idx) {
 

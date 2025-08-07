@@ -18,338 +18,166 @@
 #include "../../functions/CMS_lumi.cc"
 #include "../../functions/draw_funcs.cc"
 #include "input_list.cc"
+#include "../../functions/compare_gr.cc"
 
-const TString figdir = "../../figures/"+datatype+"/pv_res_analysis/";
+const TString figdir = "../../figures/"+datatype+"/pv_res/";
 const TString jsondir = "../../json/"+datatype+"/pv_res/";
 const int nbins = 100;
 
 int draw_pv_res(){
 
     setTDRStyle();
-    lumi_sqrtS = "13.6 TeV, 2022"+all_era;
+    lumi_sqrtS = "13.6 TeV, 2022";
 
-    float reso_pullx[nbins];
-    float reso_pully[nbins];
-    float reso_pullz[nbins];
-    float reso_pvx[nbins];
-    float reso_pvy[nbins];
-    float reso_pvz[nbins];
-    float reso2_pullx[nbins];
-    float reso2_pully[nbins];
-    float reso2_pullz[nbins];
-    float reso2_pvx[nbins];
-    float reso2_pvy[nbins];
-    float reso2_pvz[nbins];
+    float data_reso_pullx[nbins];
+    float data_reso_pully[nbins];
+    float data_reso_pullz[nbins];
+    float data_reso_pvx[nbins];
+    float data_reso_pvy[nbins];
+    float data_reso_pvz[nbins];
+
+    float mc_reso_pullx[nbins];
+    float mc_reso_pully[nbins];
+    float mc_reso_pullz[nbins];
+    float mc_reso_pvx[nbins];
+    float mc_reso_pvy[nbins];
+    float mc_reso_pvz[nbins];
+
+    float div_reso_pullx[nbins];
+    float div_reso_pully[nbins];
+    float div_reso_pullz[nbins];
+    float div_reso_pvx[nbins];
+    float div_reso_pvy[nbins];
+    float div_reso_pvz[nbins];
+
+    float data_reso2_pullx[nbins];
+    float data_reso2_pully[nbins];
+    float data_reso2_pullz[nbins];
+    float data_reso2_pvx[nbins];
+    float data_reso2_pvy[nbins];
+    float data_reso2_pvz[nbins];
+
+    float div_reso2_pullx[nbins];
+    float div_reso2_pully[nbins];
+    float div_reso2_pullz[nbins];
+    float div_reso2_pvx[nbins];
+    float div_reso2_pvy[nbins];
+    float div_reso2_pvz[nbins];
+
     float sumpt2_sqrt[nbins];
 
     for(int i=0; i<nbins; i++){
-        nlohmann::json results;
-        std::ifstream infile(jsondir + Form("fit_%d.json",i));
-        infile >> results;
+        nlohmann::json data_results;
+        std::ifstream data_infile(jsondir + Form("/data/fit_%d.json",i));
+        data_infile >> data_results;
 
-        reso_pullx[i] = results["reso_pullx"];
-        reso_pully[i] = results["reso_pully"];
-        reso_pullz[i] = results["reso_pullz"];
-        reso_pvx[i] = results["reso_pvx"];
-        reso_pvy[i] = results["reso_pvy"];
-        reso_pvz[i] = results["reso_pvz"];
-        reso2_pullx[i] = results["reso2_pullx"];
-        reso2_pully[i] = results["reso2_pully"];
-        reso2_pullz[i] = results["reso2_pullz"];
-        reso2_pvx[i] = results["reso2_pvx"];
-        reso2_pvy[i] = results["reso2_pvy"];
-        reso2_pvz[i] = results["reso2_pvz"];
-        sumpt2_sqrt[i] = results["sumpt2_sqrt"];
+        /* nlohmann::json mc_results; */
+        /* std::ifstream mc_infile(jsondir + Form("/mc/fit_%d.json",i)); */
+        /* mc_infile >> mc_results; */
+
+        sumpt2_sqrt[i] = data_results["sumpt2_sqrt"];
+        data_reso_pullx[i] = data_results["reso_pullx"];
+        data_reso_pully[i] = data_results["reso_pully"];
+        data_reso_pullz[i] = data_results["reso_pullz"];
+        data_reso_pvx[i] = data_results["reso_pvx"];
+        data_reso_pvy[i] = data_results["reso_pvy"];
+        data_reso_pvz[i] = data_results["reso_pvz"];
+        /* mc_reso_pullx[i] = mc_results["reso_pullx"]; */
+        /* mc_reso_pully[i] = mc_results["reso_pully"]; */
+        /* mc_reso_pullz[i] = mc_results["reso_pullz"]; */
+        /* mc_reso_pvx[i] = mc_results["reso_pvx"]; */
+        /* mc_reso_pvy[i] = mc_results["reso_pvy"]; */
+        /* mc_reso_pvz[i] = mc_results["reso_pvz"]; */
+        /* div_reso_pullx[i] = data_reso_pullx[i] / mc_reso_pullx[i]; */
+        /* div_reso_pully[i] = data_reso_pully[i] / mc_reso_pully[i]; */
+        /* div_reso_pullz[i] = data_reso_pullz[i] / mc_reso_pullz[i]; */
+        /* div_reso_pvx[i] = data_reso_pvx[i] / mc_reso_pvx[i]; */
+        /* div_reso_pvy[i] = data_reso_pvy[i] / mc_reso_pvy[i]; */
+        /* div_reso_pvz[i] = data_reso_pvz[i] / mc_reso_pvz[i]; */
+
+        data_reso2_pullx[i] = data_results["reso2_pullx"];
+        data_reso2_pully[i] = data_results["reso2_pully"];
+        data_reso2_pullz[i] = data_results["reso2_pullz"];
+        data_reso2_pvx[i] = data_results["reso2_pvx"];
+        data_reso2_pvy[i] = data_results["reso2_pvy"];
+        data_reso2_pvz[i] = data_results["reso2_pvz"];
+
+
+        div_reso2_pullx[i] = data_reso_pullx[i] / data_reso2_pullx[i];
+        div_reso2_pully[i] = data_reso_pully[i] / data_reso2_pully[i];
+        div_reso2_pullz[i] = data_reso_pullz[i] / data_reso2_pullz[i];
+        div_reso2_pvx[i] = data_reso_pvx[i] / data_reso2_pvx[i];
+        div_reso2_pvy[i] = data_reso_pvy[i] / data_reso2_pvy[i];
+        div_reso2_pvz[i] = data_reso_pvz[i] / data_reso2_pvz[i];
     }
 
-    TGraph * gr_pvx = new TGraph(nbins, sumpt2_sqrt, reso_pvx);
-    TGraph * gr_pvy = new TGraph(nbins, sumpt2_sqrt, reso_pvy);
-    TGraph * gr_pvz = new TGraph(nbins, sumpt2_sqrt, reso_pvz);
-    TGraph * gr_pullx = new TGraph(nbins, sumpt2_sqrt, reso_pullx);
-    TGraph * gr_pully = new TGraph(nbins, sumpt2_sqrt, reso_pully);
-    TGraph * gr_pullz = new TGraph(nbins, sumpt2_sqrt, reso_pullz);
-    TGraph * gr2_pvx = new TGraph(nbins, sumpt2_sqrt, reso2_pvx);
-    TGraph * gr2_pvy = new TGraph(nbins, sumpt2_sqrt, reso2_pvy);
-    TGraph * gr2_pvz = new TGraph(nbins, sumpt2_sqrt, reso2_pvz);
-    TGraph * gr2_pullx = new TGraph(nbins, sumpt2_sqrt, reso2_pullx);
-    TGraph * gr2_pully = new TGraph(nbins, sumpt2_sqrt, reso2_pully);
-    TGraph * gr2_pullz = new TGraph(nbins, sumpt2_sqrt, reso2_pullz);
+    TGraph * data_gr_pvx = new TGraph(nbins, sumpt2_sqrt, data_reso_pvx);
+    TGraph * data_gr_pvy = new TGraph(nbins, sumpt2_sqrt, data_reso_pvy);
+    TGraph * data_gr_pvz = new TGraph(nbins, sumpt2_sqrt, data_reso_pvz);
+    TGraph * data_gr_pullx = new TGraph(nbins, sumpt2_sqrt, data_reso_pullx);
+    TGraph * data_gr_pully = new TGraph(nbins, sumpt2_sqrt, data_reso_pully);
+    TGraph * data_gr_pullz = new TGraph(nbins, sumpt2_sqrt, data_reso_pullz);
 
-    float height_pvx = *std::max_element(reso_pvx, reso_pvx+nbins);
-    float height_pvy = *std::max_element(reso_pvy, reso_pvy+nbins);
-    float height_pvz = *std::max_element(reso_pvz, reso_pvz+nbins);
-    float floor_pvx = *std::min_element(reso_pvx, reso_pvx+nbins);
-    float floor_pvy = *std::min_element(reso_pvy, reso_pvy+nbins);
-    float floor_pvz = *std::min_element(reso_pvz, reso_pvz+nbins);
-    float height2_pvx = *std::max_element(reso2_pvx, reso2_pvx+nbins);
-    float height2_pvy = *std::max_element(reso2_pvy, reso2_pvy+nbins);
-    float height2_pvz = *std::max_element(reso2_pvz, reso2_pvz+nbins);
-    float floor2_pvx = *std::min_element(reso2_pvx, reso2_pvx+nbins);
-    float floor2_pvy = *std::min_element(reso2_pvy, reso2_pvy+nbins);
-    float floor2_pvz = *std::min_element(reso2_pvz, reso2_pvz+nbins);
+    /* TGraph * mc_gr_pvx = new TGraph(nbins, sumpt2_sqrt, mc_reso_pvx); */
+    /* TGraph * mc_gr_pvy = new TGraph(nbins, sumpt2_sqrt, mc_reso_pvy); */
+    /* TGraph * mc_gr_pvz = new TGraph(nbins, sumpt2_sqrt, mc_reso_pvz); */
+    /* TGraph * mc_gr_pullx = new TGraph(nbins, sumpt2_sqrt, mc_reso_pullx); */
+    /* TGraph * mc_gr_pully = new TGraph(nbins, sumpt2_sqrt, mc_reso_pully); */
+    /* TGraph * mc_gr_pullz = new TGraph(nbins, sumpt2_sqrt, mc_reso_pullz); */
 
-    TCanvas *c_pvx = new TCanvas("c_pvx", "", 800, 600);
-    canvas_setup(c_pvx);
-    gr_pvx->SetMarkerStyle(20);
-    gr_pvx->SetMarkerColor(kBlack);
-    gr_pvx->Draw("AP");
-    gr_pvx->GetXaxis()->SetTitle("#sqrt{#sum#it{p_{T}}^{2}} [GeV]");
-    gr_pvx->GetYaxis()->SetTitle("PV resolution in x [#mum]");
-    write_text(0.55, 0.88, datatype_text);
-    CMS_lumi(c_pvx);
-    gr_pvx->SetMaximum(height_pvx*1.3);
-    gr_pvx->SetMinimum(0);
-    gr_pvx->GetXaxis()->SetNdivisions(810);
-    gr_pvx->GetYaxis()->SetNdivisions(810);
-    gr_pvx->GetXaxis()->SetTitleSize(0.035);
-    gr_pvx->GetXaxis()->SetTitleOffset(1.5);
-    c_pvx->Update();
-    c_pvx->RedrawAxis();
-    c_pvx->SaveAs(figdir + "pvx.png");
-    /* gr_pvx->SetMaximum(height_pvx*100); */
-    /* gr_pvx->SetMinimum(floor_pvx/100); */
-    /* c_pvx->SetLogy(); */
-    /* c_pvx->Update(); */
-    /* c_pvx->RedrawAxis(); */
-    /* c_pvx->SaveAs(figdir + "pvx_log.png"); */
+    /* TGraph * div_gr_pvx = new TGraph(nbins, sumpt2_sqrt, div_reso_pvx); */
+    /* TGraph * div_gr_pvy = new TGraph(nbins, sumpt2_sqrt, div_reso_pvy); */
+    /* TGraph * div_gr_pvz = new TGraph(nbins, sumpt2_sqrt, div_reso_pvz); */
+    /* TGraph * div_gr_pullx = new TGraph(nbins, sumpt2_sqrt, div_reso_pullx); */
+    /* TGraph * div_gr_pully = new TGraph(nbins, sumpt2_sqrt, div_reso_pully); */
+    /* TGraph * div_gr_pullz = new TGraph(nbins, sumpt2_sqrt, div_reso_pullz); */
 
-    TCanvas *c_pvy = new TCanvas("c_pvy", "", 800, 600);
-    canvas_setup(c_pvy);
-    gr_pvy->SetMarkerStyle(20);
-    gr_pvy->SetMarkerColor(kBlack);
-    gr_pvy->Draw("AP");
-    gr_pvy->GetXaxis()->SetTitle("#sqrt{#sum#it{p_{T}}^{2}} [GeV]");
-    gr_pvy->GetYaxis()->SetTitle("PV resolution in y [#mum]");
-    write_text(0.55, 0.88, datatype_text);
-    CMS_lumi(c_pvy);
-    gr_pvy->SetMaximum(height_pvy*1.3);
-    gr_pvy->SetMinimum(0);
-    gr_pvy->GetXaxis()->SetNdivisions(810);
-    gr_pvy->GetYaxis()->SetNdivisions(810);
-    gr_pvy->GetXaxis()->SetTitleSize(0.035);
-    gr_pvy->GetXaxis()->SetTitleOffset(1.5);
-    c_pvy->Update();
-    c_pvy->RedrawAxis();
-    c_pvy->SaveAs(figdir + "pvy.png");
-    /* gr_pvy->SetMaximum(height_pvy*100); */
-    /* gr_pvy->SetMinimum(floor_pvy/100); */
-    /* c_pvy->SetLogy(); */
-    /* c_pvy->Update(); */
-    /* c_pvy->RedrawAxis(); */
-    /* c_pvy->SaveAs(figdir + "pvy_log.png"); */
+    TGraph * data_gr2_pvx = new TGraph(nbins, sumpt2_sqrt, data_reso2_pvx);
+    TGraph * data_gr2_pvy = new TGraph(nbins, sumpt2_sqrt, data_reso2_pvy);
+    TGraph * data_gr2_pvz = new TGraph(nbins, sumpt2_sqrt, data_reso2_pvz);
+    TGraph * data_gr2_pullx = new TGraph(nbins, sumpt2_sqrt, data_reso2_pullx);
+    TGraph * data_gr2_pully = new TGraph(nbins, sumpt2_sqrt, data_reso2_pully);
+    TGraph * data_gr2_pullz = new TGraph(nbins, sumpt2_sqrt, data_reso2_pullz);
 
-    TCanvas *c_pvz = new TCanvas("c_pvz", "", 800, 600);
-    canvas_setup(c_pvz);
-    gr_pvz->SetMarkerStyle(20);
-    gr_pvz->SetMarkerColor(kBlack);
-    gr_pvz->Draw("AP");
-    gr_pvz->GetXaxis()->SetTitle("#sqrt{#sum#it{p_{T}}^{2}} [GeV]");
-    gr_pvz->GetYaxis()->SetTitle("PV resolution in z [#mum]");
-    write_text(0.55, 0.88, datatype_text);
-    CMS_lumi(c_pvz);
-    gr_pvz->SetMaximum(height_pvz*1.3);
-    gr_pvz->SetMinimum(0);
-    gr_pvz->GetXaxis()->SetNdivisions(810);
-    gr_pvz->GetYaxis()->SetNdivisions(810);
-    gr_pvz->GetXaxis()->SetTitleSize(0.035);
-    gr_pvz->GetXaxis()->SetTitleOffset(1.5);
-    c_pvz->Update();
-    c_pvz->RedrawAxis();
-    c_pvz->SaveAs(figdir + "pvz.png");
-    /* gr_pvz->SetMaximum(height_pvz*100); */
-    /* gr_pvz->SetMinimum(floor_pvz/100); */
-    /* c_pvz->SetLogy(); */
-    /* c_pvz->Update(); */
-    /* c_pvz->RedrawAxis(); */
-    /* c_pvz->SaveAs(figdir + "pvz_log.png"); */
+    TGraph * div_gr2_pvx = new TGraph(nbins, sumpt2_sqrt, div_reso2_pvx);
+    TGraph * div_gr2_pvy = new TGraph(nbins, sumpt2_sqrt, div_reso2_pvy);
+    TGraph * div_gr2_pvz = new TGraph(nbins, sumpt2_sqrt, div_reso2_pvz);
+    TGraph * div_gr2_pullx = new TGraph(nbins, sumpt2_sqrt, div_reso2_pullx);
+    TGraph * div_gr2_pully = new TGraph(nbins, sumpt2_sqrt, div_reso2_pully);
+    TGraph * div_gr2_pullz = new TGraph(nbins, sumpt2_sqrt, div_reso2_pullz);
 
-    TCanvas *c_pullx = new TCanvas("c_pullx", "", 800, 600);
-    canvas_setup(c_pullx);
-    gr_pullx->SetMarkerStyle(20);
-    gr_pullx->SetMarkerColor(kBlack);
-    gr_pullx->Draw("AP");
-    gr_pullx->GetXaxis()->SetTitle("#sqrt{#sum#it{p_{T}}^{2}} [GeV]");
-    gr_pullx->GetYaxis()->SetTitle("PV pull in x");
-    write_text(0.55, 0.88, datatype_text);
-    CMS_lumi(c_pullx);
-    gr_pullx->SetMaximum(1.5);
-    gr_pullx->SetMinimum(0.5);
-    gr_pullx->GetXaxis()->SetNdivisions(810);
-    gr_pullx->GetYaxis()->SetNdivisions(810);
-    gr_pullx->GetXaxis()->SetTitleSize(0.035);
-    gr_pullx->GetXaxis()->SetTitleOffset(1.5);
-    c_pullx->Update();
-    c_pullx->RedrawAxis();
-    c_pullx->SaveAs(figdir + "pullx.png");
+    float data_height_pvx = *std::max_element(data_reso_pvx, data_reso_pvx+nbins);
+    float data_height_pvy = *std::max_element(data_reso_pvy, data_reso_pvy+nbins);
+    float data_height_pvz = *std::max_element(data_reso_pvz, data_reso_pvz+nbins);
+    float data_floor_pvx = *std::min_element(data_reso_pvx, data_reso_pvx+nbins);
+    float data_floor_pvy = *std::min_element(data_reso_pvy, data_reso_pvy+nbins);
+    float data_floor_pvz = *std::min_element(data_reso_pvz, data_reso_pvz+nbins);
 
-    TCanvas *c_pully = new TCanvas("c_pully", "", 800, 600);
-    canvas_setup(c_pully);
-    gr_pully->SetMarkerStyle(20);
-    gr_pully->SetMarkerColor(kBlack);
-    gr_pully->Draw("AP");
-    gr_pully->GetXaxis()->SetTitle("#sqrt{#sum#it{p_{T}}^{2}} [GeV]");
-    gr_pully->GetYaxis()->SetTitle("PV pull in y");
-    write_text(0.55, 0.88, datatype_text);
-    CMS_lumi(c_pully);
-    gr_pully->SetMaximum(1.5);
-    gr_pully->SetMinimum(0.5);
-    gr_pully->GetXaxis()->SetNdivisions(810);
-    gr_pully->GetYaxis()->SetNdivisions(810);
-    gr_pully->GetXaxis()->SetTitleSize(0.035);
-    gr_pully->GetXaxis()->SetTitleOffset(1.5);
-    c_pully->Update();
-    c_pully->RedrawAxis();
-    c_pully->SaveAs(figdir + "pully.png");
+    /* float mc_height_pvx = *std::max_element(mc_reso_pvx, mc_reso_pvx+nbins); */
+    /* float mc_height_pvy = *std::max_element(mc_reso_pvy, mc_reso_pvy+nbins); */
+    /* float mc_height_pvz = *std::max_element(mc_reso_pvz, mc_reso_pvz+nbins); */
+    /* float mc_floor_pvx = *std::min_element(mc_reso_pvx, mc_reso_pvx+nbins); */
+    /* float mc_floor_pvy = *std::min_element(mc_reso_pvy, mc_reso_pvy+nbins); */
+    /* float mc_floor_pvz = *std::min_element(mc_reso_pvz, mc_reso_pvz+nbins); */
 
-    TCanvas *c_pullz = new TCanvas("c_pullz", "", 800, 600);
-    canvas_setup(c_pullz);
-    gr_pullz->SetMarkerStyle(20);
-    gr_pullz->SetMarkerColor(kBlack);
-    gr_pullz->Draw("AP");
-    gr_pullz->GetXaxis()->SetTitle("#sqrt{#sum#it{p_{T}}^{2}} [GeV]");
-    gr_pullz->GetYaxis()->SetTitle("PV pull in z");
-    write_text(0.55, 0.88, datatype_text);
-    CMS_lumi(c_pullz);
-    gr_pullz->SetMaximum(1.5);
-    gr_pullz->SetMinimum(0.5);
-    gr_pullz->GetXaxis()->SetNdivisions(810);
-    gr_pullz->GetYaxis()->SetNdivisions(810);
-    gr_pullz->GetXaxis()->SetTitleSize(0.035);
-    gr_pullz->GetXaxis()->SetTitleOffset(1.5);
-    c_pullz->Update();
-    c_pullz->RedrawAxis();
-    c_pullz->SaveAs(figdir + "pullz.png");
+    /* float height_pvx = std::max(data_height_pvx, mc_height_pvx); */
+    /* float height_pvy = std::max(data_height_pvy, mc_height_pvy); */
+    /* float height_pvz = std::max(data_height_pvz, mc_height_pvz); */
+    /* float floor_pvx = std::min(data_floor_pvx, mc_floor_pvx); */
+    /* float floor_pvy = std::min(data_floor_pvy, mc_floor_pvy); */
+    /* float floor_pvz = std::min(data_floor_pvz, mc_floor_pvz); */
 
-    TCanvas *c2_pvx = new TCanvas("c2_pvx", "", 800, 600);
-    canvas_setup(c2_pvx);
-    gr2_pvx->SetMarkerStyle(20);
-    gr2_pvx->SetMarkerColor(kBlack);
-    gr2_pvx->Draw("AP");
-    gr2_pvx->GetXaxis()->SetTitle("#sqrt{#sum#it{p_{T}}^{2}} [GeV]");
-    gr2_pvx->GetYaxis()->SetTitle("PV resolution in x [#mum]");
-    write_text(0.55, 0.88, datatype_text);
-    CMS_lumi(c2_pvx);
-    gr2_pvx->SetMaximum(height2_pvx*1.3);
-    gr2_pvx->SetMinimum(0);
-    gr2_pvx->GetXaxis()->SetNdivisions(810);
-    gr2_pvx->GetYaxis()->SetNdivisions(810);
-    gr2_pvx->GetXaxis()->SetTitleSize(0.035);
-    gr2_pvx->GetXaxis()->SetTitleOffset(1.5);
-    c2_pvx->Update();
-    c2_pvx->RedrawAxis();
-    c2_pvx->SaveAs(figdir + "pvx2.png");
-    /* gr2_pvx->SetMaximum(height2_pvx*100); */
-    /* gr2_pvx->SetMinimum(floor_pvx/100); */
-    /* c2_pvx->SetLogy(); */
-    /* c2_pvx->Update(); */
-    /* c2_pvx->RedrawAxis(); */
-    /* c2_pvx->SaveAs(figdir + "pvx_log2.png"); */
+    /* compare_gr(data_gr_pvx, mc_gr_pvx, div_gr_pvx, height_pvx, floor_pvx, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in x [#mum]", figdir + "pvx"); */
+    /* compare_gr(data_gr_pvy, mc_gr_pvy, div_gr_pvy, height_pvy, floor_pvy, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in y [#mum]", figdir + "pvy"); */
+    /* compare_gr(data_gr_pvz, mc_gr_pvz, div_gr_pvz, height_pvz, floor_pvz, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in z [#mum]", figdir + "pvz"); */
 
-    TCanvas *c2_pvy = new TCanvas("c2_pvy", "", 800, 600);
-    canvas_setup(c2_pvy);
-    gr2_pvy->SetMarkerStyle(20);
-    gr2_pvy->SetMarkerColor(kBlack);
-    gr2_pvy->Draw("AP");
-    gr2_pvy->GetXaxis()->SetTitle("#sqrt{#sum#it{p_{T}}^{2}} [GeV]");
-    gr2_pvy->GetYaxis()->SetTitle("PV resolution in y [#mum]");
-    write_text(0.55, 0.88, datatype_text);
-    CMS_lumi(c2_pvy);
-    gr2_pvy->SetMaximum(height2_pvy*1.3);
-    gr2_pvy->SetMinimum(0);
-    gr2_pvy->GetXaxis()->SetNdivisions(810);
-    gr2_pvy->GetYaxis()->SetNdivisions(810);
-    gr2_pvy->GetXaxis()->SetTitleSize(0.035);
-    gr2_pvy->GetXaxis()->SetTitleOffset(1.5);
-    c2_pvy->Update();
-    c2_pvy->RedrawAxis();
-    c2_pvy->SaveAs(figdir + "pvy2.png");
-    /* gr2_pvy->SetMaximum(height2_pvy*100); */
-    /* gr2_pvy->SetMinimum(floor_pvy/100); */
-    /* c2_pvy->SetLogy(); */
-    /* c2_pvy->Update(); */
-    /* c2_pvy->RedrawAxis(); */
-    /* c2_pvy->SaveAs(figdir + "pvy_log2.png"); */
+    /* compare_gr(data_gr_pullx, mc_gr_pullx, div_gr_pullx, 1.5, 0.5, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in x", figdir + "pullx"); */
+    /* compare_gr(data_gr_pully, mc_gr_pully, div_gr_pully, 1.5, 0.5, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in y", figdir + "pully"); */
+    /* compare_gr(data_gr_pullz, mc_gr_pullz, div_gr_pullz, 1.5, 0.5, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in z", figdir + "pullz"); */
 
-    TCanvas *c2_pvz = new TCanvas("c2_pvz", "", 800, 600);
-    canvas_setup(c2_pvz);
-    gr2_pvz->SetMarkerStyle(20);
-    gr2_pvz->SetMarkerColor(kBlack);
-    gr2_pvz->Draw("AP");
-    gr2_pvz->GetXaxis()->SetTitle("#sqrt{#sum#it{p_{T}}^{2}} [GeV]");
-    gr2_pvz->GetYaxis()->SetTitle("PV resolution in z [#mum]");
-    write_text(0.55, 0.88, datatype_text);
-    CMS_lumi(c2_pvz);
-    gr2_pvz->SetMaximum(height2_pvz*1.3);
-    gr2_pvz->SetMinimum(0);
-    gr2_pvz->GetXaxis()->SetNdivisions(810);
-    gr2_pvz->GetYaxis()->SetNdivisions(810);
-    gr2_pvz->GetXaxis()->SetTitleSize(0.035);
-    gr2_pvz->GetXaxis()->SetTitleOffset(1.5);
-    c2_pvz->Update();
-    c2_pvz->RedrawAxis();
-    c2_pvz->SaveAs(figdir + "pvz2.png");
-    /* gr2_pvz->SetMaximum(height2_pvz*100); */
-    /* gr2_pvz->SetMinimum(floor_pvz/100); */
-    /* c2_pvz->SetLogy(); */
-    /* c2_pvz->Update(); */
-    /* c2_pvz->RedrawAxis(); */
-    /* c2_pvz->SaveAs(figdir + "pvz_log2.png"); */
+    compare_gr(data_gr_pvx, data_gr2_pvx, div_gr2_pvx, data_height_pvx, data_floor_pvx*0.7, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.9, 1.5, "reso1", "reso2", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in x [#mum]", figdir + "pvx_reso12");
+    compare_gr(data_gr_pvy, data_gr2_pvy, div_gr2_pvy, data_height_pvy, data_floor_pvy*0.7, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.9, 1.5, "reso1", "reso2", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in y [#mum]", figdir + "pvy_reso12");
+    compare_gr(data_gr_pvz, data_gr2_pvz, div_gr2_pvz, data_height_pvz, data_floor_pvz*0.7, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.9, 1.5, "reso1", "reso2", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in z [#mum]", figdir + "pvz_reso12");
 
-    TCanvas *c2_pullx = new TCanvas("c2_pullx", "", 800, 600);
-    canvas_setup(c2_pullx);
-    gr2_pullx->SetMarkerStyle(20);
-    gr2_pullx->SetMarkerColor(kBlack);
-    gr2_pullx->Draw("AP");
-    gr2_pullx->GetXaxis()->SetTitle("#sqrt{#sum#it{p_{T}}^{2}} [GeV]");
-    gr2_pullx->GetYaxis()->SetTitle("PV pull in x");
-    write_text(0.55, 0.88, datatype_text);
-    CMS_lumi(c2_pullx);
-    gr2_pullx->SetMaximum(1.5);
-    gr2_pullx->SetMinimum(0.5);
-    gr2_pullx->GetXaxis()->SetNdivisions(810);
-    gr2_pullx->GetYaxis()->SetNdivisions(810);
-    gr2_pullx->GetXaxis()->SetTitleSize(0.035);
-    gr2_pullx->GetXaxis()->SetTitleOffset(1.5);
-    c2_pullx->Update();
-    c2_pullx->RedrawAxis();
-    c2_pullx->SaveAs(figdir + "pullx2.png");
-
-    TCanvas *c2_pully = new TCanvas("c2_pully", "", 800, 600);
-    canvas_setup(c2_pully);
-    gr2_pully->SetMarkerStyle(20);
-    gr2_pully->SetMarkerColor(kBlack);
-    gr2_pully->Draw("AP");
-    gr2_pully->GetXaxis()->SetTitle("#sqrt{#sum#it{p_{T}}^{2}} [GeV]");
-    gr2_pully->GetYaxis()->SetTitle("PV pull in y");
-    write_text(0.55, 0.88, datatype_text);
-    CMS_lumi(c2_pully);
-    gr2_pully->SetMaximum(1.5);
-    gr2_pully->SetMinimum(0.5);
-    gr2_pully->GetXaxis()->SetNdivisions(810);
-    gr2_pully->GetYaxis()->SetNdivisions(810);
-    gr2_pully->GetXaxis()->SetTitleSize(0.035);
-    gr2_pully->GetXaxis()->SetTitleOffset(1.5);
-    c2_pully->Update();
-    c2_pully->RedrawAxis();
-    c2_pully->SaveAs(figdir + "pully2.png");
-
-    TCanvas *c2_pullz = new TCanvas("c2_pullz", "", 800, 600);
-    canvas_setup(c2_pullz);
-    gr2_pullz->SetMarkerStyle(20);
-    gr2_pullz->SetMarkerColor(kBlack);
-    gr2_pullz->Draw("AP");
-    gr2_pullz->GetXaxis()->SetTitle("#sqrt{#sum#it{p_{T}}^{2}} [GeV]");
-    gr2_pullz->GetYaxis()->SetTitle("PV pull in z");
-    write_text(0.55, 0.88, datatype_text);
-    CMS_lumi(c2_pullz);
-    gr2_pullz->SetMaximum(1.5);
-    gr2_pullz->SetMinimum(0.5);
-    gr2_pullz->GetXaxis()->SetNdivisions(810);
-    gr2_pullz->GetYaxis()->SetNdivisions(810);
-    gr2_pullz->GetXaxis()->SetTitleSize(0.035);
-    gr2_pullz->GetXaxis()->SetTitleOffset(1.5);
-    c2_pullz->Update();
-    c2_pullz->RedrawAxis();
-    c2_pullz->SaveAs(figdir + "pullz2.png");
     return 0;
 }
