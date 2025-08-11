@@ -27,7 +27,6 @@ const int nbins = 100;
 int draw_ip_res(){
 
     setTDRStyle();
-    lumi_sqrtS = "13.6 TeV, 2022";
 
     float eta[nbins];
     float phi[nbins];
@@ -92,7 +91,7 @@ int draw_ip_res(){
 
     for(int i=0; i<nbins; i++){
         nlohmann::json results;
-        std::ifstream infile(jsondir + Form("/compare/fit_%d.json",i));
+        std::ifstream infile(jsondir + Form("/compare/redo_fit_%d.json",i));
         infile >> results;
 
         eta[i] = results["eta"];
@@ -328,28 +327,28 @@ int draw_ip_res(){
     float floor_d0_phi_ulpt = std::min(data_floor_d0_phi_ulpt, mc_floor_d0_phi_ulpt);
     float floor_dz_phi_ulpt = std::min(data_floor_dz_phi_ulpt, mc_floor_dz_phi_ulpt);
 
-    compare_gr(data_gr_d0_pt_hieta, mc_gr_d0_pt_hieta, div_gr_d0_pt_hieta, height_d0_pt_hieta, floor_d0_pt_hieta, pt[0], pt[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{|#it{#eta}|<3.0}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_pt_hieta");
-    compare_gr(data_gr_d0_pt_loeta, mc_gr_d0_pt_loeta, div_gr_d0_pt_loeta, height_d0_pt_loeta, floor_d0_pt_loeta, pt[0], pt[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{|#it{#eta}|<1.4}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_pt_loeta");
+    compare_gr(data_gr_d0_pt_hieta, mc_gr_d0_pt_hieta, div_gr_d0_pt_hieta, height_d0_pt_hieta, floor_d0_pt_hieta, pt[0], pt[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{|#it{#eta}|<3.0}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "redo_d0_pt_hieta");
+    compare_gr(data_gr_d0_pt_loeta, mc_gr_d0_pt_loeta, div_gr_d0_pt_loeta, height_d0_pt_loeta, floor_d0_pt_loeta, pt[0], pt[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{|#it{#eta}|<1.4}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "redo_d0_pt_loeta");
 
-    compare_gr(data_gr_d0_eta_lopt, mc_gr_d0_eta_lopt, div_gr_d0_eta_lopt, height_d0_eta_lopt, floor_d0_eta_lopt, eta[0], eta[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{0.1<#it{p_{T}}<1.0 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_eta_lopt");
-    compare_gr(data_gr_d0_eta_hipt, mc_gr_d0_eta_hipt, div_gr_d0_eta_hipt, height_d0_eta_hipt, floor_d0_eta_hipt, eta[0], eta[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{1.0<#it{p_{T}}<3.0 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_eta_hipt");
-    compare_gr(data_gr_d0_eta_ulpt, mc_gr_d0_eta_ulpt, div_gr_d0_eta_ulpt, height_d0_eta_ulpt, floor_d0_eta_ulpt, eta[0], eta[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{3.0<#it{p_{T}}<10.0 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_eta_ulpt");
+    compare_gr(data_gr_d0_eta_lopt, mc_gr_d0_eta_lopt, div_gr_d0_eta_lopt, height_d0_eta_lopt, floor_d0_eta_lopt, eta[0], eta[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{0.1<#it{p_{T}}<1.0 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "redo_d0_eta_lopt");
+    compare_gr(data_gr_d0_eta_hipt, mc_gr_d0_eta_hipt, div_gr_d0_eta_hipt, height_d0_eta_hipt, floor_d0_eta_hipt, eta[0], eta[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{1.0<#it{p_{T}}<3.0 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "redo_d0_eta_hipt");
+    compare_gr(data_gr_d0_eta_ulpt, mc_gr_d0_eta_ulpt, div_gr_d0_eta_ulpt, height_d0_eta_ulpt, floor_d0_eta_ulpt, eta[0], eta[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{3.0<#it{p_{T}}<10.0 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "redo_d0_eta_ulpt");
 
-    compare_gr(data_gr_d0_phi_lopt, mc_gr_d0_phi_lopt, div_gr_d0_phi_lopt, height_d0_phi_lopt, floor_d0_phi_lopt, phi[0], phi[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{0.1<#it{p_{T}}<1.0 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_lopt");
-    compare_gr(data_gr_d0_phi_hipt, mc_gr_d0_phi_hipt, div_gr_d0_phi_hipt, height_d0_phi_hipt, floor_d0_phi_hipt, phi[0], phi[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{1.0<#it{p_{T}}<3.0 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_hipt");
-    compare_gr(data_gr_d0_phi_ulpt, mc_gr_d0_phi_ulpt, div_gr_d0_phi_ulpt, height_d0_phi_ulpt, floor_d0_phi_ulpt, phi[0], phi[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{3.0<#it{p_{T}}<10.0 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_ulpt");
+    compare_gr(data_gr_d0_phi_lopt, mc_gr_d0_phi_lopt, div_gr_d0_phi_lopt, height_d0_phi_lopt, floor_d0_phi_lopt, phi[0], phi[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{0.1<#it{p_{T}}<1.0 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "redo_d0_phi_lopt");
+    compare_gr(data_gr_d0_phi_hipt, mc_gr_d0_phi_hipt, div_gr_d0_phi_hipt, height_d0_phi_hipt, floor_d0_phi_hipt, phi[0], phi[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{1.0<#it{p_{T}}<3.0 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "redo_d0_phi_hipt");
+    compare_gr(data_gr_d0_phi_ulpt, mc_gr_d0_phi_ulpt, div_gr_d0_phi_ulpt, height_d0_phi_ulpt, floor_d0_phi_ulpt, phi[0], phi[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{3.0<#it{p_{T}}<10.0 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "redo_d0_phi_ulpt");
     
 
-    compare_gr(data_gr_dz_pt_hieta, mc_gr_dz_pt_hieta, div_gr_dz_pt_hieta, height_dz_pt_hieta, floor_dz_pt_hieta, pt[0], pt[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{|#it{#eta}|<3.0}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_pt_hieta");
-    compare_gr(data_gr_dz_pt_loeta, mc_gr_dz_pt_loeta, div_gr_dz_pt_loeta, height_dz_pt_loeta, floor_dz_pt_loeta, pt[0], pt[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{|#it{#eta}|<1.4}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_pt_loeta");
+    compare_gr(data_gr_dz_pt_hieta, mc_gr_dz_pt_hieta, div_gr_dz_pt_hieta, height_dz_pt_hieta, floor_dz_pt_hieta, pt[0], pt[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{|#it{#eta}|<3.0}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "redo_dz_pt_hieta");
+    compare_gr(data_gr_dz_pt_loeta, mc_gr_dz_pt_loeta, div_gr_dz_pt_loeta, height_dz_pt_loeta, floor_dz_pt_loeta, pt[0], pt[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{|#it{#eta}|<1.4}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "redo_dz_pt_loeta");
 
-    compare_gr(data_gr_dz_eta_lopt, mc_gr_dz_eta_lopt, div_gr_dz_eta_lopt, height_dz_eta_lopt, floor_dz_eta_lopt, eta[0], eta[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{0.1<#it{p_{T}}<1.0 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_eta_lopt");
-    compare_gr(data_gr_dz_eta_hipt, mc_gr_dz_eta_hipt, div_gr_dz_eta_hipt, height_dz_eta_hipt, floor_dz_eta_hipt, eta[0], eta[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{1.0<#it{p_{T}}<3.0 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_eta_hipt");
-    compare_gr(data_gr_dz_eta_ulpt, mc_gr_dz_eta_ulpt, div_gr_dz_eta_ulpt, height_dz_eta_ulpt, floor_dz_eta_ulpt, eta[0], eta[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{3.0<#it{p_{T}}<10.0 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_eta_ulpt");
+    compare_gr(data_gr_dz_eta_lopt, mc_gr_dz_eta_lopt, div_gr_dz_eta_lopt, height_dz_eta_lopt, floor_dz_eta_lopt, eta[0], eta[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{0.1<#it{p_{T}}<1.0 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "redo_dz_eta_lopt");
+    compare_gr(data_gr_dz_eta_hipt, mc_gr_dz_eta_hipt, div_gr_dz_eta_hipt, height_dz_eta_hipt, floor_dz_eta_hipt, eta[0], eta[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{1.0<#it{p_{T}}<3.0 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "redo_dz_eta_hipt");
+    compare_gr(data_gr_dz_eta_ulpt, mc_gr_dz_eta_ulpt, div_gr_dz_eta_ulpt, height_dz_eta_ulpt, floor_dz_eta_ulpt, eta[0], eta[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{3.0<#it{p_{T}}<10.0 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "redo_dz_eta_ulpt");
 
-    compare_gr(data_gr_dz_phi_lopt, mc_gr_dz_phi_lopt, div_gr_dz_phi_lopt, height_dz_phi_lopt, floor_dz_phi_lopt, phi[0], phi[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{0.1<#it{p_{T}}<1.0 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_lopt");
-    compare_gr(data_gr_dz_phi_hipt, mc_gr_dz_phi_hipt, div_gr_dz_phi_hipt, height_dz_phi_hipt, floor_dz_phi_hipt, phi[0], phi[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{1.0<#it{p_{T}}<3.0 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_hipt");
-    compare_gr(data_gr_dz_phi_ulpt, mc_gr_dz_phi_ulpt, div_gr_dz_phi_ulpt, height_dz_phi_ulpt, floor_dz_phi_ulpt, phi[0], phi[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{3.0<#it{p_{T}}<10.0 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_ulpt");
+    compare_gr(data_gr_dz_phi_lopt, mc_gr_dz_phi_lopt, div_gr_dz_phi_lopt, height_dz_phi_lopt, floor_dz_phi_lopt, phi[0], phi[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{0.1<#it{p_{T}}<1.0 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "redo_dz_phi_lopt");
+    compare_gr(data_gr_dz_phi_hipt, mc_gr_dz_phi_hipt, div_gr_dz_phi_hipt, height_dz_phi_hipt, floor_dz_phi_hipt, phi[0], phi[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{1.0<#it{p_{T}}<3.0 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "redo_dz_phi_hipt");
+    compare_gr(data_gr_dz_phi_ulpt, mc_gr_dz_phi_ulpt, div_gr_dz_phi_ulpt, height_dz_phi_ulpt, floor_dz_phi_ulpt, phi[0], phi[nbins-1], 0.8, 1.2, "Data", "Simulation", "#splitline{"+datatype_text+"}{3.0<#it{p_{T}}<10.0 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "redo_dz_phi_ulpt");
 
     return 0;
 }

@@ -29,7 +29,7 @@ int pv_res(int idx) {
 
     TFile *datafile = TFile::Open("/user/kakang/IPres/CMSSW_14_0_10/src/TrackingAnalysis/analysis/tuples/JetHT_data2022.root");
     TTree *datatree = (TTree*)datafile->Get("mytree");
-    TFile *mcfile = TFile::Open("/user/kakang/IPres/CMSSW_14_0_10/src/TrackingAnalysis/analysis/tuples/JetHT_mc2022.root");
+    TFile *mcfile = TFile::Open("/user/kakang/IPres/CMSSW_14_0_10/src/TrackingAnalysis/analysis/tuples/JetHT_mc2022_redo.root");
     TTree *mctree = (TTree*)mcfile->Get("mytree");
 
     std::ifstream infile("../../json/"+datatype+"/binning.json");
@@ -93,20 +93,20 @@ int pv_res(int idx) {
     TH1F *h_pull_y_mc = new TH1F("h_pull_y_mc", ptcut_title+";(#it{y}_{1}-#it{y}_{2})/#sqrt{#Delta#it{y}_{1}^{2}+#Delta#it{y}_{2}^{2}};# PV", 200, pull_y_mean-8*pull_y_stddev, pull_y_mean+8*pull_y_stddev);
     TH1F *h_pull_z_mc = new TH1F("h_pull_z_mc", ptcut_title+";(#it{z}_{1}-#it{z}_{2})/#sqrt{#Delta#it{z}_{1}^{2}+#Delta#it{z}_{2}^{2}};# PV", 200, pull_z_mean-8*pull_z_stddev, pull_z_mean+8*pull_z_stddev);
 
-    mctree->Project("h_diff_x_mc", "(pv_x_p1 - pv_x_p2)/sqrt(2)", ptcut+xnull_cut);
-    mctree->Project("h_diff_y_mc", "(pv_y_p1 - pv_y_p2)/sqrt(2)", ptcut+ynull_cut);
-    mctree->Project("h_diff_z_mc", "(pv_z_p1 - pv_z_p2)/sqrt(2)", ptcut+znull_cut);
-    mctree->Project("h_pull_x_mc", "(pv_x_p1 - pv_x_p2)/sqrt(pow(pv_xError_p1,2)+pow(pv_xError_p2,2))", ptcut+xnull_cut);
-    mctree->Project("h_pull_y_mc", "(pv_y_p1 - pv_y_p2)/sqrt(pow(pv_yError_p1,2)+pow(pv_yError_p2,2))", ptcut+ynull_cut);
-    mctree->Project("h_pull_z_mc", "(pv_z_p1 - pv_z_p2)/sqrt(pow(pv_zError_p1,2)+pow(pv_zError_p2,2))", ptcut+znull_cut);
+    mctree->Project("h_diff_x_mc", "(pv_x_p1 - pv_x_p2)/sqrt(2)",  TString("PU_factor * (") + (ptcut+xnull_cut).GetTitle() + ")");
+    mctree->Project("h_diff_y_mc", "(pv_y_p1 - pv_y_p2)/sqrt(2)",  TString("PU_factor * (") + (ptcut+ynull_cut).GetTitle() + ")");
+    mctree->Project("h_diff_z_mc", "(pv_z_p1 - pv_z_p2)/sqrt(2)",  TString("PU_factor * (") + (ptcut+znull_cut).GetTitle() + ")");
+    mctree->Project("h_pull_x_mc", "(pv_x_p1 - pv_x_p2)/sqrt(pow(pv_xError_p1,2)+pow(pv_xError_p2,2))", TString("PU_factor * (") + (ptcut+xnull_cut).GetTitle() + ")");
+    mctree->Project("h_pull_y_mc", "(pv_y_p1 - pv_y_p2)/sqrt(pow(pv_yError_p1,2)+pow(pv_yError_p2,2))", TString("PU_factor * (") + (ptcut+ynull_cut).GetTitle() + ")");
+    mctree->Project("h_pull_z_mc", "(pv_z_p1 - pv_z_p2)/sqrt(pow(pv_zError_p1,2)+pow(pv_zError_p2,2))", TString("PU_factor * (") + (ptcut+znull_cut).GetTitle() + ")");
 
-    auto result_reso_pvx = fit_compare(h_diff_x_data, h_diff_x_mc, figdir+Form("pvx_fit/pt_%d", idx), 0.01);
-    auto result_reso_pvy = fit_compare(h_diff_y_data, h_diff_y_mc, figdir+Form("pvy_fit/pt_%d", idx), 0.01);
-    auto result_reso_pvz = fit_compare(h_diff_z_data, h_diff_z_mc, figdir+Form("pvz_fit/pt_%d", idx), 0.01);
+    auto result_reso_pvx = fit_compare(h_diff_x_data, h_diff_x_mc, figdir+Form("pvx_fit/redo_pt_%d", idx), 0.01);
+    auto result_reso_pvy = fit_compare(h_diff_y_data, h_diff_y_mc, figdir+Form("pvy_fit/redo_pt_%d", idx), 0.01);
+    auto result_reso_pvz = fit_compare(h_diff_z_data, h_diff_z_mc, figdir+Form("pvz_fit/redo_pt_%d", idx), 0.01);
 
-    auto result_reso_pullx = fit_compare(h_pull_x_data, h_pull_x_mc, figdir+Form("pullx_fit/pt_%d", idx), 0.01);
-    auto result_reso_pully = fit_compare(h_pull_y_data, h_pull_y_mc, figdir+Form("pully_fit/pt_%d", idx), 0.01);
-    auto result_reso_pullz = fit_compare(h_pull_z_data, h_pull_z_mc, figdir+Form("pullz_fit/pt_%d", idx), 0.01);
+    auto result_reso_pullx = fit_compare(h_pull_x_data, h_pull_x_mc, figdir+Form("pullx_fit/redo_pt_%d", idx), 0.01);
+    auto result_reso_pully = fit_compare(h_pull_y_data, h_pull_y_mc, figdir+Form("pully_fit/redo_pt_%d", idx), 0.01);
+    auto result_reso_pullz = fit_compare(h_pull_z_data, h_pull_z_mc, figdir+Form("pullz_fit/redo_pt_%d", idx), 0.01);
 
     nlohmann::json resojson;
     resojson["sumpt2_sqrt"] = (pv_SumTrackPt2_sqrt_edges[idx] + pv_SumTrackPt2_sqrt_edges[idx+1])/2;
@@ -126,7 +126,7 @@ int pv_res(int idx) {
     resojson["reso_pullz_mc"] = result_reso_pullz.second;
 
 
-    std::ofstream outFile("../../json/"+datatype+Form("/pv_res/compare/fit_%d.json",idx));
+    std::ofstream outFile("../../json/"+datatype+Form("/pv_res/compare/redo_fit_%d.json",idx));
     outFile << resojson.dump(4);
     outFile.close();
 

@@ -54,7 +54,7 @@ int draw_pv_res(){
 
     for(int i=0; i<nbins; i++){
         nlohmann::json results;
-        std::ifstream infile(jsondir + Form("/fit_%d.json",i));
+        std::ifstream infile(jsondir + Form("/redo_fit_%d.json",i));
         infile >> results;
 
         sumpt2_sqrt[i] = results["sumpt2_sqrt"];
@@ -120,13 +120,13 @@ int draw_pv_res(){
     float floor_pvy = std::min(data_floor_pvy, mc_floor_pvy);
     float floor_pvz = std::min(data_floor_pvz, mc_floor_pvz);
 
-    compare_gr(data_gr_pvx, mc_gr_pvx, div_gr_pvx, height_pvx, floor_pvx, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in x [#mum]", figdir + "pvx");
-    compare_gr(data_gr_pvy, mc_gr_pvy, div_gr_pvy, height_pvy, floor_pvy, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in y [#mum]", figdir + "pvy");
-    compare_gr(data_gr_pvz, mc_gr_pvz, div_gr_pvz, height_pvz, floor_pvz, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in z [#mum]", figdir + "pvz");
+    compare_gr(data_gr_pvx, mc_gr_pvx, div_gr_pvx, height_pvx, floor_pvx, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in x [#mum]", figdir + "redo_pvx");
+    compare_gr(data_gr_pvy, mc_gr_pvy, div_gr_pvy, height_pvy, floor_pvy, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in y [#mum]", figdir + "redo_pvy");
+    compare_gr(data_gr_pvz, mc_gr_pvz, div_gr_pvz, height_pvz, floor_pvz, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in z [#mum]", figdir + "redo_pvz");
 
-    compare_gr(data_gr_pullx, mc_gr_pullx, div_gr_pullx, 1.5, 0.5, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in x", figdir + "pullx");
-    compare_gr(data_gr_pully, mc_gr_pully, div_gr_pully, 1.5, 0.5, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in y", figdir + "pully");
-    compare_gr(data_gr_pullz, mc_gr_pullz, div_gr_pullz, 1.5, 0.5, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in z", figdir + "pullz");
+    compare_gr(data_gr_pullx, mc_gr_pullx, div_gr_pullx, 1.5, 0.5, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in x", figdir + "redo_pullx");
+    compare_gr(data_gr_pully, mc_gr_pully, div_gr_pully, 1.5, 0.5, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in y", figdir + "redo_pully");
+    compare_gr(data_gr_pullz, mc_gr_pullz, div_gr_pullz, 1.5, 0.5, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in z", figdir + "redo_pullz");
     
     return 0;
 }

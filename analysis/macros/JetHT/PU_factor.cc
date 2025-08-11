@@ -45,7 +45,7 @@ int PU_factor(){
     for(int i=0; i<nentries; i++){
         mctree->GetEntry(i);
 
-        factor = PU_fac[ev_nPV];
+        factor = PU_fac[ev_nPV-1];
 
         outtree->Fill();
     }

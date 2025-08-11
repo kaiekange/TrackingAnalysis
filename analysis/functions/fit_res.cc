@@ -102,7 +102,7 @@ std::pair<float, float> fit_draw(TH1F* hist, TString figpath, float tolerance = 
     write_text(0.68, 0.4, Form("f_{2} = %.*f #pm %.*f", std::max(0, 2-(int)floor(log10(f2.getVal()))), f2.getVal(), std::max(0, 2-(int)floor(log10(f2.getVal()))), f2.getError()));
     write_text(0.68, 0.35, Form("f_{3} = %.*f", std::max(0, 2-(int)floor(log10(f3.getVal()))), f3.getVal()));
     write_text(0.68, 0.3, Form("reso = %.*f", std::max(0, 2-(int)floor(log10(reso))), reso));
-    write_text(0.68, 0.25, Form("FWHM/2.36 = %.*f", std::max(0, 2-(int)floor(log10(reso2))), reso2));
+    /* write_text(0.68, 0.25, Form("FWHM/2.36 = %.*f", std::max(0, 2-(int)floor(log10(reso2))), reso2)); */
     CMS_lumi_sub(c1);
 
     canvas->cd(2);
