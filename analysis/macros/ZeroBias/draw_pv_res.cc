@@ -18,11 +18,46 @@
 #include "../../functions/CMS_lumi.cc"
 #include "../../functions/draw_funcs.cc"
 #include "input_list.cc"
-#include "../../functions/compare_gr.cc"
 
 const TString figdir = "../../figures/"+datatype+"/pv_res/";
 const TString jsondir = "../../json/"+datatype+"/pv_res/";
 const int nbins = 100;
+
+void draw_gr(TGraph * gr, float height, float ground, TString given_text, TString xlabel, TString ylabel, TString figpath) {
+
+    lumi_sqrtS = "13.6 TeV, 2022";
+
+    TCanvas *canvas = new TCanvas("canvas", "canvas", 800, 600);
+    canvas_setup(canvas);
+    canvas->SetBottomMargin(0.15);
+    canvas->SetRightMargin(0.05);
+    canvas->SetLogy(0);
+    canvas->SetFillColor(0);
+    canvas->SetFrameFillColor(0);
+
+    gr->SetMarkerStyle(20);
+    gr->SetMarkerColor(kBlack);
+    gr->Draw("AP");
+    gr->GetXaxis()->SetTitle(xlabel);
+    gr->GetYaxis()->SetTitle(ylabel);
+    gr->GetXaxis()->SetTitleSize(0.035);
+    gr->GetXaxis()->SetTitleOffset(1.5);
+    write_text(0.55, 0.85, given_text);
+    gr->SetMaximum(height*1.3);
+    gr->SetMinimum(0.0);
+    gr->GetYaxis()->SetNdivisions(810);
+    CMS_lumi(canvas);
+    canvas->Update();
+    canvas->RedrawAxis();
+    canvas->SaveAs(figpath+".png");
+
+    /* gr->SetMaximum(height*100.); */
+    /* gr->SetMinimum(ground/100.); */
+    /* canvas->SetLogy(1); */
+    /* canvas->Update(); */
+    /* canvas->RedrawAxis(); */
+    /* canvas->SaveAs(figpath + "_log.png"); */
+}
 
 int draw_pv_res(){
 
@@ -95,20 +130,20 @@ int draw_pv_res(){
         /* div_reso_pvy[i] = data_reso_pvy[i] / mc_reso_pvy[i]; */
         /* div_reso_pvz[i] = data_reso_pvz[i] / mc_reso_pvz[i]; */
 
-        data_reso2_pullx[i] = data_results["reso2_pullx"];
-        data_reso2_pully[i] = data_results["reso2_pully"];
-        data_reso2_pullz[i] = data_results["reso2_pullz"];
-        data_reso2_pvx[i] = data_results["reso2_pvx"];
-        data_reso2_pvy[i] = data_results["reso2_pvy"];
-        data_reso2_pvz[i] = data_results["reso2_pvz"];
+        /* data_reso2_pullx[i] = data_results["reso2_pullx"]; */
+        /* data_reso2_pully[i] = data_results["reso2_pully"]; */
+        /* data_reso2_pullz[i] = data_results["reso2_pullz"]; */
+        /* data_reso2_pvx[i] = data_results["reso2_pvx"]; */
+        /* data_reso2_pvy[i] = data_results["reso2_pvy"]; */
+        /* data_reso2_pvz[i] = data_results["reso2_pvz"]; */
 
 
-        div_reso2_pullx[i] = data_reso_pullx[i] / data_reso2_pullx[i];
-        div_reso2_pully[i] = data_reso_pully[i] / data_reso2_pully[i];
-        div_reso2_pullz[i] = data_reso_pullz[i] / data_reso2_pullz[i];
-        div_reso2_pvx[i] = data_reso_pvx[i] / data_reso2_pvx[i];
-        div_reso2_pvy[i] = data_reso_pvy[i] / data_reso2_pvy[i];
-        div_reso2_pvz[i] = data_reso_pvz[i] / data_reso2_pvz[i];
+        /* div_reso2_pullx[i] = data_reso_pullx[i] / data_reso2_pullx[i]; */
+        /* div_reso2_pully[i] = data_reso_pully[i] / data_reso2_pully[i]; */
+        /* div_reso2_pullz[i] = data_reso_pullz[i] / data_reso2_pullz[i]; */
+        /* div_reso2_pvx[i] = data_reso_pvx[i] / data_reso2_pvx[i]; */
+        /* div_reso2_pvy[i] = data_reso_pvy[i] / data_reso2_pvy[i]; */
+        /* div_reso2_pvz[i] = data_reso_pvz[i] / data_reso2_pvz[i]; */
     }
 
     TGraph * data_gr_pvx = new TGraph(nbins, sumpt2_sqrt, data_reso_pvx);
@@ -132,19 +167,19 @@ int draw_pv_res(){
     /* TGraph * div_gr_pully = new TGraph(nbins, sumpt2_sqrt, div_reso_pully); */
     /* TGraph * div_gr_pullz = new TGraph(nbins, sumpt2_sqrt, div_reso_pullz); */
 
-    TGraph * data_gr2_pvx = new TGraph(nbins, sumpt2_sqrt, data_reso2_pvx);
-    TGraph * data_gr2_pvy = new TGraph(nbins, sumpt2_sqrt, data_reso2_pvy);
-    TGraph * data_gr2_pvz = new TGraph(nbins, sumpt2_sqrt, data_reso2_pvz);
-    TGraph * data_gr2_pullx = new TGraph(nbins, sumpt2_sqrt, data_reso2_pullx);
-    TGraph * data_gr2_pully = new TGraph(nbins, sumpt2_sqrt, data_reso2_pully);
-    TGraph * data_gr2_pullz = new TGraph(nbins, sumpt2_sqrt, data_reso2_pullz);
+    /* TGraph * data_gr2_pvx = new TGraph(nbins, sumpt2_sqrt, data_reso2_pvx); */
+    /* TGraph * data_gr2_pvy = new TGraph(nbins, sumpt2_sqrt, data_reso2_pvy); */
+    /* TGraph * data_gr2_pvz = new TGraph(nbins, sumpt2_sqrt, data_reso2_pvz); */
+    /* TGraph * data_gr2_pullx = new TGraph(nbins, sumpt2_sqrt, data_reso2_pullx); */
+    /* TGraph * data_gr2_pully = new TGraph(nbins, sumpt2_sqrt, data_reso2_pully); */
+    /* TGraph * data_gr2_pullz = new TGraph(nbins, sumpt2_sqrt, data_reso2_pullz); */
 
-    TGraph * div_gr2_pvx = new TGraph(nbins, sumpt2_sqrt, div_reso2_pvx);
-    TGraph * div_gr2_pvy = new TGraph(nbins, sumpt2_sqrt, div_reso2_pvy);
-    TGraph * div_gr2_pvz = new TGraph(nbins, sumpt2_sqrt, div_reso2_pvz);
-    TGraph * div_gr2_pullx = new TGraph(nbins, sumpt2_sqrt, div_reso2_pullx);
-    TGraph * div_gr2_pully = new TGraph(nbins, sumpt2_sqrt, div_reso2_pully);
-    TGraph * div_gr2_pullz = new TGraph(nbins, sumpt2_sqrt, div_reso2_pullz);
+    /* TGraph * div_gr2_pvx = new TGraph(nbins, sumpt2_sqrt, div_reso2_pvx); */
+    /* TGraph * div_gr2_pvy = new TGraph(nbins, sumpt2_sqrt, div_reso2_pvy); */
+    /* TGraph * div_gr2_pvz = new TGraph(nbins, sumpt2_sqrt, div_reso2_pvz); */
+    /* TGraph * div_gr2_pullx = new TGraph(nbins, sumpt2_sqrt, div_reso2_pullx); */
+    /* TGraph * div_gr2_pully = new TGraph(nbins, sumpt2_sqrt, div_reso2_pully); */
+    /* TGraph * div_gr2_pullz = new TGraph(nbins, sumpt2_sqrt, div_reso2_pullz); */
 
     float data_height_pvx = *std::max_element(data_reso_pvx, data_reso_pvx+nbins);
     float data_height_pvy = *std::max_element(data_reso_pvy, data_reso_pvy+nbins);
@@ -175,9 +210,16 @@ int draw_pv_res(){
     /* compare_gr(data_gr_pully, mc_gr_pully, div_gr_pully, 1.5, 0.5, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in y", figdir + "pully"); */
     /* compare_gr(data_gr_pullz, mc_gr_pullz, div_gr_pullz, 1.5, 0.5, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in z", figdir + "pullz"); */
 
-    compare_gr(data_gr_pvx, data_gr2_pvx, div_gr2_pvx, data_height_pvx, data_floor_pvx*0.7, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.9, 1.5, "reso1", "reso2", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in x [#mum]", figdir + "pvx_reso12");
-    compare_gr(data_gr_pvy, data_gr2_pvy, div_gr2_pvy, data_height_pvy, data_floor_pvy*0.7, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.9, 1.5, "reso1", "reso2", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in y [#mum]", figdir + "pvy_reso12");
-    compare_gr(data_gr_pvz, data_gr2_pvz, div_gr2_pvz, data_height_pvz, data_floor_pvz*0.7, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.9, 1.5, "reso1", "reso2", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in z [#mum]", figdir + "pvz_reso12");
+    /* compare_gr(data_gr_pvx, data_gr2_pvx, div_gr2_pvx, data_height_pvx, data_floor_pvx*0.7, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.9, 1.5, "reso1", "reso2", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in x [#mum]", figdir + "pvx_reso12"); */
+    /* compare_gr(data_gr_pvy, data_gr2_pvy, div_gr2_pvy, data_height_pvy, data_floor_pvy*0.7, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.9, 1.5, "reso1", "reso2", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in y [#mum]", figdir + "pvy_reso12"); */
+    /* compare_gr(data_gr_pvz, data_gr2_pvz, div_gr2_pvz, data_height_pvz, data_floor_pvz*0.7, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.9, 1.5, "reso1", "reso2", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in z [#mum]", figdir + "pvz_reso12"); */
+
+    draw_gr(data_gr_pvx, data_height_pvx, data_floor_pvx, datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in x [#mum]", figdir + "pvx");
+    draw_gr(data_gr_pvy, data_height_pvy, data_floor_pvy, datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in y [#mum]", figdir + "pvy");
+    draw_gr(data_gr_pvz, data_height_pvz, data_floor_pvz, datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in z [#mum]", figdir + "pvz");
+    draw_gr(data_gr_pullx, 1.5, 0.5, datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in x [#mum]", figdir + "pullx");
+    draw_gr(data_gr_pully, 1.5, 0.5, datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in y [#mum]", figdir + "pully");
+    draw_gr(data_gr_pullz, 1.5, 0.5, datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in z [#mum]", figdir + "pullz");
 
     return 0;
 }

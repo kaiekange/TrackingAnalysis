@@ -2,9 +2,9 @@
 
 source /cvmfs/cms.cern.ch/crab3/crab.sh
 
-datasetlist="data_JetHT.txt"
+datasetlist="data_ZeroBias.txt"
 configtemplate="crabConfigTemplateData.py"
-ver="Track-v20250328_noBS"
+ver="Track-v20250717"
 prodv="/store/user/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
 pver="0"
 

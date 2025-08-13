@@ -20,12 +20,18 @@ done < "$datasetlist"
 
 for dataset in ${datasets[@]}
 do
-    split=(${dataset//\// })
+
+    tmpdataset=${dataset#/}
+    IFS='/' read -r -a split <<< "$tmpdataset"
+
     content=${split[0]}
-    content=${content//_*}
+    content=$(echo "$content" | cut -d'_' -f1-3)
+
     era_pro=${split[1]}
-    era_pro=${era_pro//-*}
+    era_pro=${era_pro%%MiniAOD*}
+
     format=${split[2]}
+
 
     REQUESTNAME="${content}_${era_pro}_${format}_ver${pver}"
     INPUTDATASET=${dataset}
