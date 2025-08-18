@@ -10,9 +10,8 @@
 
 int splitbin() {
 
-    if(gSystem->AccessPathName("../../json")) gSystem->MakeDirectory("../../json");
-    if(gSystem->AccessPathName("../../json/ZeroBias")) gSystem->MakeDirectory("../../json/ZeroBias");
-    TFile *myfile = TFile::Open("/user/kakang/IPres/CMSSW_14_0_10/src/TrackingAnalysis/analysis/tuples/ZeroBias_data2022.root");
+    if(gSystem->AccessPathName("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/ZeroBias")) gSystem->MakeDirectory("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/ZeroBias");
+    TFile *myfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/ZeroBias/2022_data.root");
 
     TTree *mytree = (TTree*)myfile->Get("mytree");
 
@@ -106,7 +105,7 @@ int splitbin() {
     splitparams["pv_trk_eta"] = pv_trk_eta_binedges;
     splitparams["pv_trk_phi"] = pv_trk_phi_binedges;
 
-    std::ofstream outfile("../../json/ZeroBias/binning.json");
+    std::ofstream outfile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/ZeroBias/binning.json");
     outfile << splitparams.dump(4);
     outfile.close();
     std::cout << "Binning saved to binning.json\n";

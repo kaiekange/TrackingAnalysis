@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Using find for robustness
-dirs=($(find . -maxdepth 1 -type d -name 'crab_*' -printf '%f\n'))
+dirs=($(find . -maxdepth 1 -type d -name 'crab_QCD*' -printf '%f\n'))
 
 # Loop to verify
 for dir in "${dirs[@]}"; do

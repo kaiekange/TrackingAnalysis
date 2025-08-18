@@ -4,33 +4,24 @@
 #include <TString.h>
 #include <TMath.h>
 #include <TH1.h>
-#include <TCanvas.h>
-#include <TLegend.h>
-#include <RooRealVar.h>
-#include <RooDataHist.h>
-#include <RooAddition.h>
-#include <RooFitResult.h>
-#include <RooCBShape.h>
 #include <algorithm>
 #include <nlohmann/json.hpp>
 
+#include "input_list.cc"
 #include "../../functions/tdrStyle.cc"
 #include "../../functions/CMS_lumi.cc"
-#include "../../functions/draw_funcs.cc"
-#include "input_list.cc"
 #include "../../functions/fit_res.cc"
 
-const TString figdir = "../../figures/"+datatype+"/pv_res/"+sampletype+"/";
+const TString figdir = "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/ZeroBias/pv_res/"+sampletype;
 
-int pv_res_analysis(int idx) {
+int pv_res(int idx) {
 
     setTDRStyle();
 
-    std::cout << anaroot << std::endl;
-    TFile *myfile = TFile::Open(anaroot);
+    TFile *myfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/ZeroBias/2022_"+sampletype+".root");
     TTree *mytree = (TTree*)myfile->Get("mytree");
 
-    std::ifstream infile("../../json/"+datatype+"/binning.json");
+    std::ifstream infile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/ZeroBias/binning.json");
     nlohmann::json binning;
     infile >> binning;
 
@@ -84,32 +75,19 @@ int pv_res_analysis(int idx) {
     mytree->Project("h_pull_y", "(pv_y_p1 - pv_y_p2)/sqrt(pow(pv_yError_p1,2)+pow(pv_yError_p2,2))", ptcut+ynull_cut);
     mytree->Project("h_pull_z", "(pv_z_p1 - pv_z_p2)/sqrt(pow(pv_zError_p1,2)+pow(pv_zError_p2,2))", ptcut+znull_cut);
 
-    auto result_reso_pvx = fit_draw(h_diff_x, figdir+Form("pvx_fit/pt_%d", idx), 0.01);
-    auto result_reso_pvy = fit_draw(h_diff_y, figdir+Form("pvy_fit/pt_%d", idx), 0.01);
-    auto result_reso_pvz = fit_draw(h_diff_z, figdir+Form("pvz_fit/pt_%d", idx), 0.01);
-
-    auto result_reso_pullx = fit_draw(h_pull_x, figdir+Form("pullx_fit/pt_%d", idx), 0.01);
-    auto result_reso_pully = fit_draw(h_pull_y, figdir+Form("pully_fit/pt_%d", idx), 0.01);
-    auto result_reso_pullz = fit_draw(h_pull_z, figdir+Form("pullz_fit/pt_%d", idx), 0.01);
-
     nlohmann::json resojson;
+    
     resojson["sumpt2_sqrt"] = (pv_SumTrackPt2_sqrt_edges[idx] + pv_SumTrackPt2_sqrt_edges[idx+1])/2;
+    
+    resojson["reso_pvx"] = fit_res(h_diff_x, figdir+Form("/pvx_fit/pt_%d", idx), 0.01);
+    resojson["reso_pvy"] = fit_res(h_diff_y, figdir+Form("/pvy_fit/pt_%d", idx), 0.01);
+    resojson["reso_pvz"] = fit_res(h_diff_z, figdir+Form("/pvz_fit/pt_%d", idx), 0.01);
 
-    resojson["reso_pvx"] = result_reso_pvx.first;
-    resojson["reso_pvy"] = result_reso_pvy.first;
-    resojson["reso_pvz"] = result_reso_pvz.first;
-    resojson["reso_pullx"] = result_reso_pullx.first;
-    resojson["reso_pully"] = result_reso_pully.first;
-    resojson["reso_pullz"] = result_reso_pullz.first;
+    resojson["reso_pullx"] = fit_res(h_pull_x, figdir+Form("/pullx_fit/pt_%d", idx), 0.01);
+    resojson["reso_pully"] = fit_res(h_pull_y, figdir+Form("/pully_fit/pt_%d", idx), 0.01);
+    resojson["reso_pullz"] = fit_res(h_pull_z, figdir+Form("/pullz_fit/pt_%d", idx), 0.01);
 
-    resojson["reso2_pvx"] = result_reso_pvx.second;
-    resojson["reso2_pvy"] = result_reso_pvy.second;
-    resojson["reso2_pvz"] = result_reso_pvz.second;
-    resojson["reso2_pullx"] = result_reso_pullx.second;
-    resojson["reso2_pully"] = result_reso_pully.second;
-    resojson["reso2_pullz"] = result_reso_pullz.second;
-
-    std::ofstream outFile("../../json/"+datatype+"/pv_res/"+sampletype+Form("/fit_%d.json",idx));
+    std::ofstream outFile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/ZeroBias/pv_res/"+sampletype+Form("/fit_%d.json",idx));
     outFile << resojson.dump(4);
     outFile.close();
 

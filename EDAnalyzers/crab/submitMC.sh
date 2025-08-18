@@ -3,6 +3,7 @@
 source /cvmfs/cms.cern.ch/crab3/crab.sh
 
 datasetlist="mc_JetHT.txt"
+# datasetlist="mc_ZeroBias.txt"
 configtemplate="crabConfigTemplate.py"
 ver="Track-v20250717"
 prodv="/store/user/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
@@ -20,6 +21,14 @@ done < "$datasetlist"
 
 for dataset in ${datasets[@]}
 do
+
+    if [[ "${dataset}" == *"postEE"* ]]; then
+        flag_2022preEE="0"
+        flag_2022postEE="1"
+    else
+        flag_2022preEE="1"
+        flag_2022postEE="0"
+    fi
 
     tmpdataset=${dataset#/}
     IFS='/' read -r -a split <<< "$tmpdataset"
@@ -42,6 +51,8 @@ do
         | sed "s|INPUTDATASET|${INPUTDATASET}|g" \
         | sed "s|OUTPUTDATASETTAG|${OUTPUTDATASETTAG}|g" \
         | sed "s|OUTLFN|${OUTLFN}|g" \
+        | sed "s|flag_2022preEE|${flag_2022preEE}|g" \
+        | sed "s|flag_2022postEE|${flag_2022postEE}|g" \
         > "crabConfig.py"
 
     # crab submit -c crabConfig.py --dryrun

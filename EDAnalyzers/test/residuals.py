@@ -5,9 +5,8 @@ options = VarParsing('analysis')
 options.register('withBS', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Primary vertex reconstruction with BS constraint')
 options.register('isData', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Run on data')
 options.register('addLost', True, VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Add lost tracks')
-options.register('is2022', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Run on 2022 MC')
-options.register('is2023', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Run on 2023 MC')
-options.register('is2024', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Run on 2024 MC')
+options.register('is2022preEE', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Run on 2022 MC preEE')
+options.register('is2022postEE', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Run on 2022 MC postEE')
 options.parseArguments()
 
 readFiles = cms.untracked.vstring()
@@ -27,10 +26,10 @@ process.MessageLogger.cerr.FwkReport = cms.untracked.PSet( reportEvery = cms.unt
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 if options.isData: process.GlobalTag.globaltag = '124X_dataRun3_v15'
-elif options.is2022: process.GlobalTag.globaltag = '122X_mcRun3_2021_realistic_v9' # jet ht
-# elif options.is2022: process.GlobalTag.globaltag = '124X_mcRun3_2022_realistic_v12' #min bias
-elif options.is2023: process.GlobalTag.globaltag = '126X_mcRun3_2023_forPU65_v4'
-elif options.is2024: process.GlobalTag.globaltag = '133X_mcRun3_2024_realistic_v9'
+# elif options.is2022preEE: process.GlobalTag.globaltag = '132X_mcRun3_2022_realistic_v3'
+# elif options.is2022postEE: process.GlobalTag.globaltag = '132X_mcRun3_2022_realistic_postEE_v4'
+elif options.is2022preEE: process.GlobalTag.globaltag = '130X_mcRun3_2022_realistic_v5'
+elif options.is2022postEE: process.GlobalTag.globaltag = '130X_mcRun3_2022_realistic_postEE_v6'
 
 process.load("CondCore.CondDB.CondDB_cfi")
 process.load('Configuration.Geometry.GeometryRecoDB_cff')

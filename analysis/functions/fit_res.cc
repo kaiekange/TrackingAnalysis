@@ -1,4 +1,6 @@
-std::pair<float, float> fit_draw(TH1F* hist, TString figpath, float tolerance = 1e-4) {
+#include "draw_funcs.cc"
+
+float fit_res(TH1F* hist, TString figpath, float tolerance = 1e-4) {
 
     lumi_sqrtS = "13.6 TeV, 2022"+all_era;
 
@@ -32,37 +34,6 @@ std::pair<float, float> fit_draw(TH1F* hist, TString figpath, float tolerance = 
         delete integral;
     }
     float reso = 0.5 * (low + high);
-
-    float xmin = pv_var.getMin();
-    float xmax = pv_var.getMax();
-    float maxVal = 0.0;
-    float xAtMax = 0.0;
-    for (float val = xmin; val <= xmax; val += tolerance) {
-        pv_var.setVal(val);
-        float y = triGauss.getVal(pv_var);
-        if (y > maxVal) {
-            maxVal = y;
-            xAtMax = val;
-        }
-    }
-    float halfMax = maxVal / 2.0;
-    float left = xmin, right = xmax;
-    for (float val = xAtMax; val >= xmin; val -= tolerance) {
-        pv_var.setVal(val);
-        if (triGauss.getVal(pv_var) < halfMax) {
-            left = val;
-            break;
-        }
-    }
-    for (float val = xAtMax; val <= xmax; val += tolerance) {
-        pv_var.setVal(val);
-        if (triGauss.getVal(pv_var) < halfMax) {
-            right = val;
-            break;
-        }
-    }
-
-    float reso2 = (right - left) / 2.36;
 
     TCanvas *canvas = new TCanvas("canvas", "canvas", 800, 700);
     canvas->Divide(1,2);
@@ -102,7 +73,6 @@ std::pair<float, float> fit_draw(TH1F* hist, TString figpath, float tolerance = 
     write_text(0.68, 0.4, Form("f_{2} = %.*f #pm %.*f", std::max(0, 2-(int)floor(log10(f2.getVal()))), f2.getVal(), std::max(0, 2-(int)floor(log10(f2.getVal()))), f2.getError()));
     write_text(0.68, 0.35, Form("f_{3} = %.*f", std::max(0, 2-(int)floor(log10(f3.getVal()))), f3.getVal()));
     write_text(0.68, 0.3, Form("reso = %.*f", std::max(0, 2-(int)floor(log10(reso))), reso));
-    /* write_text(0.68, 0.25, Form("FWHM/2.36 = %.*f", std::max(0, 2-(int)floor(log10(reso2))), reso2)); */
     CMS_lumi_sub(c1);
 
     canvas->cd(2);
@@ -132,9 +102,9 @@ std::pair<float, float> fit_draw(TH1F* hist, TString figpath, float tolerance = 
     pull->GetYaxis()->SetTitleSize(0.12);
     pull->GetYaxis()->SetLabelSize(0.12);
     pull->GetXaxis()->SetNdivisions(810);
-    pull->GetYaxis()->SetNdivisions(810);
+    /* pull->GetYaxis()->SetNdivisions(810); */
     canvas->Update();
     canvas->SaveAs(figpath+".png");
 
-    return {reso, reso2};
+    return reso;
 }

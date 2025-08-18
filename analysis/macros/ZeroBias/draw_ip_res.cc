@@ -19,8 +19,7 @@
 #include "../../functions/draw_funcs.cc"
 #include "input_list.cc"
 
-const TString figdir = "../../figures/"+datatype+"/ip_res/";
-const TString jsondir = "../../json/"+datatype+"/ip_res/";
+const TString figdir = "/pnfs/iihe/cms/user/kakang/IPres/analysis/figures/ZeroBias/ip_res/"+sampletype;
 const int nbins = 500;
 
 int draw_ip_res(){
@@ -64,7 +63,7 @@ int draw_ip_res(){
 
     for(int i=0; i<nbins; i++){
         nlohmann::json results;
-        std::ifstream infile(jsondir + Form("data/fit_%d.json",i));
+        std::ifstream infile(Form("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/ZeroBias/ip_res/data/fit_%d.json",i));
         infile >> results;
 
         eta[i] = results["eta"];
@@ -164,13 +163,13 @@ int draw_ip_res(){
     gr_d0_pt_hieta->SetMinimum(0);
     c_d0_pt->Update();
     c_d0_pt->RedrawAxis();
-    c_d0_pt->SaveAs(figdir + "d0_pt.png");
+    c_d0_pt->SaveAs(figdir + "/d0_pt.png");
     gr_d0_pt_hieta->SetMaximum(height_d0_pt*100);
     gr_d0_pt_hieta->SetMinimum(floor_d0_pt/100);
     c_d0_pt->SetLogy();
     c_d0_pt->Update();
     c_d0_pt->RedrawAxis();
-    c_d0_pt->SaveAs(figdir + "d0_pt_log.png");
+    c_d0_pt->SaveAs(figdir + "/d0_pt_log.png");
 
     TCanvas *c_d0_eta = new TCanvas("c_d0_eta", "", 800, 600);
     canvas_setup(c_d0_eta);
@@ -202,13 +201,13 @@ int draw_ip_res(){
     gr_d0_eta_hipt->SetMinimum(0);
     c_d0_eta->Update();
     c_d0_eta->RedrawAxis();
-    c_d0_eta->SaveAs(figdir + "d0_eta.png");
+    c_d0_eta->SaveAs(figdir + "/d0_eta.png");
     gr_d0_eta_hipt->SetMaximum(height_d0_eta*100);
     gr_d0_eta_hipt->SetMinimum(floor_d0_eta/100);
     c_d0_eta->SetLogy();
     c_d0_eta->Update();
     c_d0_eta->RedrawAxis();
-    c_d0_eta->SaveAs(figdir + "d0_eta_log.png");
+    c_d0_eta->SaveAs(figdir + "/d0_eta_log.png");
 
 
     TCanvas *c_d0_phi = new TCanvas("c_d0_phi", "", 800, 600);
@@ -241,13 +240,13 @@ int draw_ip_res(){
     gr_d0_phi_hipt->SetMinimum(0);
     c_d0_phi->Update();
     c_d0_phi->RedrawAxis();
-    c_d0_phi->SaveAs(figdir + "d0_phi.png");
+    c_d0_phi->SaveAs(figdir + "/d0_phi.png");
     gr_d0_phi_hipt->SetMaximum(height_d0_phi*100);
     gr_d0_phi_hipt->SetMinimum(floor_d0_phi/100);
     c_d0_phi->SetLogy();
     c_d0_phi->Update();
     c_d0_phi->RedrawAxis();
-    c_d0_phi->SaveAs(figdir + "d0_phi_log.png");
+    c_d0_phi->SaveAs(figdir + "/d0_phi_log.png");
 
 
 
@@ -281,13 +280,13 @@ int draw_ip_res(){
     gr_dz_pt_hieta->SetMinimum(0);
     c_dz_pt->Update();
     c_dz_pt->RedrawAxis();
-    c_dz_pt->SaveAs(figdir + "dz_pt.png");
+    c_dz_pt->SaveAs(figdir + "/dz_pt.png");
     gr_dz_pt_hieta->SetMaximum(height_dz_pt*100);
     gr_dz_pt_hieta->SetMinimum(floor_dz_pt/100);
     c_dz_pt->SetLogy();
     c_dz_pt->Update();
     c_dz_pt->RedrawAxis();
-    c_dz_pt->SaveAs(figdir + "dz_pt_log.png");
+    c_dz_pt->SaveAs(figdir + "/dz_pt_log.png");
 
     TCanvas *c_dz_eta = new TCanvas("c_dz_eta", "", 800, 600);
     canvas_setup(c_dz_eta);
@@ -319,13 +318,13 @@ int draw_ip_res(){
     gr_dz_eta_hipt->SetMinimum(0);
     c_dz_eta->Update();
     c_dz_eta->RedrawAxis();
-    c_dz_eta->SaveAs(figdir + "dz_eta.png");
+    c_dz_eta->SaveAs(figdir + "/dz_eta.png");
     gr_dz_eta_hipt->SetMaximum(height_dz_eta*100);
     gr_dz_eta_hipt->SetMinimum(floor_dz_eta/100);
     c_dz_eta->SetLogy();
     c_dz_eta->Update();
     c_dz_eta->RedrawAxis();
-    c_dz_eta->SaveAs(figdir + "dz_eta_log.png");
+    c_dz_eta->SaveAs(figdir + "/dz_eta_log.png");
 
 
     TCanvas *c_dz_phi = new TCanvas("c_dz_phi", "", 800, 600);
@@ -358,13 +357,13 @@ int draw_ip_res(){
     gr_dz_phi_hipt->SetMinimum(0);
     c_dz_phi->Update();
     c_dz_phi->RedrawAxis();
-    c_dz_phi->SaveAs(figdir + "dz_phi.png");
+    c_dz_phi->SaveAs(figdir + "/dz_phi.png");
     gr_dz_phi_hipt->SetMaximum(height_dz_phi*100);
     gr_dz_phi_hipt->SetMinimum(floor_dz_phi/100);
     c_dz_phi->SetLogy();
     c_dz_phi->Update();
     c_dz_phi->RedrawAxis();
-    c_dz_phi->SaveAs(figdir + "dz_phi_log.png");
+    c_dz_phi->SaveAs(figdir + "/dz_phi_log.png");
 
 
 
