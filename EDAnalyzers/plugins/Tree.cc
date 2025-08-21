@@ -33,46 +33,6 @@ void ResTree::Init()
     trig_PFJet500_pass = 0;
     trig_PFJet550_pass = 0;
 
-    trig_PFJetFwd15_pass = 0;
-    trig_PFJetFwd25_pass = 0;
-    trig_PFJetFwd40_pass = 0;
-    trig_PFJetFwd60_pass = 0;
-    trig_PFJetFwd80_pass = 0;
-    trig_PFJetFwd140_pass = 0;
-    trig_PFJetFwd200_pass = 0;
-    trig_PFJetFwd260_pass = 0;
-    trig_PFJetFwd320_pass = 0;
-    trig_PFJetFwd400_pass = 0;
-    trig_PFJetFwd450_pass = 0;
-    trig_PFJetFwd500_pass = 0;
-
-    trig_AK8PFJet15_pass = 0;
-    trig_AK8PFJet25_pass = 0;
-    trig_AK8PFJet40_pass = 0;
-    trig_AK8PFJet60_pass = 0;
-    trig_AK8PFJet80_pass = 0;
-    trig_AK8PFJet140_pass = 0;
-    trig_AK8PFJet200_pass = 0;
-    trig_AK8PFJet260_pass = 0;
-    trig_AK8PFJet320_pass = 0;
-    trig_AK8PFJet400_pass = 0;
-    trig_AK8PFJet450_pass = 0;
-    trig_AK8PFJet500_pass = 0;
-    trig_AK8PFJet550_pass = 0;
-
-    trig_AK8PFJetFwd15_pass = 0;
-    trig_AK8PFJetFwd25_pass = 0;
-    trig_AK8PFJetFwd40_pass = 0;
-    trig_AK8PFJetFwd60_pass = 0;
-    trig_AK8PFJetFwd80_pass = 0;
-    trig_AK8PFJetFwd140_pass = 0;
-    trig_AK8PFJetFwd200_pass = 0;
-    trig_AK8PFJetFwd260_pass = 0;
-    trig_AK8PFJetFwd320_pass = 0;
-    trig_AK8PFJetFwd400_pass = 0;
-    trig_AK8PFJetFwd450_pass = 0;
-    trig_AK8PFJetFwd500_pass = 0;
-
     trig_AK4PFJet30_pass = 0;
     trig_AK4PFJet50_pass = 0;
     trig_AK4PFJet80_pass = 0;
@@ -548,80 +508,40 @@ void ResTree::CreateBranches(int buff = 32000, bool runOnData = false)
     tree->Branch("ev_rho", &ev_rho, "ev_rho/F", buff);
     tree->Branch("ev_nPV", &ev_nPV, "ev_nPV/I", buff);
 
-    tree->Branch("trig_ZeroBias_pass", &trig_ZeroBias_pass, "trig_ZeroBias_pass/0", buff);;
+    tree->Branch("trig_ZeroBias_pass", &trig_ZeroBias_pass, "trig_ZeroBias_pass/O", buff);
 
-    tree->Branch("trig_PFJet15_pass", &trig_PFJet15_pass, "trig_PFJet15_pass/0", buff);;
-    tree->Branch("trig_PFJet25_pass", &trig_PFJet25_pass, "trig_PFJet25_pass/0", buff);;
-    tree->Branch("trig_PFJet40_pass", &trig_PFJet40_pass, "trig_PFJet40_pass/0", buff);;
-    tree->Branch("trig_PFJet60_pass", &trig_PFJet60_pass, "trig_PFJet60_pass/0", buff);;
-    tree->Branch("trig_PFJet80_pass", &trig_PFJet80_pass, "trig_PFJet80_pass/0", buff);;
-    tree->Branch("trig_PFJet110_pass", &trig_PFJet110_pass, "trig_PFJet110_pass/0", buff);;
-    tree->Branch("trig_PFJet140_pass", &trig_PFJet140_pass, "trig_PFJet140_pass/0", buff);;
-    tree->Branch("trig_PFJet200_pass", &trig_PFJet200_pass, "trig_PFJet200_pass/0", buff);;
-    tree->Branch("trig_PFJet260_pass", &trig_PFJet260_pass, "trig_PFJet260_pass/0", buff);;
-    tree->Branch("trig_PFJet320_pass", &trig_PFJet320_pass, "trig_PFJet320_pass/0", buff);;
-    tree->Branch("trig_PFJet400_pass", &trig_PFJet400_pass, "trig_PFJet400_pass/0", buff);;
-    tree->Branch("trig_PFJet450_pass", &trig_PFJet450_pass, "trig_PFJet450_pass/0", buff);;
-    tree->Branch("trig_PFJet500_pass", &trig_PFJet500_pass, "trig_PFJet500_pass/0", buff);;
-    tree->Branch("trig_PFJet550_pass", &trig_PFJet550_pass, "trig_PFJet550_pass/0", buff);;
+    tree->Branch("trig_PFJet15_pass", &trig_PFJet15_pass, "trig_PFJet15_pass/O", buff);
+    tree->Branch("trig_PFJet25_pass", &trig_PFJet25_pass, "trig_PFJet25_pass/O", buff);
+    tree->Branch("trig_PFJet40_pass", &trig_PFJet40_pass, "trig_PFJet40_pass/O", buff);
+    tree->Branch("trig_PFJet60_pass", &trig_PFJet60_pass, "trig_PFJet60_pass/O", buff);
+    tree->Branch("trig_PFJet80_pass", &trig_PFJet80_pass, "trig_PFJet80_pass/O", buff);
+    tree->Branch("trig_PFJet110_pass", &trig_PFJet110_pass, "trig_PFJet110_pass/O", buff);
+    tree->Branch("trig_PFJet140_pass", &trig_PFJet140_pass, "trig_PFJet140_pass/O", buff);
+    tree->Branch("trig_PFJet200_pass", &trig_PFJet200_pass, "trig_PFJet200_pass/O", buff);
+    tree->Branch("trig_PFJet260_pass", &trig_PFJet260_pass, "trig_PFJet260_pass/O", buff);
+    tree->Branch("trig_PFJet320_pass", &trig_PFJet320_pass, "trig_PFJet320_pass/O", buff);
+    tree->Branch("trig_PFJet400_pass", &trig_PFJet400_pass, "trig_PFJet400_pass/O", buff);
+    tree->Branch("trig_PFJet450_pass", &trig_PFJet450_pass, "trig_PFJet450_pass/O", buff);
+    tree->Branch("trig_PFJet500_pass", &trig_PFJet500_pass, "trig_PFJet500_pass/O", buff);
+    tree->Branch("trig_PFJet550_pass", &trig_PFJet550_pass, "trig_PFJet550_pass/O", buff);
 
-    tree->Branch("trig_PFJetFwd15_pass", &trig_PFJetFwd15_pass, "trig_PFJetFwd15_pass/0", buff);;
-    tree->Branch("trig_PFJetFwd25_pass", &trig_PFJetFwd25_pass, "trig_PFJetFwd25_pass/0", buff);;
-    tree->Branch("trig_PFJetFwd40_pass", &trig_PFJetFwd40_pass, "trig_PFJetFwd40_pass/0", buff);;
-    tree->Branch("trig_PFJetFwd60_pass", &trig_PFJetFwd60_pass, "trig_PFJetFwd60_pass/0", buff);;
-    tree->Branch("trig_PFJetFwd80_pass", &trig_PFJetFwd80_pass, "trig_PFJetFwd80_pass/0", buff);;
-    tree->Branch("trig_PFJetFwd140_pass", &trig_PFJetFwd140_pass, "trig_PFJetFwd140_pass/0", buff);;
-    tree->Branch("trig_PFJetFwd200_pass", &trig_PFJetFwd200_pass, "trig_PFJetFwd200_pass/0", buff);;
-    tree->Branch("trig_PFJetFwd260_pass", &trig_PFJetFwd260_pass, "trig_PFJetFwd260_pass/0", buff);;
-    tree->Branch("trig_PFJetFwd320_pass", &trig_PFJetFwd320_pass, "trig_PFJetFwd320_pass/0", buff);;
-    tree->Branch("trig_PFJetFwd400_pass", &trig_PFJetFwd400_pass, "trig_PFJetFwd400_pass/0", buff);;
-    tree->Branch("trig_PFJetFwd450_pass", &trig_PFJetFwd450_pass, "trig_PFJetFwd450_pass/0", buff);;
-    tree->Branch("trig_PFJetFwd500_pass", &trig_PFJetFwd500_pass, "trig_PFJetFwd500_pass/0", buff);;
+    tree->Branch("trig_AK4PFJet30_pass", &trig_AK4PFJet30_pass, "trig_AK4PFJet30_pass/O", buff);
+    tree->Branch("trig_AK4PFJet50_pass", &trig_AK4PFJet50_pass, "trig_AK4PFJet50_pass/O", buff);
+    tree->Branch("trig_AK4PFJet80_pass", &trig_AK4PFJet80_pass, "trig_AK4PFJet80_pass/O", buff);
+    tree->Branch("trig_AK4PFJet100_pass", &trig_AK4PFJet100_pass, "trig_AK4PFJet100_pass/O", buff);
+    tree->Branch("trig_AK4PFJet120_pass", &trig_AK4PFJet120_pass, "trig_AK4PFJet120_pass/O", buff);
 
-    tree->Branch("trig_AK8PFJet15_pass", &trig_AK8PFJet15_pass, "trig_AK8PFJet15_pass/0", buff);;
-    tree->Branch("trig_AK8PFJet25_pass", &trig_AK8PFJet25_pass, "trig_AK8PFJet25_pass/0", buff);;
-    tree->Branch("trig_AK8PFJet40_pass", &trig_AK8PFJet40_pass, "trig_AK8PFJet40_pass/0", buff);;
-    tree->Branch("trig_AK8PFJet60_pass", &trig_AK8PFJet60_pass, "trig_AK8PFJet60_pass/0", buff);;
-    tree->Branch("trig_AK8PFJet80_pass", &trig_AK8PFJet80_pass, "trig_AK8PFJet80_pass/0", buff);;
-    tree->Branch("trig_AK8PFJet140_pass", &trig_AK8PFJet140_pass, "trig_AK8PFJet140_pass/0", buff);;
-    tree->Branch("trig_AK8PFJet200_pass", &trig_AK8PFJet200_pass, "trig_AK8PFJet200_pass/0", buff);;
-    tree->Branch("trig_AK8PFJet260_pass", &trig_AK8PFJet260_pass, "trig_AK8PFJet260_pass/0", buff);;
-    tree->Branch("trig_AK8PFJet320_pass", &trig_AK8PFJet320_pass, "trig_AK8PFJet320_pass/0", buff);;
-    tree->Branch("trig_AK8PFJet400_pass", &trig_AK8PFJet400_pass, "trig_AK8PFJet400_pass/0", buff);;
-    tree->Branch("trig_AK8PFJet450_pass", &trig_AK8PFJet450_pass, "trig_AK8PFJet450_pass/0", buff);;
-    tree->Branch("trig_AK8PFJet500_pass", &trig_AK8PFJet500_pass, "trig_AK8PFJet500_pass/0", buff);;
-    tree->Branch("trig_AK8PFJet550_pass", &trig_AK8PFJet550_pass, "trig_AK8PFJet550_pass/0", buff);;
-
-    tree->Branch("trig_AK8PFJetFwd15_pass", &trig_AK8PFJetFwd15_pass, "trig_AK8PFJetFwd15_pass/0", buff);;
-    tree->Branch("trig_AK8PFJetFwd25_pass", &trig_AK8PFJetFwd25_pass, "trig_AK8PFJetFwd25_pass/0", buff);;
-    tree->Branch("trig_AK8PFJetFwd40_pass", &trig_AK8PFJetFwd40_pass, "trig_AK8PFJetFwd40_pass/0", buff);;
-    tree->Branch("trig_AK8PFJetFwd60_pass", &trig_AK8PFJetFwd60_pass, "trig_AK8PFJetFwd60_pass/0", buff);;
-    tree->Branch("trig_AK8PFJetFwd80_pass", &trig_AK8PFJetFwd80_pass, "trig_AK8PFJetFwd80_pass/0", buff);;
-    tree->Branch("trig_AK8PFJetFwd140_pass", &trig_AK8PFJetFwd140_pass, "trig_AK8PFJetFwd140_pass/0", buff);;
-    tree->Branch("trig_AK8PFJetFwd200_pass", &trig_AK8PFJetFwd200_pass, "trig_AK8PFJetFwd200_pass/0", buff);;
-    tree->Branch("trig_AK8PFJetFwd260_pass", &trig_AK8PFJetFwd260_pass, "trig_AK8PFJetFwd260_pass/0", buff);;
-    tree->Branch("trig_AK8PFJetFwd320_pass", &trig_AK8PFJetFwd320_pass, "trig_AK8PFJetFwd320_pass/0", buff);;
-    tree->Branch("trig_AK8PFJetFwd400_pass", &trig_AK8PFJetFwd400_pass, "trig_AK8PFJetFwd400_pass/0", buff);;
-    tree->Branch("trig_AK8PFJetFwd450_pass", &trig_AK8PFJetFwd450_pass, "trig_AK8PFJetFwd450_pass/0", buff);;
-    tree->Branch("trig_AK8PFJetFwd500_pass", &trig_AK8PFJetFwd500_pass, "trig_AK8PFJetFwd500_pass/0", buff);;
-
-    tree->Branch("trig_AK4PFJet30_pass", &trig_AK4PFJet30_pass, "trig_AK4PFJet30_pass/0", buff);;
-    tree->Branch("trig_AK4PFJet50_pass", &trig_AK4PFJet50_pass, "trig_AK4PFJet50_pass/0", buff);;
-    tree->Branch("trig_AK4PFJet80_pass", &trig_AK4PFJet80_pass, "trig_AK4PFJet80_pass/0", buff);;
-    tree->Branch("trig_AK4PFJet100_pass", &trig_AK4PFJet100_pass, "trig_AK4PFJet100_pass/0", buff);;
-    tree->Branch("trig_AK4PFJet120_pass", &trig_AK4PFJet120_pass, "trig_AK4PFJet120_pass/0", buff);;
-
-    tree->Branch("trig_PFHT180_pass", &trig_PFHT180_pass, "trig_PFHT180_pass/0", buff);;
-    tree->Branch("trig_PFHT250_pass", &trig_PFHT250_pass, "trig_PFHT250_pass/0", buff);;
-    tree->Branch("trig_PFHT370_pass", &trig_PFHT370_pass, "trig_PFHT370_pass/0", buff);;
-    tree->Branch("trig_PFHT430_pass", &trig_PFHT430_pass, "trig_PFHT430_pass/0", buff);;
-    tree->Branch("trig_PFHT510_pass", &trig_PFHT510_pass, "trig_PFHT510_pass/0", buff);;
-    tree->Branch("trig_PFHT590_pass", &trig_PFHT590_pass, "trig_PFHT590_pass/0", buff);;
-    tree->Branch("trig_PFHT680_pass", &trig_PFHT680_pass, "trig_PFHT680_pass/0", buff);;
-    tree->Branch("trig_PFHT780_pass", &trig_PFHT780_pass, "trig_PFHT780_pass/0", buff);;
-    tree->Branch("trig_PFHT890_pass", &trig_PFHT890_pass, "trig_PFHT890_pass/0", buff);;
-    tree->Branch("trig_PFHT1050_pass", &trig_PFHT1050_pass, "trig_PFHT1050_pass/0", buff);;
-    tree->Branch("trig_PFHT350_pass", &trig_PFHT350_pass, "trig_PFHT350_pass/0", buff);;
+    tree->Branch("trig_PFHT180_pass", &trig_PFHT180_pass, "trig_PFHT180_pass/O", buff);
+    tree->Branch("trig_PFHT250_pass", &trig_PFHT250_pass, "trig_PFHT250_pass/O", buff);
+    tree->Branch("trig_PFHT370_pass", &trig_PFHT370_pass, "trig_PFHT370_pass/O", buff);
+    tree->Branch("trig_PFHT430_pass", &trig_PFHT430_pass, "trig_PFHT430_pass/O", buff);
+    tree->Branch("trig_PFHT510_pass", &trig_PFHT510_pass, "trig_PFHT510_pass/O", buff);
+    tree->Branch("trig_PFHT590_pass", &trig_PFHT590_pass, "trig_PFHT590_pass/O", buff);
+    tree->Branch("trig_PFHT680_pass", &trig_PFHT680_pass, "trig_PFHT680_pass/O", buff);
+    tree->Branch("trig_PFHT780_pass", &trig_PFHT780_pass, "trig_PFHT780_pass/O", buff);
+    tree->Branch("trig_PFHT890_pass", &trig_PFHT890_pass, "trig_PFHT890_pass/O", buff);
+    tree->Branch("trig_PFHT1050_pass", &trig_PFHT1050_pass, "trig_PFHT1050_pass/O", buff);
+    tree->Branch("trig_PFHT350_pass", &trig_PFHT350_pass, "trig_PFHT350_pass/O", buff);
 
     if( !runOnData ) 
     {

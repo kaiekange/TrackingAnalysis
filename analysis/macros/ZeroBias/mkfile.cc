@@ -4,12 +4,12 @@
 #include "../../functions/fill_file_vector.cc"
 
 const string filepath[] = {
-    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250717/ZeroBias/Run2022B_27Jun2023_v1_MINIAOD/250812_133855/",
-    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250717/ZeroBias/Run2022C_27Jun2023_v1_MINIAOD/250812_133906/",
-    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250717/ZeroBias/Run2022D_27Jun2023_v1_MINIAOD/250812_133917/",
-    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250717/ZeroBias/Run2022E_27Jun2023_v1_MINIAOD/250812_133926/",
-    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250717/SingleNeutrino_E-10_gun/Run3Summer22EE_MINIAODSIM/250818_085142/",
-    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250717/SingleNeutrino_E-10_gun/Run3Summer22_MINIAODSIM/250818_085124/",
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/ZeroBias/Run2022B_27Jun2023_v1_MINIAOD/250820_124458/",
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/ZeroBias/Run2022C_27Jun2023_v1_MINIAOD/250820_130734/",
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/ZeroBias/Run2022D_27Jun2023_v1_MINIAOD/250820_130743/",
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/ZeroBias/Run2022E_27Jun2023_v1_MINIAOD/250820_130754/",
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/SingleNeutrino_E-10_gun/Run3Summer22_MINIAODSIM/250820_142350/",
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/SingleNeutrino_E-10_gun/Run3Summer22EE_MINIAODSIM/250820_142401/"
 };
 
 const TString eras[] = {"2022_data_B", "2022_data_C", "2022_data_D", "2022_data_E", "2022_mc_postEE", "2022_mc_preEE"};
@@ -28,7 +28,6 @@ int mkfile( int idx ) {
     TFile *outfile = new TFile(outputdir + eras[idx] + ".root", "RECREATE");
     TTree *outtree = new TTree("mytree", "");
   
-    bool trig_ZeroBias_pass; 
     int ev_nPV;
     int pv_NTracks;
     float pv_SumTrackPt;
@@ -60,7 +59,6 @@ int mkfile( int idx ) {
     vector<float> * pv_trk_eta = new vector<float>();
     vector<float> * pv_trk_phi = new vector<float>();
 
-    outtree->Branch("trig_ZeroBias_pass", &trig_ZeroBias_pass);
     outtree->Branch("ev_nPV", &ev_nPV);
     outtree->Branch("pv_NTracks", &pv_NTracks);
     outtree->Branch("pv_SumTrackPt", &pv_SumTrackPt);
@@ -109,6 +107,7 @@ int mkfile( int idx ) {
             continue;
         }
 
+        bool trig_ZeroBias_pass; 
         int myev_nPV;
         vector<int> *mypv_NTracks = nullptr;
         vector<float> *mypv_SumTrackPt = nullptr;
@@ -139,6 +138,7 @@ int mkfile( int idx ) {
         vector<vector<float>> *mypv_trk_eta = nullptr;
         vector<vector<float>> *mypv_trk_phi = nullptr;
         
+        intree->SetBranchAddress("trig_ZeroBias_pass", &trig_ZeroBias_pass);
         intree->SetBranchAddress("ev_nPV", &myev_nPV);
         intree->SetBranchAddress("pv_NTracks", &mypv_NTracks);
         intree->SetBranchAddress("pv_SumTrackPt", &mypv_SumTrackPt);

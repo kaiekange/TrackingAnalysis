@@ -384,8 +384,6 @@ void Residuals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     {
         TString trigName = TString(names.triggerName(i));
 
-        //	std::cout << i << " " << trigName << std::endl;
-
         bool pass = (triggerBits->accept(i) ? true : false);
 
         if( trigName.Contains("HLT_ZeroBias_v") ) ftree->trig_ZeroBias_pass = pass;
@@ -404,46 +402,6 @@ void Residuals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         else if( trigName.Contains("HLT_PFJet450_v") ) ftree->trig_PFJet450_pass = pass;
         else if( trigName.Contains("HLT_PFJet500_v") ) ftree->trig_PFJet500_pass = pass;
         else if( trigName.Contains("HLT_PFJet550_v") ) ftree->trig_PFJet550_pass = pass;
-        
-        else if( trigName.Contains("HLT_PFJetFwd15_v") ) ftree->trig_PFJetFwd15_pass = pass;
-        else if( trigName.Contains("HLT_PFJetFwd25_v") ) ftree->trig_PFJetFwd25_pass = pass;
-        else if( trigName.Contains("HLT_PFJetFwd40_v") ) ftree->trig_PFJetFwd40_pass = pass;
-        else if( trigName.Contains("HLT_PFJetFwd60_v") ) ftree->trig_PFJetFwd60_pass = pass;
-        else if( trigName.Contains("HLT_PFJetFwd80_v") ) ftree->trig_PFJetFwd80_pass = pass;
-        else if( trigName.Contains("HLT_PFJetFwd140_v") ) ftree->trig_PFJetFwd140_pass = pass;
-        else if( trigName.Contains("HLT_PFJetFwd200_v") ) ftree->trig_PFJetFwd200_pass = pass;
-        else if( trigName.Contains("HLT_PFJetFwd260_v") ) ftree->trig_PFJetFwd260_pass = pass;
-        else if( trigName.Contains("HLT_PFJetFwd320_v") ) ftree->trig_PFJetFwd320_pass = pass;
-        else if( trigName.Contains("HLT_PFJetFwd400_v") ) ftree->trig_PFJetFwd400_pass = pass;
-        else if( trigName.Contains("HLT_PFJetFwd450_v") ) ftree->trig_PFJetFwd450_pass = pass;
-        else if( trigName.Contains("HLT_PFJetFwd500_v") ) ftree->trig_PFJetFwd500_pass = pass;
-
-        else if( trigName.Contains("HLT_AK8PFJet15_v") ) ftree->trig_AK8PFJet15_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJet25_v") ) ftree->trig_AK8PFJet25_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJet40_v") ) ftree->trig_AK8PFJet40_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJet60_v") ) ftree->trig_AK8PFJet60_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJet80_v") ) ftree->trig_AK8PFJet80_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJet140_v") ) ftree->trig_AK8PFJet140_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJet200_v") ) ftree->trig_AK8PFJet200_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJet260_v") ) ftree->trig_AK8PFJet260_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJet320_v") ) ftree->trig_AK8PFJet320_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJet400_v") ) ftree->trig_AK8PFJet400_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJet450_v") ) ftree->trig_AK8PFJet450_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJet500_v") ) ftree->trig_AK8PFJet500_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJet550_v") ) ftree->trig_AK8PFJet550_pass = pass;
-        
-        else if( trigName.Contains("HLT_AK8PFJetFwd15_v") ) ftree->trig_AK8PFJetFwd15_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJetFwd25_v") ) ftree->trig_AK8PFJetFwd25_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJetFwd40_v") ) ftree->trig_AK8PFJetFwd40_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJetFwd60_v") ) ftree->trig_AK8PFJetFwd60_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJetFwd80_v") ) ftree->trig_AK8PFJetFwd80_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJetFwd140_v") ) ftree->trig_AK8PFJetFwd140_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJetFwd200_v") ) ftree->trig_AK8PFJetFwd200_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJetFwd260_v") ) ftree->trig_AK8PFJetFwd260_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJetFwd320_v") ) ftree->trig_AK8PFJetFwd320_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJetFwd400_v") ) ftree->trig_AK8PFJetFwd400_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJetFwd450_v") ) ftree->trig_AK8PFJetFwd450_pass = pass;
-        else if( trigName.Contains("HLT_AK8PFJetFwd500_v") ) ftree->trig_AK8PFJetFwd500_pass = pass;
 
         else if( trigName.Contains("HLT_AK4PFJet30_v") ) ftree->trig_AK4PFJet30_pass = pass;
         else if( trigName.Contains("HLT_AK4PFJet50_v") ) ftree->trig_AK4PFJet50_pass = pass;
@@ -463,7 +421,6 @@ void Residuals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         else if( trigName.Contains("HLT_PFHT1050_v") ) ftree->trig_PFHT1050_pass = pass;
         else if( trigName.Contains("HLT_PFHT350_v") ) ftree->trig_PFHT350_pass = pass;
 
-        //	     std::cout << i << " " << trigName << " L1=" << L1prescale << " HLT=" << HLTprescale << std::endl;
     }
 
     // Pileup info

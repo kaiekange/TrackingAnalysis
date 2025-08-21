@@ -12,6 +12,15 @@ mkdir -p /pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/ZeroBias/pv_res
 mkdir -p /pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/ZeroBias/pv_res/${sampletype}/pully_fit
 mkdir -p /pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/ZeroBias/pv_res/${sampletype}/pullz_fit
 
+rm -f /pnfs/iihe/cms/store/user/kakang/IPres/analysis/logs/ZeroBias/pv_res/${sampletype}/run_${idx}.log
+rm -f /pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/ZeroBias/pv_res/${sampletype}/fit_${idx}.json
+rm -f /pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/ZeroBias/pv_res/${sampletype}/pvx_fit/pt_${idx}.*
+rm -f /pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/ZeroBias/pv_res/${sampletype}/pvy_fit/pt_${idx}.*
+rm -f /pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/ZeroBias/pv_res/${sampletype}/pvz_fit/pt_${idx}.*
+rm -f /pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/ZeroBias/pv_res/${sampletype}/pullx_fit/pt_${idx}.*
+rm -f /pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/ZeroBias/pv_res/${sampletype}/pully_fit/pt_${idx}.*
+rm -f /pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/ZeroBias/pv_res/${sampletype}/pullz_fit/pt_${idx}.*
+
 {
     source /cvmfs/cms.cern.ch/cmsset_default.sh
     cd /user/kakang/IPres/CMSSW_14_0_10/src

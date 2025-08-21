@@ -2,32 +2,39 @@
 
 source /cvmfs/cms.cern.ch/crab3/crab.sh
 
-datasetlist="mc_JetHT.txt"
-# datasetlist="mc_ZeroBias.txt"
+# datasetlist="mc_JetHT.txt"
+# GTpreEE="130X_mcRun3_2022_realistic_v5"
+# GTpostEE="130X_mcRun3_2022_realistic_postEE_v6"
+
+datasetlist="mc_ZeroBias.txt"
+GTpreEE="132X_mcRun3_2022_realistic_v3"
+GTpostEE="132X_mcRun3_2022_realistic_postEE_v4"
 configtemplate="crabConfigTemplate.py"
-ver="Track-v20250717"
+ver="Track-v20250819"
 prodv="/store/user/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
-pver="0"
+pver="1"
 
 rm -f crabConfig.py*
 
 datasets=()
-while read -r line; do
-  if [[ ${line:0:1} == '#' ]]; then
+eventscales=()
+while read -r name number; do
+  if [[ ${name:0:1} == '#' ]]; then
     continue
   fi
-  datasets+=("$line")
+  datasets+=("$name")
+  eventscales+=("$number")
 done < "$datasetlist"
 
-for dataset in ${datasets[@]}
-do
+for i in ${!datasets[@]}; do
+
+    dataset=${datasets[i]}
+    EVENTSCALE=${eventscales[i]}
 
     if [[ "${dataset}" == *"postEE"* ]]; then
-        flag_2022preEE="0"
-        flag_2022postEE="1"
+        GLOBALTAG=${GTpostEE}
     else
-        flag_2022preEE="1"
-        flag_2022postEE="0"
+        GLOBALTAG=${GTpreEE}
     fi
 
     tmpdataset=${dataset#/}
@@ -41,7 +48,6 @@ do
 
     format=${split[2]}
 
-
     REQUESTNAME="${content}_${era_pro}_${format}_ver${pver}"
     INPUTDATASET=${dataset}
     OUTPUTDATASETTAG="${era_pro}_${format}"
@@ -51,8 +57,8 @@ do
         | sed "s|INPUTDATASET|${INPUTDATASET}|g" \
         | sed "s|OUTPUTDATASETTAG|${OUTPUTDATASETTAG}|g" \
         | sed "s|OUTLFN|${OUTLFN}|g" \
-        | sed "s|flag_2022preEE|${flag_2022preEE}|g" \
-        | sed "s|flag_2022postEE|${flag_2022postEE}|g" \
+        | sed "s|GLOBALTAG|${GLOBALTAG}|g" \
+        | sed "s|EVENTSCALE|${EVENTSCALE}|g" \
         > "crabConfig.py"
 
     # crab submit -c crabConfig.py --dryrun

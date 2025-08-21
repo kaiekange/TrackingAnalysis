@@ -45,47 +45,7 @@ class ResTree
         bool trig_PFJet450_pass;
         bool trig_PFJet500_pass;
         bool trig_PFJet550_pass;
-
-        bool trig_PFJetFwd15_pass;
-        bool trig_PFJetFwd25_pass;
-        bool trig_PFJetFwd40_pass;
-        bool trig_PFJetFwd60_pass;
-        bool trig_PFJetFwd80_pass;
-        bool trig_PFJetFwd140_pass;
-        bool trig_PFJetFwd200_pass;
-        bool trig_PFJetFwd260_pass;
-        bool trig_PFJetFwd320_pass;
-        bool trig_PFJetFwd400_pass;
-        bool trig_PFJetFwd450_pass;
-        bool trig_PFJetFwd500_pass;
-
-        bool trig_AK8PFJet15_pass;
-        bool trig_AK8PFJet25_pass;
-        bool trig_AK8PFJet40_pass;
-        bool trig_AK8PFJet60_pass;
-        bool trig_AK8PFJet80_pass;
-        bool trig_AK8PFJet140_pass;
-        bool trig_AK8PFJet200_pass;
-        bool trig_AK8PFJet260_pass;
-        bool trig_AK8PFJet320_pass;
-        bool trig_AK8PFJet400_pass;
-        bool trig_AK8PFJet450_pass;
-        bool trig_AK8PFJet500_pass;
-        bool trig_AK8PFJet550_pass;
-
-        bool trig_AK8PFJetFwd15_pass;
-        bool trig_AK8PFJetFwd25_pass;
-        bool trig_AK8PFJetFwd40_pass;
-        bool trig_AK8PFJetFwd60_pass;
-        bool trig_AK8PFJetFwd80_pass;
-        bool trig_AK8PFJetFwd140_pass;
-        bool trig_AK8PFJetFwd200_pass;
-        bool trig_AK8PFJetFwd260_pass;
-        bool trig_AK8PFJetFwd320_pass;
-        bool trig_AK8PFJetFwd400_pass;
-        bool trig_AK8PFJetFwd450_pass;
-        bool trig_AK8PFJetFwd500_pass;
-
+        
         bool trig_AK4PFJet30_pass;
         bool trig_AK4PFJet50_pass;
         bool trig_AK4PFJet80_pass;
@@ -103,7 +63,7 @@ class ResTree
         bool trig_PFHT890_pass;
         bool trig_PFHT1050_pass;
         bool trig_PFHT350_pass;
-
+        
         int mc_pu_intime_NumInt;
         int mc_pu_trueNumInt;
         int mc_pu_before_npu;

@@ -10,7 +10,7 @@ secFiles = cms.untracked.vstring()
 source = cms.Source("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
 
 readFiles.extend( [
-    "file:/user/kakang/IPres/3DBC2199-8FE7-F746-85BB-4668C75726A8.root"
+    "/store/data/Run2022B/ZeroBias/MINIAOD/27Jun2023-v1/2520000/0262c661-ecd4-49ba-aa14-f497aeec04f1.root"
     #"/store/data/Run2022A/JetHT/MINIAOD/22Sep2023-v1/50000/e8a996e4-f1df-4da4-9dd3-6c23bbdcc78e.root"
     #'/store/data/Run2016B/JetHT/MINIAOD/ver2_HIPM_UL2016_MiniAODv2-v2/230000/45CF386B-286D-7545-B097-238839251127.root'
 ]);
@@ -22,17 +22,14 @@ process.MessageLogger.cerr.FwkReport = cms.untracked.PSet( reportEvery = cms.unt
 
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
-#process.GlobalTag.globaltag = '130X_dataRun3_v2'
-#process.GlobalTag.globaltag = '106X_dataRun2_v35'
-process.GlobalTag = GlobalTag(process.GlobalTag, '106X_dataRun2_v35', '')
-#process.GlobalTag = GlobalTag(process.GlobalTag, '130X_dataRun3_v2', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v15', '')
 
 process.load("CondCore.CondDB.CondDB_cfi")
 process.load('Configuration.Geometry.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_cff')
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
-#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(50) )
+# process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(5) )
 
 process.source = source
 
@@ -81,7 +78,7 @@ process.residuals.RunOnData = True
 process.residuals.stageL1Trigger = cms.uint32(0)
 
 process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string("output2016.root"),
+                                   fileName = cms.string("ZeroBias_test.root"),
                                    closeFileFast = cms.untracked.bool(True)
                                    )
 

@@ -118,7 +118,7 @@ residuals = cms.EDAnalyzer("Residuals",
         # VtxErrorZMax = cms.double(0.0036),
 
         # Event filter
-        EventScale = cms.int32(100),
+        # EventScale = cms.int32(1),
         # TrackScale = cms.int32(100),
         TrackScale = cms.int32(1),
 
