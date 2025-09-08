@@ -15,7 +15,7 @@ config.JobType.allowUndistributedCMSSW = True
 config.section_('Data')
 config.Data.splitting='LumiBased'
 config.Data.totalUnits = -1
-config.Data.unitsPerJob = 50
+config.Data.unitsPerJob = 10
 
 #config.Data.allowNonValidInputDataset = True
 config.Data.lumiMask = 'JSON/Cert_Collisions2022_355100_362760_Golden.json'

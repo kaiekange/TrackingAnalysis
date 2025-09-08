@@ -2,17 +2,17 @@
 
 source /cvmfs/cms.cern.ch/crab3/crab.sh
 
-# datasetlist="mc_JetHT.txt"
-# GTpreEE="130X_mcRun3_2022_realistic_v5"
-# GTpostEE="130X_mcRun3_2022_realistic_postEE_v6"
+datasetlist="mc_JetHT.txt"
+GTpreEE="130X_mcRun3_2022_realistic_v5"
+GTpostEE="130X_mcRun3_2022_realistic_postEE_v6"
 
-datasetlist="mc_ZeroBias.txt"
-GTpreEE="132X_mcRun3_2022_realistic_v3"
-GTpostEE="132X_mcRun3_2022_realistic_postEE_v4"
+# datasetlist="mc_ZeroBias.txt"
+# GTpreEE="132X_mcRun3_2022_realistic_v3"
+# GTpostEE="132X_mcRun3_2022_realistic_postEE_v4"
 configtemplate="crabConfigTemplate.py"
 ver="Track-v20250819"
 prodv="/store/user/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
-pver="1"
+pver="0"
 
 rm -f crabConfig.py*
 

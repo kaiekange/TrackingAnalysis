@@ -1,6 +1,9 @@
-void compare_gr(TGraph * gr1, TGraph * gr2, TGraph * div_gr, float height, float ground, float xmin, float xmax, float ymin, float ymax, TString leg1, TString leg2, TString given_text, TString xlabel, TString ylabel, TString figpath) {
+#include <TCanvas.h>
+#include <TLegend.h>
 
-    lumi_sqrtS = "13.6 TeV, 2022";
+void compare_gr(TGraph * gr1, TGraph * gr2, TGraph * div_gr, float height, float ground, float xmin, float xmax, float ymin, float ymax, TString leg1, TString leg2, TString era, TString given_text, TString xlabel, TString ylabel, TString figpath) {
+
+    lumi_sqrtS = "13.6 TeV, 2022 " + era;
 
     TCanvas *canvas = new TCanvas("canvas", "canvas", 800, 700);
     canvas->Divide(1,2);

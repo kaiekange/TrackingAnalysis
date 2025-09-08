@@ -8,10 +8,10 @@
 #include "TFile.h"
 #include "TTree.h"
 
-int splitbin() {
+int splitbin(TString era="preEE") {
 
-    if(gSystem->AccessPathName("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/ZeroBias")) gSystem->MakeDirectory("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/ZeroBias");
-    TFile *myfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/ZeroBias/2022_data.root");
+    if(gSystem->AccessPathName("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/ZeroBias_" + era)) gSystem->MakeDirectory("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/ZeroBias_"+era);
+    TFile *myfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/ZeroBias/all_skimmed_2022_data_"+era+".root");
 
     TTree *mytree = (TTree*)myfile->Get("mytree");
 
@@ -105,7 +105,7 @@ int splitbin() {
     splitparams["pv_trk_eta"] = pv_trk_eta_binedges;
     splitparams["pv_trk_phi"] = pv_trk_phi_binedges;
 
-    std::ofstream outfile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/ZeroBias/binning.json");
+    std::ofstream outfile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/ZeroBias_"+era+"/binning.json");
     outfile << splitparams.dump(4);
     outfile.close();
     std::cout << "Binning saved to binning.json\n";

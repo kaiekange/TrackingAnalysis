@@ -10,7 +10,7 @@ configtemplate="crabConfigTemplateData.py"
 ver="Track-v20250819"
 
 prodv="/store/user/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
-pver="0"
+pver="1"
 
 rm -f crabConfig.py*
 

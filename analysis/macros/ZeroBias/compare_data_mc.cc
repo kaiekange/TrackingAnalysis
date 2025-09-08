@@ -27,7 +27,7 @@ void compare_draw(TString era, TTree *datatree, TTree *mctree, TString myvar, TS
     h1->SetMarkerSize(0.7);
 
     TH1F *h2 = new TH1F("h2", "", nbins, varmin, varmax);
-    mctree->Project("h2", myvar);
+    mctree->Project("h2", myvar, "PU_factor");
     h2->Scale(1./h2->Integral());
     h2->SetFillColorAlpha(kOrange-9, 0.3);
     h2->SetFillStyle(1001);
@@ -77,17 +77,17 @@ int compare_data_mc(TString era){
 
     TFile *datafile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/ZeroBias/all_skimmed_2022_data_"+era+".root");
     TTree *datatree = (TTree*)datafile->Get("mytree");
-    TFile *mcfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/ZeroBias/all_skimmed_2022_mc_"+era+".root");
+    TFile *mcfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/ZeroBias/all_skimmed_2022_mc_"+era+"_corr.root");
     TTree *mctree = (TTree*)mcfile->Get("mytree");
 
     compare_draw(era, datatree, mctree, "ev_nPV", "# primary vertices", "Normalised # events", 90, 0.5, 90.5, figdir+"nPV.png");
-    compare_draw(era, datatree, mctree, "pv_SumTrackPt", "#sum#it{p_{T}} [GeV]", "Normalised # events", 100, 0, 2000, figdir+"sumPt.png");
-    compare_draw(era, datatree, mctree, "sqrt(pv_SumTrackPt2)", "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "Normalised # events", 100, 0, 500, figdir+"sumPt2.png");
+    compare_draw(era, datatree, mctree, "pv_SumTrackPt", "#sum#it{p_{T}} [GeV]", "Normalised # events", 100, 0, 300, figdir+"sumPt.png");
+    compare_draw(era, datatree, mctree, "sqrt(pv_SumTrackPt2)", "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "Normalised # events", 100, 0, 50, figdir+"sumPt2.png");
     compare_draw(era, datatree, mctree, "pv_NTracks", "# tracks", "Normalised # events", 50, 0, 250, figdir+"ntracks.png");
     compare_draw(era, datatree, mctree, "pv_chi2", "#chi^{2}", "Normalised # events", 100, 0, 500, figdir+"chi2.png");
     compare_draw(era, datatree, mctree, "pv_ndof", "NDOF", "Normalised # events", 100, 0, 500, figdir+"ndof.png");
     compare_draw(era, datatree, mctree, "pv_chi2/pv_ndof", "#chi^{2}/NDOF", "Normalised # events", 100, 0, 2, figdir+"chi2ndof.png");
-    compare_draw(era, datatree, mctree, "pv_trk_pt", "Track #it{p_{T}} [GeV]", "Normalised # events", 100, 0, 10, figdir+"pt.png");
+    compare_draw(era, datatree, mctree, "pv_trk_pt", "Track #it{p_{T}} [GeV]", "Normalised # events", 100, 0, 6, figdir+"pt.png");
     compare_draw(era, datatree, mctree, "pv_trk_eta", "Track #it{#eta}", "Normalised # events", 100, -3, 3, figdir+"eta.png");
     compare_draw(era, datatree, mctree, "pv_trk_phi", "Track #it{#phi}", "Normalised # events", 100, -3.1416, 3.1416, figdir+"phi.png");
 

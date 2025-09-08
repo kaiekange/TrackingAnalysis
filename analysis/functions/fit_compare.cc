@@ -1,6 +1,12 @@
-std::pair<float, float> fit_compare(TH1F * hist_data, TH1F * hist_mc, TString figpath, float tolerance = 1e-4) {
+#include "tdrStyle.cc"
+#include "CMS_lumi.cc"
+#include "draw_funcs.cc"
 
-    lumi_sqrtS = "13.6 TeV, 2022";
+std::pair<float, float> fit_compare(TH1F * hist_data, TH1F * hist_mc, TString era, TString figpath, float tolerance = 1e-4) {
+
+    setTDRStyle();
+
+    lumi_sqrtS = "13.6 TeV, 2022 " + era;
 
     hist_data->Scale(1./hist_data->Integral());
     hist_mc->Scale(1./hist_mc->Integral());
@@ -70,37 +76,6 @@ std::pair<float, float> fit_compare(TH1F * hist_data, TH1F * hist_mc, TString fi
     }
     float reso_mc = 0.5 * (low_mc + high_mc);
 
-    /* float xmin = pv_var.getMin(); */
-    /* float xmax = pv_var.getMax(); */
-    /* float maxVal = 0.0; */
-    /* float xAtMax = 0.0; */
-    /* for (float val = xmin; val <= xmax; val += tolerance) { */
-    /*     pv_var.setVal(val); */
-    /*     float y = triGauss.getVal(pv_var); */
-    /*     if (y > maxVal) { */
-    /*         maxVal = y; */
-    /*         xAtMax = val; */
-    /*     } */
-    /* } */
-    /* float halfMax = maxVal / 2.0; */
-    /* float left = xmin, right = xmax; */
-    /* for (float val = xAtMax; val >= xmin; val -= tolerance) { */
-    /*     pv_var.setVal(val); */
-    /*     if (triGauss.getVal(pv_var) < halfMax) { */
-    /*         left = val; */
-    /*         break; */
-    /*     } */
-    /* } */
-    /* for (float val = xAtMax; val <= xmax; val += tolerance) { */
-    /*     pv_var.setVal(val); */
-    /*     if (triGauss.getVal(pv_var) < halfMax) { */
-    /*         right = val; */
-    /*         break; */
-    /*     } */
-    /* } */
-
-    /* float reso2 = (right - left) / 2.36; */
-
     TCanvas *canvas = new TCanvas("canvas", "canvas", 800, 600);
     canvas_setup(canvas);
     canvas->SetBottomMargin(0.15);
@@ -136,16 +111,6 @@ std::pair<float, float> fit_compare(TH1F * hist_data, TH1F * hist_mc, TString fi
     write_text(0.6, 0.7, Form("Fit Results:"));
     write_text(0.6, 0.65, Form("data reso = %.*f", std::max(0, 2-(int)floor(log10(reso_data))), reso_data));
     write_text(0.6, 0.6, Form("simulation reso = %.*f", std::max(0, 2-(int)floor(log10(reso_mc))), reso_mc));
-    
-    
-    /* write_text(0.68, 0.65, Form("#mu = %.*f #pm %.*f", std::max(0, 2-(int)floor(log10(abs(mu.getVal())))), mu.getVal(), std::max(0, 2-(int)floor(log10(abs(mu.getVal())))), mu.getError())); */
-    /* write_text(0.68, 0.6, Form("#sigma_{1} = %.*f #pm %.*f", std::max(0, 2-(int)floor(log10(sigma1.getVal()))), sigma1.getVal(), std::max(0, 2-(int)floor(log10(sigma1.getVal()))), sigma1.getError())); */
-    /* write_text(0.68, 0.55, Form("#sigma_{2} = %.*f #pm %.*f", std::max(0, 2-(int)floor(log10(sigma2.getVal()))), sigma2.getVal(), std::max(0, 2-(int)floor(log10(sigma2.getVal()))), sigma2.getError())); */
-    /* write_text(0.68, 0.5, Form("#sigma_{3} = %.*f #pm %.*f", std::max(0, 2-(int)floor(log10(sigma3.getVal()))), sigma3.getVal(), std::max(0, 2-(int)floor(log10(sigma3.getVal()))), sigma3.getError())); */
-    /* write_text(0.68, 0.45, Form("f_{1} = %.*f #pm %.*f", std::max(0, 2-(int)floor(log10(f1.getVal()))), f1.getVal(), std::max(0, 2-(int)floor(log10(f1.getVal()))), f1.getError())); */
-    /* write_text(0.68, 0.4, Form("f_{2} = %.*f #pm %.*f", std::max(0, 2-(int)floor(log10(f2.getVal()))), f2.getVal(), std::max(0, 2-(int)floor(log10(f2.getVal()))), f2.getError())); */
-    /* write_text(0.68, 0.35, Form("reso = %.*f", std::max(0, 2-(int)floor(log10(reso))), reso)); */
-    /* write_text(0.68, 0.3, Form("FWHM/2.36 = %.*f", std::max(0, 2-(int)floor(log10(reso2))), reso2)); */
     CMS_lumi(canvas);
 
     canvas->Update();
