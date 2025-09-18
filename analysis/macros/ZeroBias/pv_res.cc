@@ -20,7 +20,7 @@ int pv_res(int iera, int idx) {
 
     TString figdir = "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/ZeroBias_"+era+"/pv_res/";
 
-    TFile *datafile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/ZeroBias/all_skimmed_2022_data_"+era+".root");
+    TFile *datafile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/ZeroBias/all_skimmed_2022_data_"+era+"_corr.root");
     TTree *datatree = (TTree*)datafile->Get("mytree");
     TFile *mcfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/ZeroBias/all_skimmed_2022_mc_"+era+"_corr.root");
     TTree *mctree = (TTree*)mcfile->Get("mytree");
@@ -44,12 +44,12 @@ int pv_res(int iera, int idx) {
     TH1F * h_pull_y_tmp = new TH1F("h_pull_y_tmp", "", 200, -10, 10); 
     TH1F * h_pull_z_tmp = new TH1F("h_pull_z_tmp", "", 200, -10, 10); 
 
-    datatree->Project("h_diff_x_tmp", "(pv_x_p1 - pv_x_p2)/sqrt(2)", ptcut+xnull_cut);
-    datatree->Project("h_diff_y_tmp", "(pv_y_p1 - pv_y_p2)/sqrt(2)", ptcut+ynull_cut);
-    datatree->Project("h_diff_z_tmp", "(pv_z_p1 - pv_z_p2)/sqrt(2)", ptcut+znull_cut);
-    datatree->Project("h_pull_x_tmp", "(pv_x_p1 - pv_x_p2)/sqrt(pow(pv_xError_p1,2)+pow(pv_xError_p2,2))", ptcut+xnull_cut);
-    datatree->Project("h_pull_y_tmp", "(pv_y_p1 - pv_y_p2)/sqrt(pow(pv_yError_p1,2)+pow(pv_yError_p2,2))", ptcut+ynull_cut);
-    datatree->Project("h_pull_z_tmp", "(pv_z_p1 - pv_z_p2)/sqrt(pow(pv_zError_p1,2)+pow(pv_zError_p2,2))", ptcut+znull_cut);
+    datatree->Project("h_diff_x_tmp", "(pv_x_p1 - pv_x_p2)/sqrt(2)", TString("PU_factor*(") + (ptcut+xnull_cut).GetTitle() + ")");
+    datatree->Project("h_diff_y_tmp", "(pv_y_p1 - pv_y_p2)/sqrt(2)", TString("PU_factor*(") + (ptcut+ynull_cut).GetTitle() + ")");
+    datatree->Project("h_diff_z_tmp", "(pv_z_p1 - pv_z_p2)/sqrt(2)", TString("PU_factor*(") + (ptcut+znull_cut).GetTitle() + ")");
+    datatree->Project("h_pull_x_tmp", "(pv_x_p1 - pv_x_p2)/sqrt(pow(pv_xError_p1,2)+pow(pv_xError_p2,2))", TString("PU_factor*(") + (ptcut+xnull_cut).GetTitle() + ")");
+    datatree->Project("h_pull_y_tmp", "(pv_y_p1 - pv_y_p2)/sqrt(pow(pv_yError_p1,2)+pow(pv_yError_p2,2))", TString("PU_factor*(") + (ptcut+ynull_cut).GetTitle() + ")");
+    datatree->Project("h_pull_z_tmp", "(pv_z_p1 - pv_z_p2)/sqrt(pow(pv_zError_p1,2)+pow(pv_zError_p2,2))", TString("PU_factor*(") + (ptcut+znull_cut).GetTitle() + ")");
 
     float diff_x_mean = h_diff_x_tmp->GetMean();
     float diff_y_mean = h_diff_y_tmp->GetMean();
@@ -72,12 +72,12 @@ int pv_res(int iera, int idx) {
     TH1F *h_data_pull_y = new TH1F("h_data_pull_y", ptcut_title+";(#it{y}_{1}-#it{y}_{2})/#sqrt{#Delta#it{y}_{1}^{2}+#Delta#it{y}_{2}^{2}};# PV", 500, pull_y_mean-8*pull_y_stddev, pull_y_mean+8*pull_y_stddev);
     TH1F *h_data_pull_z = new TH1F("h_data_pull_z", ptcut_title+";(#it{z}_{1}-#it{z}_{2})/#sqrt{#Delta#it{z}_{1}^{2}+#Delta#it{z}_{2}^{2}};# PV", 500, pull_z_mean-8*pull_z_stddev, pull_z_mean+8*pull_z_stddev);
 
-    datatree->Project("h_data_diff_x", "(pv_x_p1 - pv_x_p2)/sqrt(2)", ptcut+xnull_cut);
-    datatree->Project("h_data_diff_y", "(pv_y_p1 - pv_y_p2)/sqrt(2)", ptcut+ynull_cut);
-    datatree->Project("h_data_diff_z", "(pv_z_p1 - pv_z_p2)/sqrt(2)", ptcut+znull_cut);
-    datatree->Project("h_data_pull_x", "(pv_x_p1 - pv_x_p2)/sqrt(pow(pv_xError_p1,2)+pow(pv_xError_p2,2))", ptcut+xnull_cut);
-    datatree->Project("h_data_pull_y", "(pv_y_p1 - pv_y_p2)/sqrt(pow(pv_yError_p1,2)+pow(pv_yError_p2,2))", ptcut+ynull_cut);
-    datatree->Project("h_data_pull_z", "(pv_z_p1 - pv_z_p2)/sqrt(pow(pv_zError_p1,2)+pow(pv_zError_p2,2))", ptcut+znull_cut);
+    datatree->Project("h_data_diff_x", "(pv_x_p1 - pv_x_p2)/sqrt(2)", TString("PU_factor*(") + (ptcut+xnull_cut).GetTitle() + ")");
+    datatree->Project("h_data_diff_y", "(pv_y_p1 - pv_y_p2)/sqrt(2)", TString("PU_factor*(") + (ptcut+ynull_cut).GetTitle() + ")");
+    datatree->Project("h_data_diff_z", "(pv_z_p1 - pv_z_p2)/sqrt(2)", TString("PU_factor*(") + (ptcut+znull_cut).GetTitle() + ")");
+    datatree->Project("h_data_pull_x", "(pv_x_p1 - pv_x_p2)/sqrt(pow(pv_xError_p1,2)+pow(pv_xError_p2,2))", TString("PU_factor*(") + (ptcut+xnull_cut).GetTitle() + ")");
+    datatree->Project("h_data_pull_y", "(pv_y_p1 - pv_y_p2)/sqrt(pow(pv_yError_p1,2)+pow(pv_yError_p2,2))", TString("PU_factor*(") + (ptcut+ynull_cut).GetTitle() + ")");
+    datatree->Project("h_data_pull_z", "(pv_z_p1 - pv_z_p2)/sqrt(pow(pv_zError_p1,2)+pow(pv_zError_p2,2))", TString("PU_factor*(") + (ptcut+znull_cut).GetTitle() + ")");
 
     TH1F *h_mc_diff_x = new TH1F("h_mc_diff_x", "", 500, diff_x_mean-8*diff_x_stddev, diff_x_mean+8*diff_x_stddev);
     TH1F *h_mc_diff_y = new TH1F("h_mc_diff_y", "", 500, diff_y_mean-8*diff_y_stddev, diff_y_mean+8*diff_y_stddev);

@@ -1,7 +1,8 @@
 #!/bin/bash
 
 iera=$1
-process=$2
+process=247
+# process=$2
 
 eras=("preEE" "postEE")
 era=${eras[$iera]}

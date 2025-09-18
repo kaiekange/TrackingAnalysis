@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# condor_submit mkfile.sub Era=0 JobName=2022_data_B NumJobs=233
-# condor_submit mkfile.sub Era=1 JobName=2022_data_C NumJobs=954
-# condor_submit mkfile.sub Era=2 JobName=2022_data_D NumJobs=540
-# condor_submit mkfile.sub Era=3 JobName=2022_data_E0 NumJobs=1000
-# condor_submit mkfile.sub Era=4 JobName=2022_data_E1 NumJobs=1000
-# condor_submit mkfile.sub Era=5 JobName=2022_data_E2 NumJobs=187
+condor_submit mkfile.sub Era=0 JobName=2022_data_B NumJobs=233
+condor_submit mkfile.sub Era=1 JobName=2022_data_C NumJobs=954
+condor_submit mkfile.sub Era=2 JobName=2022_data_D NumJobs=540
+condor_submit mkfile.sub Era=3 JobName=2022_data_E0 NumJobs=1000
+condor_submit mkfile.sub Era=4 JobName=2022_data_E1 NumJobs=1000
+condor_submit mkfile.sub Era=5 JobName=2022_data_E2 NumJobs=187
 condor_submit mkfile.sub Era=6 JobName=2022_mc_50to80_preEE NumJobs=39
 condor_submit mkfile.sub Era=7 JobName=2022_mc_80to120_preEE NumJobs=22
 condor_submit mkfile.sub Era=8 JobName=2022_mc_120to170_preEE NumJobs=30

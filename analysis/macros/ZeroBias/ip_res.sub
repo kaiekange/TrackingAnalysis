@@ -15,4 +15,4 @@ max_retries = 1
 
 should_transfer_files = NO
 
-queue 500
+queue 1

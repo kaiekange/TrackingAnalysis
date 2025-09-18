@@ -13,7 +13,7 @@
 #include "../../functions/CMS_lumi.cc"
 #include "../../functions/draw_funcs.cc"
 
-const TString datatype_text = "Unbiased collision events";
+const TString datatype_text = "High-q^{2} multi-jet events";
 
 void compare_draw(TString era, TTree *datatree, TTree *mctree, TString myvar, TString xtitle, TString ytitle, int nbins, float varmin, float varmax, TString figpath){
 
@@ -27,7 +27,7 @@ void compare_draw(TString era, TTree *datatree, TTree *mctree, TString myvar, TS
     h1->SetMarkerSize(0.7);
 
     TH1F *h2 = new TH1F("h2", "", nbins, varmin, varmax);
-    mctree->Project("h2", myvar);
+    mctree->Project("h2", myvar, "xsecweight * PSweight");
     h2->Scale(1./h2->Integral());
     h2->SetFillColorAlpha(kOrange-9, 0.3);
     h2->SetFillStyle(1001);
@@ -71,13 +71,13 @@ int compare_data_mc(TString era){
 
     setTDRStyle();
     
-    const TString figdir = "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/ZeroBias_"+era+"/compare/";
+    const TString figdir = "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/JetHT_"+era+"/compare/";
 
     if(gSystem->AccessPathName(figdir)) gSystem->MakeDirectory(figdir);
 
-    TFile *datafile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/ZeroBias/all_skimmed_2022_data_"+era+".root");
+    TFile *datafile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_"+era+".root");
     TTree *datatree = (TTree*)datafile->Get("mytree");
-    TFile *mcfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/ZeroBias/all_skimmed_2022_mc_"+era+".root");
+    TFile *mcfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_PS.root");
     TTree *mctree = (TTree*)mcfile->Get("mytree");
 
     compare_draw(era, datatree, mctree, "ev_nPV", "# primary vertices", "Normalised # events", 90, 0.5, 90.5, figdir+"nPV.png");

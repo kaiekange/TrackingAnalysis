@@ -1,0 +1,11 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import mplhep
+plt.style.use(mplhep.style.LHCb2)
+import ROOT
+ROOT.EnableImplicitMT()
+
+weight_preEE = {1, 0.221839575, 0.027052134, 0.012157346, 0.000675689, 5.52185E-05, 1.96163E-06, 5.98198E-07, 3.13786E-07, 4.68717E-08, 1.42529E-08, 3.32981E-09, 1.02914E-10}
+weight_postEE = {1, 0.099155235, 0.040371105, 0.010722512, 0.000368968, 3.43437E-05, 7.28824E-06, 2.2931E-06, 1.26887E-06, 2.1858E-07, 5.41467E-08, 1.10481E-08, 5.69236E-10}
+
+

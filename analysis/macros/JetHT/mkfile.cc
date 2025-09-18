@@ -31,7 +31,9 @@ int mkfile( TString infilename, TString outfilename ) {
     bool trig_PFHT680_pass; 
     bool trig_PFHT780_pass; 
     bool trig_PFHT890_pass; 
-    bool trig_PFHT1050_pass; 
+    bool trig_PFHT1050_pass;
+    int myev_run;
+    int myev_lumi;
     int myev_nPV;
     vector<int> *mypv_NTracks = nullptr;
     vector<float> *mypv_SumTrackPt = nullptr;
@@ -73,6 +75,8 @@ int mkfile( TString infilename, TString outfilename ) {
     intree->SetBranchAddress("trig_PFHT780_pass", &trig_PFHT780_pass); 
     intree->SetBranchAddress("trig_PFHT890_pass", &trig_PFHT890_pass); 
     intree->SetBranchAddress("trig_PFHT1050_pass", &trig_PFHT1050_pass); 
+    intree->SetBranchAddress("ev_run", &myev_run);
+    intree->SetBranchAddress("ev_lumi", &myev_lumi);
     intree->SetBranchAddress("ev_nPV", &myev_nPV);
     intree->SetBranchAddress("pv_NTracks", &mypv_NTracks);
     intree->SetBranchAddress("pv_SumTrackPt", &mypv_SumTrackPt);
@@ -106,6 +110,8 @@ int mkfile( TString infilename, TString outfilename ) {
     TFile *outfile = new TFile(outfilename, "RECREATE");
     TTree *outtree = new TTree("mytree", "");
   
+    int ev_run;
+    int ev_lumi;
     int ev_nPV;
     float ev_PFHT;
     int pv_NTracks;
@@ -149,8 +155,10 @@ int mkfile( TString infilename, TString outfilename ) {
     outtree->Branch("trig_PFHT780_pass", &trig_PFHT780_pass); 
     outtree->Branch("trig_PFHT890_pass", &trig_PFHT890_pass); 
     outtree->Branch("trig_PFHT1050_pass", &trig_PFHT1050_pass); 
+    outtree->Branch("ev_run", &ev_run);
+    outtree->Branch("ev_lumi", &ev_lumi);
     outtree->Branch("ev_nPV", &ev_nPV);
-    outtree->Branch("ev_PFHT", &ev_PFHT):
+    outtree->Branch("ev_PFHT", &ev_PFHT);
     outtree->Branch("pv_NTracks", &pv_NTracks);
     outtree->Branch("pv_SumTrackPt", &pv_SumTrackPt);
     outtree->Branch("pv_SumTrackPt2", &pv_SumTrackPt2);
@@ -197,6 +205,8 @@ int mkfile( TString infilename, TString outfilename ) {
 
         if( (!trig_PFHT180_pass) && (!trig_PFHT250_pass) && (!trig_PFHT350_pass) && (!trig_PFHT370_pass) && (!trig_PFHT430_pass) && (!trig_PFHT510_pass) && (!trig_PFHT590_pass) && (!trig_PFHT680_pass) && (!trig_PFHT780_pass) && (!trig_PFHT890_pass) && (!trig_PFHT1050_pass) ) continue; 
 
+        ev_run = myev_run;
+        ev_lumi = myev_lumi;
         ev_nPV = myev_nPV;
         pv_NTracks = mypv_NTracks->at(0);
         pv_SumTrackPt = mypv_SumTrackPt->at(0);

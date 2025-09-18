@@ -20,7 +20,7 @@ void compare_draw(TString era, TTree *datatree, TTree *mctree, TString myvar, TS
     lumi_sqrtS = "13.6 TeV, 2022 " + era;
 
     TH1F *h1 = new TH1F("h1", "", nbins, varmin, varmax);
-    datatree->Project("h1", myvar);
+    datatree->Project("h1", myvar, "PU_factor");
     h1->Scale(1./h1->Integral());
     h1->SetLineColor(kBlack);
     h1->SetMarkerColor(kBlack);
@@ -75,7 +75,7 @@ int compare_data_mc(TString era){
 
     if(gSystem->AccessPathName(figdir)) gSystem->MakeDirectory(figdir);
 
-    TFile *datafile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/ZeroBias/all_skimmed_2022_data_"+era+".root");
+    TFile *datafile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/ZeroBias/all_skimmed_2022_data_"+era+"_corr.root");
     TTree *datatree = (TTree*)datafile->Get("mytree");
     TFile *mcfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/ZeroBias/all_skimmed_2022_mc_"+era+"_corr.root");
     TTree *mctree = (TTree*)mcfile->Get("mytree");
