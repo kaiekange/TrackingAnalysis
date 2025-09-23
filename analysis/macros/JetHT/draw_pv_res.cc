@@ -1,132 +1,126 @@
 #include <vector>
 #include <iostream>
+#include <TFile.h>
 #include <TTree.h>
 #include <TString.h>
 #include <TMath.h>
-#include <TH1.h>
-#include <TCanvas.h>
-#include <TLegend.h>
-#include <RooRealVar.h>
-#include <RooDataHist.h>
-#include <RooAddition.h>
-#include <RooFitResult.h>
-#include <RooCBShape.h>
+#include <TGraph.h>
 #include <algorithm>
 #include <nlohmann/json.hpp>
 
 #include "../../functions/tdrStyle.cc"
 #include "../../functions/CMS_lumi.cc"
 #include "../../functions/draw_funcs.cc"
-#include "input_list.cc"
 #include "../../functions/compare_gr.cc"
 
-const TString figdir = "../../figures/"+datatype+"/pv_res/compare/";
-const TString jsondir = "../../json/"+datatype+"/pv_res/compare/";
-const int nbins = 20;
+const TString datatype_text = "High-q^{2} multi-jet events";
+const int nbins = 100;
 
-int draw_pv_res(){
+int draw_pv_res(TString era){
+
+    TString figdir = "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/JetHT_"+era+"/pv_res/";
 
     setTDRStyle();
-    lumi_sqrtS = "13.6 TeV, 2022";
+    lumi_sqrtS = "13.6 TeV, 2022 " + era;
 
-    float data_reso_pullx[nbins];
-    float data_reso_pully[nbins];
-    float data_reso_pullz[nbins];
-    float data_reso_pvx[nbins];
-    float data_reso_pvy[nbins];
-    float data_reso_pvz[nbins];
+    float reso_data_pullx[nbins];
+    float reso_data_pully[nbins];
+    float reso_data_pullz[nbins];
+    float reso_data_pvx[nbins];
+    float reso_data_pvy[nbins];
+    float reso_data_pvz[nbins];
     
-    float mc_reso_pullx[nbins];
-    float mc_reso_pully[nbins];
-    float mc_reso_pullz[nbins];
-    float mc_reso_pvx[nbins];
-    float mc_reso_pvy[nbins];
-    float mc_reso_pvz[nbins];
+    float reso_mc_pullx[nbins];
+    float reso_mc_pully[nbins];
+    float reso_mc_pullz[nbins];
+    float reso_mc_pvx[nbins];
+    float reso_mc_pvy[nbins];
+    float reso_mc_pvz[nbins];
     
-    float div_reso_pullx[nbins];
-    float div_reso_pully[nbins];
-    float div_reso_pullz[nbins];
-    float div_reso_pvx[nbins];
-    float div_reso_pvy[nbins];
-    float div_reso_pvz[nbins];
+    float reso_div_pullx[nbins];
+    float reso_div_pully[nbins];
+    float reso_div_pullz[nbins];
+    float reso_div_pvx[nbins];
+    float reso_div_pvy[nbins];
+    float reso_div_pvz[nbins];
 
     float sumpt2_sqrt[nbins];
 
     for(int i=0; i<nbins; i++){
         nlohmann::json results;
-        std::ifstream infile(jsondir + Form("/redo_fit_%d.json",i));
+        std::ifstream infile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+Form("/pv_res/fit_%d.json",i));
         infile >> results;
 
         sumpt2_sqrt[i] = results["sumpt2_sqrt"];
-        data_reso_pullx[i] = results["reso_pullx_data"];
-        data_reso_pully[i] = results["reso_pully_data"];
-        data_reso_pullz[i] = results["reso_pullz_data"];
-        data_reso_pvx[i] = results["reso_pvx_data"];
-        data_reso_pvy[i] = results["reso_pvy_data"];
-        data_reso_pvz[i] = results["reso_pvz_data"];
-        mc_reso_pullx[i] = results["reso_pullx_mc"];
-        mc_reso_pully[i] = results["reso_pully_mc"];
-        mc_reso_pullz[i] = results["reso_pullz_mc"];
-        mc_reso_pvx[i] = results["reso_pvx_mc"];
-        mc_reso_pvy[i] = results["reso_pvy_mc"];
-        mc_reso_pvz[i] = results["reso_pvz_mc"];
-        div_reso_pullx[i] = data_reso_pullx[i] / mc_reso_pullx[i];
-        div_reso_pully[i] = data_reso_pully[i] / mc_reso_pully[i];
-        div_reso_pullz[i] = data_reso_pullz[i] / mc_reso_pullz[i];
-        div_reso_pvx[i] = data_reso_pvx[i] / mc_reso_pvx[i];
-        div_reso_pvy[i] = data_reso_pvy[i] / mc_reso_pvy[i];
-        div_reso_pvz[i] = data_reso_pvz[i] / mc_reso_pvz[i];
+        reso_data_pullx[i] = results["reso_data_pullx"];
+        reso_data_pully[i] = results["reso_data_pully"];
+        reso_data_pullz[i] = results["reso_data_pullz"];
+        reso_data_pvx[i] = results["reso_data_pvx"];
+        reso_data_pvy[i] = results["reso_data_pvy"];
+        reso_data_pvz[i] = results["reso_data_pvz"];
+        reso_mc_pullx[i] = results["reso_mc_pullx"];
+        reso_mc_pully[i] = results["reso_mc_pully"];
+        reso_mc_pullz[i] = results["reso_mc_pullz"];
+        reso_mc_pvx[i] = results["reso_mc_pvx"];
+        reso_mc_pvy[i] = results["reso_mc_pvy"];
+        reso_mc_pvz[i] = results["reso_mc_pvz"];
+        reso_div_pullx[i] = reso_data_pullx[i] / reso_mc_pullx[i];
+        reso_div_pully[i] = reso_data_pully[i] / reso_mc_pully[i];
+        reso_div_pullz[i] = reso_data_pullz[i] / reso_mc_pullz[i];
+        reso_div_pvx[i] = reso_data_pvx[i] / reso_mc_pvx[i];
+        reso_div_pvy[i] = reso_data_pvy[i] / reso_mc_pvy[i];
+        reso_div_pvz[i] = reso_data_pvz[i] / reso_mc_pvz[i];
     }
 
-    TGraph * data_gr_pvx = new TGraph(nbins, sumpt2_sqrt, data_reso_pvx);
-    TGraph * data_gr_pvy = new TGraph(nbins, sumpt2_sqrt, data_reso_pvy);
-    TGraph * data_gr_pvz = new TGraph(nbins, sumpt2_sqrt, data_reso_pvz);
-    TGraph * data_gr_pullx = new TGraph(nbins, sumpt2_sqrt, data_reso_pullx);
-    TGraph * data_gr_pully = new TGraph(nbins, sumpt2_sqrt, data_reso_pully);
-    TGraph * data_gr_pullz = new TGraph(nbins, sumpt2_sqrt, data_reso_pullz);
+    TGraph * gr_data_pvx = new TGraph(nbins, sumpt2_sqrt, reso_data_pvx);
+    TGraph * gr_data_pvy = new TGraph(nbins, sumpt2_sqrt, reso_data_pvy);
+    TGraph * gr_data_pvz = new TGraph(nbins, sumpt2_sqrt, reso_data_pvz);
+    TGraph * gr_data_pullx = new TGraph(nbins, sumpt2_sqrt, reso_data_pullx);
+    TGraph * gr_data_pully = new TGraph(nbins, sumpt2_sqrt, reso_data_pully);
+    TGraph * gr_data_pullz = new TGraph(nbins, sumpt2_sqrt, reso_data_pullz);
 
-    TGraph * mc_gr_pvx = new TGraph(nbins, sumpt2_sqrt, mc_reso_pvx);
-    TGraph * mc_gr_pvy = new TGraph(nbins, sumpt2_sqrt, mc_reso_pvy);
-    TGraph * mc_gr_pvz = new TGraph(nbins, sumpt2_sqrt, mc_reso_pvz);
-    TGraph * mc_gr_pullx = new TGraph(nbins, sumpt2_sqrt, mc_reso_pullx);
-    TGraph * mc_gr_pully = new TGraph(nbins, sumpt2_sqrt, mc_reso_pully);
-    TGraph * mc_gr_pullz = new TGraph(nbins, sumpt2_sqrt, mc_reso_pullz);
+    TGraph * gr_mc_pvx = new TGraph(nbins, sumpt2_sqrt, reso_mc_pvx);
+    TGraph * gr_mc_pvy = new TGraph(nbins, sumpt2_sqrt, reso_mc_pvy);
+    TGraph * gr_mc_pvz = new TGraph(nbins, sumpt2_sqrt, reso_mc_pvz);
+    TGraph * gr_mc_pullx = new TGraph(nbins, sumpt2_sqrt, reso_mc_pullx);
+    TGraph * gr_mc_pully = new TGraph(nbins, sumpt2_sqrt, reso_mc_pully);
+    TGraph * gr_mc_pullz = new TGraph(nbins, sumpt2_sqrt, reso_mc_pullz);
 
-    TGraph * div_gr_pvx = new TGraph(nbins, sumpt2_sqrt, div_reso_pvx);
-    TGraph * div_gr_pvy = new TGraph(nbins, sumpt2_sqrt, div_reso_pvy);
-    TGraph * div_gr_pvz = new TGraph(nbins, sumpt2_sqrt, div_reso_pvz);
-    TGraph * div_gr_pullx = new TGraph(nbins, sumpt2_sqrt, div_reso_pullx);
-    TGraph * div_gr_pully = new TGraph(nbins, sumpt2_sqrt, div_reso_pully);
-    TGraph * div_gr_pullz = new TGraph(nbins, sumpt2_sqrt, div_reso_pullz);
+    TGraph * gr_div_pvx = new TGraph(nbins, sumpt2_sqrt, reso_div_pvx);
+    TGraph * gr_div_pvy = new TGraph(nbins, sumpt2_sqrt, reso_div_pvy);
+    TGraph * gr_div_pvz = new TGraph(nbins, sumpt2_sqrt, reso_div_pvz);
+    TGraph * gr_div_pullx = new TGraph(nbins, sumpt2_sqrt, reso_div_pullx);
+    TGraph * gr_div_pully = new TGraph(nbins, sumpt2_sqrt, reso_div_pully);
+    TGraph * gr_div_pullz = new TGraph(nbins, sumpt2_sqrt, reso_div_pullz);
 
-    float data_height_pvx = *std::max_element(data_reso_pvx, data_reso_pvx+nbins);
-    float data_height_pvy = *std::max_element(data_reso_pvy, data_reso_pvy+nbins);
-    float data_height_pvz = *std::max_element(data_reso_pvz, data_reso_pvz+nbins);
-    float data_floor_pvx = *std::min_element(data_reso_pvx, data_reso_pvx+nbins);
-    float data_floor_pvy = *std::min_element(data_reso_pvy, data_reso_pvy+nbins);
-    float data_floor_pvz = *std::min_element(data_reso_pvz, data_reso_pvz+nbins);
+    float height_data_pvx = *std::max_element(reso_data_pvx, reso_data_pvx+nbins);
+    float height_data_pvy = *std::max_element(reso_data_pvy, reso_data_pvy+nbins);
+    float height_data_pvz = *std::max_element(reso_data_pvz, reso_data_pvz+nbins);
+    float floor_data_pvx = *std::min_element(reso_data_pvx, reso_data_pvx+nbins);
+    float floor_data_pvy = *std::min_element(reso_data_pvy, reso_data_pvy+nbins);
+    float floor_data_pvz = *std::min_element(reso_data_pvz, reso_data_pvz+nbins);
 
-    float mc_height_pvx = *std::max_element(mc_reso_pvx, mc_reso_pvx+nbins);
-    float mc_height_pvy = *std::max_element(mc_reso_pvy, mc_reso_pvy+nbins);
-    float mc_height_pvz = *std::max_element(mc_reso_pvz, mc_reso_pvz+nbins);
-    float mc_floor_pvx = *std::min_element(mc_reso_pvx, mc_reso_pvx+nbins);
-    float mc_floor_pvy = *std::min_element(mc_reso_pvy, mc_reso_pvy+nbins);
-    float mc_floor_pvz = *std::min_element(mc_reso_pvz, mc_reso_pvz+nbins);
+    float height_mc_pvx = *std::max_element(reso_mc_pvx, reso_mc_pvx+nbins);
+    float height_mc_pvy = *std::max_element(reso_mc_pvy, reso_mc_pvy+nbins);
+    float height_mc_pvz = *std::max_element(reso_mc_pvz, reso_mc_pvz+nbins);
+    float floor_mc_pvx = *std::min_element(reso_mc_pvx, reso_mc_pvx+nbins);
+    float floor_mc_pvy = *std::min_element(reso_mc_pvy, reso_mc_pvy+nbins);
+    float floor_mc_pvz = *std::min_element(reso_mc_pvz, reso_mc_pvz+nbins);
 
-    float height_pvx = std::max(data_height_pvx, mc_height_pvx);
-    float height_pvy = std::max(data_height_pvy, mc_height_pvy);
-    float height_pvz = std::max(data_height_pvz, mc_height_pvz);
-    float floor_pvx = std::min(data_floor_pvx, mc_floor_pvx);
-    float floor_pvy = std::min(data_floor_pvy, mc_floor_pvy);
-    float floor_pvz = std::min(data_floor_pvz, mc_floor_pvz);
+    float height_pvx = std::max(height_data_pvx, height_mc_pvx);
+    float height_pvy = std::max(height_data_pvy, height_mc_pvy);
+    float height_pvz = std::max(height_data_pvz, height_mc_pvz);
+    float floor_pvx = std::min(floor_data_pvx, floor_mc_pvx);
+    float floor_pvy = std::min(floor_data_pvy, floor_mc_pvy);
+    float floor_pvz = std::min(floor_data_pvz, floor_mc_pvz);
 
-    compare_gr(data_gr_pvx, mc_gr_pvx, div_gr_pvx, height_pvx, floor_pvx, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in x [#mum]", figdir + "redo_pvx");
-    compare_gr(data_gr_pvy, mc_gr_pvy, div_gr_pvy, height_pvy, floor_pvy, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in y [#mum]", figdir + "redo_pvy");
-    compare_gr(data_gr_pvz, mc_gr_pvz, div_gr_pvz, height_pvz, floor_pvz, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in z [#mum]", figdir + "redo_pvz");
+    compare_gr(gr_data_pvx, gr_mc_pvx, gr_div_pvx, height_pvx, floor_pvx, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", era, datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in x [#mum]", figdir + "pvx");
+    compare_gr(gr_data_pvy, gr_mc_pvy, gr_div_pvy, height_pvy, floor_pvy, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", era, datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in y [#mum]", figdir + "pvy");
+    compare_gr(gr_data_pvz, gr_mc_pvz, gr_div_pvz, height_pvz, floor_pvz, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", era, datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in z [#mum]", figdir + "pvz");
 
-    compare_gr(data_gr_pullx, mc_gr_pullx, div_gr_pullx, 1.5, 0.5, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in x", figdir + "redo_pullx");
-    compare_gr(data_gr_pully, mc_gr_pully, div_gr_pully, 1.5, 0.5, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in y", figdir + "redo_pully");
-    compare_gr(data_gr_pullz, mc_gr_pullz, div_gr_pullz, 1.5, 0.5, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in z", figdir + "redo_pullz");
+    compare_gr(gr_data_pullx, gr_mc_pullx, gr_div_pullx, 1.5, 0.5, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", era, datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in x", figdir + "pullx");
+    compare_gr(gr_data_pully, gr_mc_pully, gr_div_pully, 1.5, 0.5, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", era, datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in y", figdir + "pully");
+    compare_gr(gr_data_pullz, gr_mc_pullz, gr_div_pullz, 1.5, 0.5, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", era, datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in z", figdir + "pullz");
     
     return 0;
 }

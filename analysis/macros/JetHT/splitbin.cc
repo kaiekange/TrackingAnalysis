@@ -8,11 +8,10 @@
 #include "TFile.h"
 #include "TTree.h"
 
-int splitbin() {
+int splitbin(TString era) {
 
-    if(gSystem->AccessPathName("../../json")) gSystem->MakeDirectory("../../json");
-    if(gSystem->AccessPathName("../../json/JetHT")) gSystem->MakeDirectory("../../json/JetHT");
-    TFile *myfile = TFile::Open("/user/kakang/IPres/CMSSW_14_0_10/src/TrackingAnalysis/analysis/tuples/JetHT_data2022.root");
+    if(gSystem->AccessPathName("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_" + era)) gSystem->MakeDirectory("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era);
+    TFile *myfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_"+era+".root");
 
     TTree *mytree = (TTree*)myfile->Get("mytree");
 
@@ -58,7 +57,7 @@ int splitbin() {
         }
     }
 
-    int nbins = 20;
+    int nbins = 100;
     std::sort(pv_SumTrackPt_vec.begin(), pv_SumTrackPt_vec.end());
     std::vector<float> pv_SumTrackPt_binedges;
     pv_SumTrackPt_binedges.reserve(nbins + 1);
@@ -69,7 +68,7 @@ int splitbin() {
     }
     pv_SumTrackPt_binedges.push_back(300.0f);
 
-    nbins = 100;
+    nbins = 500;
     std::sort(pv_trk_pt_vec.begin(), pv_trk_pt_vec.end());
     std::vector<float> pv_trk_pt_binedges;
     pv_trk_pt_binedges.reserve(nbins + 1);
@@ -106,7 +105,7 @@ int splitbin() {
     splitparams["pv_trk_eta"] = pv_trk_eta_binedges;
     splitparams["pv_trk_phi"] = pv_trk_phi_binedges;
 
-    std::ofstream outfile("../../json/JetHT/binning.json");
+    std::ofstream outfile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+"/binning.json");
     outfile << splitparams.dump(4);
     outfile.close();
     std::cout << "Binning saved to binning.json\n";
