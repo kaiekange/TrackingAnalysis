@@ -20,12 +20,12 @@ int ip_res(int iera, int idx) {
 
     TString figdir = "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/JetHT_"+era+"/ip_res/";
 
-    TFile *datafile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_"+era+".root");
+    TFile *datafile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_"+era+"_1050_corr.root");
     TTree *datatree = (TTree*)datafile->Get("mytree");
-    TFile *mcfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_corr.root");
+    TFile *mcfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_1050_corr.root");
     TTree *mctree = (TTree*)mcfile->Get("mytree");
 
-    std::ifstream infile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+"/binning.json");
+    std::ifstream infile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+"/binning_1050.json");
     nlohmann::json binning;
     infile >> binning;
 
@@ -208,26 +208,26 @@ int ip_res(int iera, int idx) {
     TH1F *h_mc_d0_phi_ulpt = new TH1F("h_mc_d0_phi_ulpt", "#splitline{"+phicut_title+"}{3<#it{p_{T}}<10 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 500, d0_phi_ulpt_mean-8*d0_phi_ulpt_stddev, d0_phi_ulpt_mean+8*d0_phi_ulpt_stddev);
     TH1F *h_mc_dz_phi_ulpt = new TH1F("h_mc_dz_phi_ulpt", "#splitline{"+phicut_title+"}{3<#it{p_{T}}<10 GeV};Track IP #it{d_{z}} [mm];# tracks", 500, dz_phi_ulpt_mean-8*dz_phi_ulpt_stddev, dz_phi_ulpt_mean+8*dz_phi_ulpt_stddev);
 
-    mctree->Project("h_mc_d0_pt_loeta", "pv_trk_d0_pvunbiased", TString("xsecweight*PSweight*PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 1.4").GetTitle() + ")");
-    mctree->Project("h_mc_dz_pt_loeta", "pv_trk_dz_pvunbiased", TString("xsecweight*PSweight*PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 1.4").GetTitle() + ")");
-    mctree->Project("h_mc_d0_pt_hieta", "pv_trk_d0_pvunbiased", TString("xsecweight*PSweight*PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 3").GetTitle() + ")");
-    mctree->Project("h_mc_dz_pt_hieta", "pv_trk_dz_pvunbiased", TString("xsecweight*PSweight*PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 3").GetTitle() + ")");
-    mctree->Project("h_mc_d0_pt_eta", "pv_trk_d0_pvunbiased", TString("xsecweight*PSweight*PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 3").GetTitle() + ")");
-    mctree->Project("h_mc_dz_pt_eta", "pv_trk_dz_pvunbiased", TString("xsecweight*PSweight*PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 3").GetTitle() + ")");
+    mctree->Project("h_mc_d0_pt_loeta", "pv_trk_d0_pvunbiased", TString("xsecweight * PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 1.4").GetTitle() + ")");
+    mctree->Project("h_mc_dz_pt_loeta", "pv_trk_dz_pvunbiased", TString("xsecweight * PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 1.4").GetTitle() + ")");
+    mctree->Project("h_mc_d0_pt_hieta", "pv_trk_d0_pvunbiased", TString("xsecweight * PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 3").GetTitle() + ")");
+    mctree->Project("h_mc_dz_pt_hieta", "pv_trk_dz_pvunbiased", TString("xsecweight * PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 3").GetTitle() + ")");
+    mctree->Project("h_mc_d0_pt_eta", "pv_trk_d0_pvunbiased", TString("xsecweight * PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 3").GetTitle() + ")");
+    mctree->Project("h_mc_dz_pt_eta", "pv_trk_dz_pvunbiased", TString("xsecweight * PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 3").GetTitle() + ")");
 
-    mctree->Project("h_mc_d0_eta_lopt", "pv_trk_d0_pvunbiased", TString("xsecweight*PSweight*PU_factor * (") + (etacut+"pv_trk_pt>0.1 && pv_trk_pt<1").GetTitle() + ")");
-    mctree->Project("h_mc_dz_eta_lopt", "pv_trk_dz_pvunbiased", TString("xsecweight*PSweight*PU_factor * (") + (etacut+"pv_trk_pt>0.1 && pv_trk_pt<1").GetTitle() + ")");
-    mctree->Project("h_mc_d0_eta_hipt", "pv_trk_d0_pvunbiased", TString("xsecweight*PSweight*PU_factor * (") + (etacut+"pv_trk_pt>1 && pv_trk_pt<3").GetTitle() + ")");
-    mctree->Project("h_mc_dz_eta_hipt", "pv_trk_dz_pvunbiased", TString("xsecweight*PSweight*PU_factor * (") + (etacut+"pv_trk_pt>1 && pv_trk_pt<3").GetTitle() + ")");
-    mctree->Project("h_mc_d0_eta_ulpt", "pv_trk_d0_pvunbiased", TString("xsecweight*PSweight*PU_factor * (") + (etacut+"pv_trk_pt>3 && pv_trk_pt<10").GetTitle() + ")");
-    mctree->Project("h_mc_dz_eta_ulpt", "pv_trk_dz_pvunbiased", TString("xsecweight*PSweight*PU_factor * (") + (etacut+"pv_trk_pt>3 && pv_trk_pt<10").GetTitle() + ")");
+    mctree->Project("h_mc_d0_eta_lopt", "pv_trk_d0_pvunbiased", TString("xsecweight * PU_factor * (") + (etacut+"pv_trk_pt>0.1 && pv_trk_pt<1").GetTitle() + ")");
+    mctree->Project("h_mc_dz_eta_lopt", "pv_trk_dz_pvunbiased", TString("xsecweight * PU_factor * (") + (etacut+"pv_trk_pt>0.1 && pv_trk_pt<1").GetTitle() + ")");
+    mctree->Project("h_mc_d0_eta_hipt", "pv_trk_d0_pvunbiased", TString("xsecweight * PU_factor * (") + (etacut+"pv_trk_pt>1 && pv_trk_pt<3").GetTitle() + ")");
+    mctree->Project("h_mc_dz_eta_hipt", "pv_trk_dz_pvunbiased", TString("xsecweight * PU_factor * (") + (etacut+"pv_trk_pt>1 && pv_trk_pt<3").GetTitle() + ")");
+    mctree->Project("h_mc_d0_eta_ulpt", "pv_trk_d0_pvunbiased", TString("xsecweight * PU_factor * (") + (etacut+"pv_trk_pt>3 && pv_trk_pt<10").GetTitle() + ")");
+    mctree->Project("h_mc_dz_eta_ulpt", "pv_trk_dz_pvunbiased", TString("xsecweight * PU_factor * (") + (etacut+"pv_trk_pt>3 && pv_trk_pt<10").GetTitle() + ")");
 
-    mctree->Project("h_mc_d0_phi_lopt", "pv_trk_d0_pvunbiased", TString("xsecweight*PSweight*PU_factor * (") + (phicut+"pv_trk_pt>0.1 && pv_trk_pt<1").GetTitle() + ")");
-    mctree->Project("h_mc_dz_phi_lopt", "pv_trk_dz_pvunbiased", TString("xsecweight*PSweight*PU_factor * (") + (phicut+"pv_trk_pt>0.1 && pv_trk_pt<1").GetTitle() + ")");
-    mctree->Project("h_mc_d0_phi_hipt", "pv_trk_d0_pvunbiased", TString("xsecweight*PSweight*PU_factor * (") + (phicut+"pv_trk_pt>1 && pv_trk_pt<3").GetTitle() + ")");
-    mctree->Project("h_mc_dz_phi_hipt", "pv_trk_dz_pvunbiased", TString("xsecweight*PSweight*PU_factor * (") + (phicut+"pv_trk_pt>1 && pv_trk_pt<3").GetTitle() + ")");
-    mctree->Project("h_mc_d0_phi_ulpt", "pv_trk_d0_pvunbiased", TString("xsecweight*PSweight*PU_factor * (") + (phicut+"pv_trk_pt>3 && pv_trk_pt<10").GetTitle() + ")");
-    mctree->Project("h_mc_dz_phi_ulpt", "pv_trk_dz_pvunbiased", TString("xsecweight*PSweight*PU_factor * (") + (phicut+"pv_trk_pt>3 && pv_trk_pt<10").GetTitle() + ")");
+    mctree->Project("h_mc_d0_phi_lopt", "pv_trk_d0_pvunbiased", TString("xsecweight * PU_factor * (") + (phicut+"pv_trk_pt>0.1 && pv_trk_pt<1").GetTitle() + ")");
+    mctree->Project("h_mc_dz_phi_lopt", "pv_trk_dz_pvunbiased", TString("xsecweight * PU_factor * (") + (phicut+"pv_trk_pt>0.1 && pv_trk_pt<1").GetTitle() + ")");
+    mctree->Project("h_mc_d0_phi_hipt", "pv_trk_d0_pvunbiased", TString("xsecweight * PU_factor * (") + (phicut+"pv_trk_pt>1 && pv_trk_pt<3").GetTitle() + ")");
+    mctree->Project("h_mc_dz_phi_hipt", "pv_trk_dz_pvunbiased", TString("xsecweight * PU_factor * (") + (phicut+"pv_trk_pt>1 && pv_trk_pt<3").GetTitle() + ")");
+    mctree->Project("h_mc_d0_phi_ulpt", "pv_trk_d0_pvunbiased", TString("xsecweight * PU_factor * (") + (phicut+"pv_trk_pt>3 && pv_trk_pt<10").GetTitle() + ")");
+    mctree->Project("h_mc_dz_phi_ulpt", "pv_trk_dz_pvunbiased", TString("xsecweight * PU_factor * (") + (phicut+"pv_trk_pt>3 && pv_trk_pt<10").GetTitle() + ")");
 
     auto result_reso_d0_pt_loeta = fit_compare(h_data_d0_pt_loeta, h_mc_d0_pt_loeta, era, figdir+Form("ippv_xy_fit/redo_pt_loeta_%d", idx), 0.1);
     auto result_reso_dz_pt_loeta = fit_compare(h_data_dz_pt_loeta, h_mc_dz_pt_loeta, era, figdir+Form("ippv_z_fit/redo_pt_loeta_%d", idx), 0.1);

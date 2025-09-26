@@ -1,5 +1,5 @@
 #!/bin/bash
-ERAS=( "postEE" )
+ERAS=( "preEE" )
 # ERAS=( "preEE" "postEE" )
 
 for IERA in "${!ERAS[@]}"; do

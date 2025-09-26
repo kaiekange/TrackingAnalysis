@@ -14,11 +14,11 @@
 #include "../../functions/compare_gr.cc"
 
 const TString datatype_text = "High-q^{2} multi-jet events";
-const int nbins = 100;
+const int nbins = 50;
 
-int draw_pv_res(TString era){
+int draw_pv_res(TString era, TString trigHT){
 
-    TString figdir = "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/JetHT_"+era+"/pv_res/";
+    TString figdir = "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/JetHT_"+era+"/pv_res_"+trigHT+"/";
 
     setTDRStyle();
     lumi_sqrtS = "13.6 TeV, 2022 " + era;
@@ -48,7 +48,7 @@ int draw_pv_res(TString era){
 
     for(int i=0; i<nbins; i++){
         nlohmann::json results;
-        std::ifstream infile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+Form("/pv_res/fit_%d.json",i));
+        std::ifstream infile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+"/pv_res_"+trigHT+Form("/fit_%d.json",i));
         infile >> results;
 
         sumpt2_sqrt[i] = results["sumpt2_sqrt"];

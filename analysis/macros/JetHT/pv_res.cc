@@ -10,22 +10,25 @@
 
 const TString datatype_text = "High-q^{2} multi-jet events";
 
-#include "../../functions/fit_compare.cc"
+#include "../../functions/fit_res.cc"
 
-int pv_res(int iera, int idx) {
+
+int pv_res(int iera, int idx, int trigHT_int) {
+
+    TString trigHT = Form("%d", trigHT_int);
 
     TString eras[] = {"preEE", "postEE"};
 
     TString era = eras[iera];
 
-    TString figdir = "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/JetHT_"+era+"/pv_res/";
+    TString figdir = "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/JetHT_"+era+"/pv_res_"+trigHT+"/";
 
-    TFile *datafile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_"+era+".root");
+    TFile *datafile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_"+era+"_"+trigHT+"_corr.root");
     TTree *datatree = (TTree*)datafile->Get("mytree");
-    TFile *mcfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_corr.root");
+    TFile *mcfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_"+trigHT+"_corr.root");
     TTree *mctree = (TTree*)mcfile->Get("mytree");
 
-    std::ifstream infile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+"/binning.json");
+    std::ifstream infile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+"/binning_"+trigHT+".json");
     nlohmann::json binning;
     infile >> binning;
 
@@ -86,21 +89,20 @@ int pv_res(int iera, int idx) {
     TH1F *h_mc_pull_y = new TH1F("h_mc_pull_y", "", 500, pull_y_mean-8*pull_y_stddev, pull_y_mean+8*pull_y_stddev);
     TH1F *h_mc_pull_z = new TH1F("h_mc_pull_z", "", 500, pull_z_mean-8*pull_z_stddev, pull_z_mean+8*pull_z_stddev);
 
-    mctree->Project("h_mc_diff_x", "(pv_x_p1 - pv_x_p2)/sqrt(2)", TString("xsecweight*PSweight*PU_factor*(") + (ptcut+xnull_cut).GetTitle() + ")");
-    mctree->Project("h_mc_diff_y", "(pv_y_p1 - pv_y_p2)/sqrt(2)", TString("xsecweight*PSweight*PU_factor*(") + (ptcut+ynull_cut).GetTitle() + ")");
-    mctree->Project("h_mc_diff_z", "(pv_z_p1 - pv_z_p2)/sqrt(2)", TString("xsecweight*PSweight*PU_factor*(") + (ptcut+znull_cut).GetTitle() + ")");
-    mctree->Project("h_mc_pull_x", "(pv_x_p1 - pv_x_p2)/sqrt(pow(pv_xError_p1,2)+pow(pv_xError_p2,2))", TString("xsecweight*PSweight*PU_factor*(") + (ptcut+xnull_cut).GetTitle() + ")");
-    mctree->Project("h_mc_pull_y", "(pv_y_p1 - pv_y_p2)/sqrt(pow(pv_yError_p1,2)+pow(pv_yError_p2,2))", TString("xsecweight*PSweight*PU_factor*(") + (ptcut+ynull_cut).GetTitle() + ")");
-    mctree->Project("h_mc_pull_z", "(pv_z_p1 - pv_z_p2)/sqrt(pow(pv_zError_p1,2)+pow(pv_zError_p2,2))", TString("xsecweight*PSweight*PU_factor*(") + (ptcut+znull_cut).GetTitle() + ")");
+    mctree->Project("h_mc_diff_x", "(pv_x_p1 - pv_x_p2)/sqrt(2)", TString("xsecweight * PU_factor*(") + (ptcut+xnull_cut).GetTitle() + ")");
+    mctree->Project("h_mc_diff_y", "(pv_y_p1 - pv_y_p2)/sqrt(2)", TString("xsecweight * PU_factor*(") + (ptcut+ynull_cut).GetTitle() + ")");
+    mctree->Project("h_mc_diff_z", "(pv_z_p1 - pv_z_p2)/sqrt(2)", TString("xsecweight * PU_factor*(") + (ptcut+znull_cut).GetTitle() + ")");
+    mctree->Project("h_mc_pull_x", "(pv_x_p1 - pv_x_p2)/sqrt(pow(pv_xError_p1,2)+pow(pv_xError_p2,2))", TString("xsecweight * PU_factor*(") + (ptcut+xnull_cut).GetTitle() + ")");
+    mctree->Project("h_mc_pull_y", "(pv_y_p1 - pv_y_p2)/sqrt(pow(pv_yError_p1,2)+pow(pv_yError_p2,2))", TString("xsecweight * PU_factor*(") + (ptcut+ynull_cut).GetTitle() + ")");
+    mctree->Project("h_mc_pull_z", "(pv_z_p1 - pv_z_p2)/sqrt(pow(pv_zError_p1,2)+pow(pv_zError_p2,2))", TString("xsecweight * PU_factor*(") + (ptcut+znull_cut).GetTitle() + ")");
 
+    auto result_reso_pvx = fit_compare(h_data_diff_x, h_mc_diff_x, era, figdir+Form("pvx_fit/data_pt_%d", idx), figdir+Form("pvx_fit/mc_pt_%d", idx), 0.01);
+    auto result_reso_pvy = fit_compare(h_data_diff_y, h_mc_diff_y, era, figdir+Form("pvy_fit/data_pt_%d", idx), figdir+Form("pvy_fit/mc_pt_%d", idx), 0.01);
+    auto result_reso_pvz = fit_compare(h_data_diff_z, h_mc_diff_z, era, figdir+Form("pvz_fit/data_pt_%d", idx), figdir+Form("pvz_fit/mc_pt_%d", idx), 0.01);
 
-    auto result_reso_pvx = fit_compare(h_data_diff_x, h_mc_diff_x, era, figdir+Form("pvx_fit/pt_%d", idx), 0.01);
-    auto result_reso_pvy = fit_compare(h_data_diff_y, h_mc_diff_y, era, figdir+Form("pvy_fit/pt_%d", idx), 0.01);
-    auto result_reso_pvz = fit_compare(h_data_diff_z, h_mc_diff_z, era, figdir+Form("pvz_fit/pt_%d", idx), 0.01);
-
-    auto result_reso_pullx = fit_compare(h_data_pull_x, h_mc_pull_x, era, figdir+Form("pullx_fit/pt_%d", idx), 0.01);
-    auto result_reso_pully = fit_compare(h_data_pull_y, h_mc_pull_y, era, figdir+Form("pully_fit/pt_%d", idx), 0.01);
-    auto result_reso_pullz = fit_compare(h_data_pull_z, h_mc_pull_z, era, figdir+Form("pullz_fit/pt_%d", idx), 0.01);
+    auto result_reso_pullx = fit_compare(h_data_pull_x, h_mc_pull_x, era, figdir+Form("pullx_fit/data_pt_%d", idx), figdir+Form("pullx_fit/mc_pt_%d", idx), 0.01);
+    auto result_reso_pully = fit_compare(h_data_pull_y, h_mc_pull_y, era, figdir+Form("pully_fit/data_pt_%d", idx), figdir+Form("pully_fit/mc_pt_%d", idx), 0.01);
+    auto result_reso_pullz = fit_compare(h_data_pull_z, h_mc_pull_z, era, figdir+Form("pullz_fit/data_pt_%d", idx), figdir+Form("pullz_fit/mc_pt_%d", idx), 0.01);
 
     nlohmann::json resojson;
 
@@ -122,7 +124,7 @@ int pv_res(int iera, int idx) {
     resojson["reso_mc_pully"] = result_reso_pully.second;
     resojson["reso_mc_pullz"] = result_reso_pullz.second;
 
-    std::ofstream outFile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+Form("/pv_res/fit_%d.json",idx));
+    std::ofstream outFile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+"/pv_res_"+trigHT+Form("/fit_%d.json",idx));
     outFile << resojson.dump(4);
     outFile.close();
 

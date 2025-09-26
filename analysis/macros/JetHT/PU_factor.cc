@@ -9,46 +9,37 @@
 
 const int nbins = 90;
 
-int PU_factor(TString era){
+int PU_factor(TString era, TString trigHT){
 
-    TFile *datafile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_"+era+".root");
-    TTree *datatree = (TTree*)datafile->Get("mytree");
-    TFile *mcfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_PS.root");
-    TTree *mctree = (TTree*)mcfile->Get("mytree");
+    ROOT::RDataFrame dataDF("mytree", "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_"+era+".root");
+    ROOT::RDataFrame mcDF("mytree", "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_xsec.root");
 
-    int mcev_nPV;
-    mctree->SetBranchAddress("ev_nPV", &mcev_nPV);
+    TString trigcut = "trig_PFHT"+trigHT+"_pass";
 
-    TH1F * h_data = new TH1F("h_data", "", nbins, 0.5, nbins+0.5);
-    TH1F * h_mc = new TH1F("h_mc", "", nbins, 0.5, nbins+0.5);
+    auto dataDF_filter = dataDF.Filter(trigcut.Data());
+    auto mcDF_filter = mcDF.Filter(trigcut.Data());
 
-    datatree->Project("h_data", "ev_nPV");
-    mctree->Project("h_mc", "ev_nPV", "xsecweight * PSweight");
+    /* dataDF_filter.Snapshot("mytree", "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_"+era+"_"+trigHT+"_corr.root"); */
 
+    auto h_data_auto = dataDF_filter.Histo1D({"h_data_auto", "", nbins, 0.5, nbins+0.5}, "ev_nPV");
+    TH1D * h_data = h_data_auto.GetPtr();
     h_data->Scale(1./h_data->Integral());
+
+    auto h_mc_auto = mcDF_filter.Histo1D({"h_mc_auto", "", nbins, 0.5, nbins+0.5}, "ev_nPV", "xsecweight");
+    TH1D * h_mc = h_mc_auto.GetPtr();
     h_mc->Scale(1./h_mc->Integral());
 
-    TH1F * h_ratio = (TH1F*)h_data->Clone("h_ratio");
+    TH1D * h_ratio = (TH1D*) h_data->Clone("h_ratio");
     h_ratio->Divide(h_mc);
-    
-    std::vector<float> mcPU_fac;
 
+    std::vector<double> mcPU_fac;
     for(int i=0; i<nbins; i++){
         mcPU_fac.push_back(h_ratio->GetBinContent(i+1));
     }
 
-    TFile *mcoutfile = new TFile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_corr.root", "RECREATE");
-    TTree *mcouttree = mctree->CloneTree(0);
-    float mcfactor;
-    mcouttree->Branch("PU_factor", &mcfactor);
-    for(int i=0; i<mctree->GetEntries(); i++){
-        mctree->GetEntry(i);
-        mcfactor = mcPU_fac[mcev_nPV-1];
-        mcouttree->Fill();
-    }
-    mcouttree->Write();
-	delete mcouttree;
-	mcoutfile->Close();
+    mcDF_filter.Define("PU_factor", [&mcPU_fac](int nPV) {
+        return mcPU_fac[nPV-1];
+    }, {"ev_nPV"}).Snapshot("mytree" ,"/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_"+trigHT+"_corr.root");
 
     return 0;
 }
