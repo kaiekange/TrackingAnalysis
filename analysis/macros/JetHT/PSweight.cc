@@ -2,14 +2,35 @@
 #include <TTree.h>
 #include <TString.h>
 
-const double weight_preEE[] = {14718.68741, 84939.43179, 60429.87469, 35153.78198, 16205.72735, 7206.506941, 1005.578246, 161.6573003, 11.37454914, 1};
-    
-const double weight_postEE[] = {10799.6928, 13288.17665, 6238.220023, 5283.509487, 4974.061986, 2989.423651, 562.7977765, 113.8803247, 9.135362991, 1};
-    
+const double weight_preEE[] = {
+    35317389.8287109,
+    1619937.38973069,
+    491789.493013329,
+    126703.898944331,
+    33011.5278127328,
+    8680.56547125817,
+    1005.49000424629,
+    161.649821030966,
+    11.3732049797148,
+    1
+};
 
-int PSweight(TString era){
+const double weight_postEE[] = {
+    25156407.3397797,
+    1112202.78668804,
+    338933.742668619,
+    86444.5820867605,
+    22385.0317691743,
+    5893.01382483904,
+    693.246875343215,
+    113.90150050473,
+    9.13497706877434,
+    1
+}; 
 
-    TFile *infile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_xsec.root");
+int PSweight(TString era, TString PTrange){
+
+    TFile *infile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/2022_mc_xsec/all_skimmed_2022_mc_"+PTrange+"_"+era+"_xsec.root");
     TTree *intree = (TTree*)infile->Get("mytree");
 
     bool trig_PFHT1050_pass;
@@ -33,7 +54,7 @@ int PSweight(TString era){
     intree->SetBranchAddress("trig_PFHT250_pass", &trig_PFHT250_pass);
     intree->SetBranchAddress("trig_PFHT180_pass", &trig_PFHT180_pass);
 
-    TFile *outfile = new TFile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_PS.root", "RECREATE");
+    TFile *outfile = new TFile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/2022_mc_PS/all_skimmed_2022_mc_"+PTrange+"_"+era+"_PS.root", "RECREATE");
     TTree *outtree = intree->CloneTree(0);
 
     float PSweight;
@@ -59,7 +80,6 @@ int PSweight(TString era){
         else if(trig_PFHT370_pass) PSweight = myweight[7];
         else if(trig_PFHT250_pass) PSweight = myweight[8];
         else if(trig_PFHT180_pass) PSweight = myweight[9];
-        else PSweight = 0;
 
         outtree->Fill();
     }
