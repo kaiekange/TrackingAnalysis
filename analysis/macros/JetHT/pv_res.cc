@@ -11,24 +11,22 @@
 const TString datatype_text = "High-q^{2} multi-jet events";
 
 #include "../../functions/fit_res.cc"
+/* #include "../../functions/single_gauss_fit_res.cc" */
 
-
-int pv_res(int iera, int idx, int trigHT_int) {
-
-    TString trigHT = Form("%d", trigHT_int);
+int pv_res(int iera, int idx) {
 
     TString eras[] = {"preEE", "postEE"};
 
     TString era = eras[iera];
 
-    TString figdir = "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/JetHT_"+era+"/pv_res_"+trigHT+"/";
+    TString figdir = "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/JetHT_"+era+"/pv_res/";
 
-    TFile *datafile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_"+era+"_"+trigHT+"_corr.root");
+    TFile *datafile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_"+era+"_corr.root");
     TTree *datatree = (TTree*)datafile->Get("mytree");
-    TFile *mcfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_"+trigHT+"_corr.root");
+    TFile *mcfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_corr.root");
     TTree *mctree = (TTree*)mcfile->Get("mytree");
 
-    std::ifstream infile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+"/binning_"+trigHT+".json");
+    std::ifstream infile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+"/binning.json");
     nlohmann::json binning;
     infile >> binning;
 
@@ -68,12 +66,12 @@ int pv_res(int iera, int idx, int trigHT_int) {
     float pull_y_stddev = h_pull_y_tmp->GetStdDev();
     float pull_z_stddev = h_pull_z_tmp->GetStdDev();
 
-    TH1F *h_data_diff_x = new TH1F("h_data_diff_x", ptcut_title+";(#it{x}_{1}-#it{x}_{2})/#sqrt{2} [#mum];# PV", 500, diff_x_mean-8*diff_x_stddev, diff_x_mean+8*diff_x_stddev);
-    TH1F *h_data_diff_y = new TH1F("h_data_diff_y", ptcut_title+";(#it{y}_{1}-#it{y}_{2})/#sqrt{2} [#mum];# PV", 500, diff_y_mean-8*diff_y_stddev, diff_y_mean+8*diff_y_stddev);
-    TH1F *h_data_diff_z = new TH1F("h_data_diff_z", ptcut_title+";(#it{z}_{1}-#it{z}_{2})/#sqrt{2} [mm];# PV", 500, diff_z_mean-8*diff_z_stddev, diff_z_mean+8*diff_z_stddev);
-    TH1F *h_data_pull_x = new TH1F("h_data_pull_x", ptcut_title+";(#it{x}_{1}-#it{x}_{2})/#sqrt{#Delta#it{x}_{1}^{2}+#Delta#it{x}_{2}^{2}};# PV", 500, pull_x_mean-8*pull_x_stddev, pull_x_mean+8*pull_x_stddev);
-    TH1F *h_data_pull_y = new TH1F("h_data_pull_y", ptcut_title+";(#it{y}_{1}-#it{y}_{2})/#sqrt{#Delta#it{y}_{1}^{2}+#Delta#it{y}_{2}^{2}};# PV", 500, pull_y_mean-8*pull_y_stddev, pull_y_mean+8*pull_y_stddev);
-    TH1F *h_data_pull_z = new TH1F("h_data_pull_z", ptcut_title+";(#it{z}_{1}-#it{z}_{2})/#sqrt{#Delta#it{z}_{1}^{2}+#Delta#it{z}_{2}^{2}};# PV", 500, pull_z_mean-8*pull_z_stddev, pull_z_mean+8*pull_z_stddev);
+    TH1F *h_data_diff_x = new TH1F("h_data_diff_x", ptcut_title+";(#it{x}_{1}-#it{x}_{2})/#sqrt{2} [#mum];# PV", 100, diff_x_mean-8*diff_x_stddev, diff_x_mean+8*diff_x_stddev);
+    TH1F *h_data_diff_y = new TH1F("h_data_diff_y", ptcut_title+";(#it{y}_{1}-#it{y}_{2})/#sqrt{2} [#mum];# PV", 100, diff_y_mean-8*diff_y_stddev, diff_y_mean+8*diff_y_stddev);
+    TH1F *h_data_diff_z = new TH1F("h_data_diff_z", ptcut_title+";(#it{z}_{1}-#it{z}_{2})/#sqrt{2} [mm];# PV", 100, diff_z_mean-8*diff_z_stddev, diff_z_mean+8*diff_z_stddev);
+    TH1F *h_data_pull_x = new TH1F("h_data_pull_x", ptcut_title+";(#it{x}_{1}-#it{x}_{2})/#sqrt{#Delta#it{x}_{1}^{2}+#Delta#it{x}_{2}^{2}};# PV", 100, pull_x_mean-8*pull_x_stddev, pull_x_mean+8*pull_x_stddev);
+    TH1F *h_data_pull_y = new TH1F("h_data_pull_y", ptcut_title+";(#it{y}_{1}-#it{y}_{2})/#sqrt{#Delta#it{y}_{1}^{2}+#Delta#it{y}_{2}^{2}};# PV", 100, pull_y_mean-8*pull_y_stddev, pull_y_mean+8*pull_y_stddev);
+    TH1F *h_data_pull_z = new TH1F("h_data_pull_z", ptcut_title+";(#it{z}_{1}-#it{z}_{2})/#sqrt{#Delta#it{z}_{1}^{2}+#Delta#it{z}_{2}^{2}};# PV", 100, pull_z_mean-8*pull_z_stddev, pull_z_mean+8*pull_z_stddev);
 
     datatree->Project("h_data_diff_x", "(pv_x_p1 - pv_x_p2)/sqrt(2)", ptcut+xnull_cut);
     datatree->Project("h_data_diff_y", "(pv_y_p1 - pv_y_p2)/sqrt(2)", ptcut+ynull_cut);
@@ -82,19 +80,19 @@ int pv_res(int iera, int idx, int trigHT_int) {
     datatree->Project("h_data_pull_y", "(pv_y_p1 - pv_y_p2)/sqrt(pow(pv_yError_p1,2)+pow(pv_yError_p2,2))", ptcut+ynull_cut);
     datatree->Project("h_data_pull_z", "(pv_z_p1 - pv_z_p2)/sqrt(pow(pv_zError_p1,2)+pow(pv_zError_p2,2))", ptcut+znull_cut);
 
-    TH1F *h_mc_diff_x = new TH1F("h_mc_diff_x", "", 500, diff_x_mean-8*diff_x_stddev, diff_x_mean+8*diff_x_stddev);
-    TH1F *h_mc_diff_y = new TH1F("h_mc_diff_y", "", 500, diff_y_mean-8*diff_y_stddev, diff_y_mean+8*diff_y_stddev);
-    TH1F *h_mc_diff_z = new TH1F("h_mc_diff_z", "", 500, diff_z_mean-8*diff_z_stddev, diff_z_mean+8*diff_z_stddev);
-    TH1F *h_mc_pull_x = new TH1F("h_mc_pull_x", "", 500, pull_x_mean-8*pull_x_stddev, pull_x_mean+8*pull_x_stddev);
-    TH1F *h_mc_pull_y = new TH1F("h_mc_pull_y", "", 500, pull_y_mean-8*pull_y_stddev, pull_y_mean+8*pull_y_stddev);
-    TH1F *h_mc_pull_z = new TH1F("h_mc_pull_z", "", 500, pull_z_mean-8*pull_z_stddev, pull_z_mean+8*pull_z_stddev);
+    TH1F *h_mc_diff_x = new TH1F("h_mc_diff_x", ptcut_title+";(#it{x}_{1}-#it{x}_{2})/#sqrt{2} [#mum];# PV", 50, diff_x_mean-8*diff_x_stddev, diff_x_mean+8*diff_x_stddev);
+    TH1F *h_mc_diff_y = new TH1F("h_mc_diff_y", ptcut_title+";(#it{y}_{1}-#it{y}_{2})/#sqrt{2} [#mum];# PV", 50, diff_y_mean-8*diff_y_stddev, diff_y_mean+8*diff_y_stddev);
+    TH1F *h_mc_diff_z = new TH1F("h_mc_diff_z", ptcut_title+";(#it{z}_{1}-#it{z}_{2})/#sqrt{2} [mm];# PV", 50, diff_z_mean-8*diff_z_stddev, diff_z_mean+8*diff_z_stddev);
+    TH1F *h_mc_pull_x = new TH1F("h_mc_pull_x", ptcut_title+";(#it{x}_{1}-#it{x}_{2})/#sqrt{#Delta#it{x}_{1}^{2}+#Delta#it{x}_{2}^{2}};# PV", 50, pull_x_mean-8*pull_x_stddev, pull_x_mean+8*pull_x_stddev);
+    TH1F *h_mc_pull_y = new TH1F("h_mc_pull_y", ptcut_title+";(#it{y}_{1}-#it{y}_{2})/#sqrt{#Delta#it{y}_{1}^{2}+#Delta#it{y}_{2}^{2}};# PV", 50, pull_y_mean-8*pull_y_stddev, pull_y_mean+8*pull_y_stddev);
+    TH1F *h_mc_pull_z = new TH1F("h_mc_pull_z", ptcut_title+";(#it{z}_{1}-#it{z}_{2})/#sqrt{#Delta#it{z}_{1}^{2}+#Delta#it{z}_{2}^{2}};# PV", 50, pull_z_mean-8*pull_z_stddev, pull_z_mean+8*pull_z_stddev);
 
-    mctree->Project("h_mc_diff_x", "(pv_x_p1 - pv_x_p2)/sqrt(2)", TString("xsecweight * PU_factor*(") + (ptcut+xnull_cut).GetTitle() + ")");
-    mctree->Project("h_mc_diff_y", "(pv_y_p1 - pv_y_p2)/sqrt(2)", TString("xsecweight * PU_factor*(") + (ptcut+ynull_cut).GetTitle() + ")");
-    mctree->Project("h_mc_diff_z", "(pv_z_p1 - pv_z_p2)/sqrt(2)", TString("xsecweight * PU_factor*(") + (ptcut+znull_cut).GetTitle() + ")");
-    mctree->Project("h_mc_pull_x", "(pv_x_p1 - pv_x_p2)/sqrt(pow(pv_xError_p1,2)+pow(pv_xError_p2,2))", TString("xsecweight * PU_factor*(") + (ptcut+xnull_cut).GetTitle() + ")");
-    mctree->Project("h_mc_pull_y", "(pv_y_p1 - pv_y_p2)/sqrt(pow(pv_yError_p1,2)+pow(pv_yError_p2,2))", TString("xsecweight * PU_factor*(") + (ptcut+ynull_cut).GetTitle() + ")");
-    mctree->Project("h_mc_pull_z", "(pv_z_p1 - pv_z_p2)/sqrt(pow(pv_zError_p1,2)+pow(pv_zError_p2,2))", TString("xsecweight * PU_factor*(") + (ptcut+znull_cut).GetTitle() + ")");
+    mctree->Project("h_mc_diff_x", "(pv_x_p1 - pv_x_p2)/sqrt(2)", TString("xsecweight * PSweight * PU_factor * (") + (ptcut+xnull_cut).GetTitle() + ")");
+    mctree->Project("h_mc_diff_y", "(pv_y_p1 - pv_y_p2)/sqrt(2)", TString("xsecweight * PSweight * PU_factor * (") + (ptcut+ynull_cut).GetTitle() + ")");
+    mctree->Project("h_mc_diff_z", "(pv_z_p1 - pv_z_p2)/sqrt(2)", TString("xsecweight * PSweight * PU_factor * (") + (ptcut+znull_cut).GetTitle() + ")");
+    mctree->Project("h_mc_pull_x", "(pv_x_p1 - pv_x_p2)/sqrt(pow(pv_xError_p1,2)+pow(pv_xError_p2,2))", TString("xsecweight * PSweight * PU_factor * (") + (ptcut+xnull_cut).GetTitle() + ")");
+    mctree->Project("h_mc_pull_y", "(pv_y_p1 - pv_y_p2)/sqrt(pow(pv_yError_p1,2)+pow(pv_yError_p2,2))", TString("xsecweight * PSweight * PU_factor * (") + (ptcut+ynull_cut).GetTitle() + ")");
+    mctree->Project("h_mc_pull_z", "(pv_z_p1 - pv_z_p2)/sqrt(pow(pv_zError_p1,2)+pow(pv_zError_p2,2))", TString("xsecweight * PSweight * PU_factor * (") + (ptcut+znull_cut).GetTitle() + ")");
 
     auto result_reso_pvx = fit_compare(h_data_diff_x, h_mc_diff_x, era, figdir+Form("pvx_fit/data_pt_%d", idx), figdir+Form("pvx_fit/mc_pt_%d", idx), 0.01);
     auto result_reso_pvy = fit_compare(h_data_diff_y, h_mc_diff_y, era, figdir+Form("pvy_fit/data_pt_%d", idx), figdir+Form("pvy_fit/mc_pt_%d", idx), 0.01);
@@ -124,7 +122,51 @@ int pv_res(int iera, int idx, int trigHT_int) {
     resojson["reso_mc_pully"] = result_reso_pully.second;
     resojson["reso_mc_pullz"] = result_reso_pullz.second;
 
-    std::ofstream outFile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+"/pv_res_"+trigHT+Form("/fit_%d.json",idx));
+    /* std::vector<float> result_reso_pvx = fit_compare(h_data_diff_x, h_mc_diff_x, era, figdir+Form("pvx_fit/data_pt_%d", idx), figdir+Form("pvx_fit/mc_pt_%d", idx), 0.01); */
+    /* std::vector<float> result_reso_pvy = fit_compare(h_data_diff_y, h_mc_diff_y, era, figdir+Form("pvy_fit/data_pt_%d", idx), figdir+Form("pvy_fit/mc_pt_%d", idx), 0.01); */
+    /* std::vector<float> result_reso_pvz = fit_compare(h_data_diff_z, h_mc_diff_z, era, figdir+Form("pvz_fit/data_pt_%d", idx), figdir+Form("pvz_fit/mc_pt_%d", idx), 0.01); */
+
+    /* std::vector<float> result_reso_pullx = fit_compare(h_data_pull_x, h_mc_pull_x, era, figdir+Form("pullx_fit/data_pt_%d", idx), figdir+Form("pullx_fit/mc_pt_%d", idx), 0.01); */
+    /* std::vector<float> result_reso_pully = fit_compare(h_data_pull_y, h_mc_pull_y, era, figdir+Form("pully_fit/data_pt_%d", idx), figdir+Form("pully_fit/mc_pt_%d", idx), 0.01); */
+    /* std::vector<float> result_reso_pullz = fit_compare(h_data_pull_z, h_mc_pull_z, era, figdir+Form("pullz_fit/data_pt_%d", idx), figdir+Form("pullz_fit/mc_pt_%d", idx), 0.01); */
+
+    /* nlohmann::json resojson; */
+
+    /* resojson["sumpt2_sqrt"] = (pv_SumTrackPt2_sqrt_edges[idx] + pv_SumTrackPt2_sqrt_edges[idx+1])/2; */
+
+    /* resojson["reso_data_pvx"] = result_reso_pvx[0]; */
+    /* resojson["reso_data_pvy"] = result_reso_pvy[0]; */
+    /* resojson["reso_data_pvz"] = result_reso_pvz[0]; */
+
+    /* resojson["reso_data_pullx"] = result_reso_pullx[0]; */
+    /* resojson["reso_data_pully"] = result_reso_pully[0]; */
+    /* resojson["reso_data_pullz"] = result_reso_pullz[0]; */
+
+    /* resojson["reso_error_data_pvx"] = result_reso_pvx[1]; */
+    /* resojson["reso_error_data_pvy"] = result_reso_pvy[1]; */
+    /* resojson["reso_error_data_pvz"] = result_reso_pvz[1]; */
+
+    /* resojson["reso_error_data_pullx"] = result_reso_pullx[1]; */
+    /* resojson["reso_error_data_pully"] = result_reso_pully[1]; */
+    /* resojson["reso_error_data_pullz"] = result_reso_pullz[1]; */
+
+    /* resojson["reso_mc_pvx"] = result_reso_pvx[2]; */
+    /* resojson["reso_mc_pvy"] = result_reso_pvy[2]; */
+    /* resojson["reso_mc_pvz"] = result_reso_pvz[2]; */
+
+    /* resojson["reso_mc_pullx"] = result_reso_pullx[2]; */
+    /* resojson["reso_mc_pully"] = result_reso_pully[2]; */
+    /* resojson["reso_mc_pullz"] = result_reso_pullz[2]; */
+    
+    /* resojson["reso_error_mc_pvx"] = result_reso_pvx[3]; */
+    /* resojson["reso_error_mc_pvy"] = result_reso_pvy[3]; */
+    /* resojson["reso_error_mc_pvz"] = result_reso_pvz[3]; */
+
+    /* resojson["reso_error_mc_pullx"] = result_reso_pullx[3]; */
+    /* resojson["reso_error_mc_pully"] = result_reso_pully[3]; */
+    /* resojson["reso_error_mc_pullz"] = result_reso_pullz[3]; */
+
+    std::ofstream outFile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+Form("/pv_res/fit_%d.json",idx));
     outFile << resojson.dump(4);
     outFile.close();
 

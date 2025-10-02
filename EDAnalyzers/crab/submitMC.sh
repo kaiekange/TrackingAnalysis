@@ -12,7 +12,7 @@ GTpostEE="130X_mcRun3_2022_realistic_postEE_v6"
 configtemplate="crabConfigTemplate.py"
 ver="Track-v20250819"
 prodv="/store/user/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
-pver="0"
+pver="1"
 
 rm -f crabConfig.py*
 

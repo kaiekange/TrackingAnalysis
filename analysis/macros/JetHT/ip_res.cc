@@ -10,7 +10,7 @@
 
 const TString datatype_text = "High-q^{2} multi-jet events";
 
-#include "../../functions/fit_compare.cc"
+#include "../../functions/fit_res.cc"
 
 int ip_res(int iera, int idx) {
 
@@ -20,12 +20,12 @@ int ip_res(int iera, int idx) {
 
     TString figdir = "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/JetHT_"+era+"/ip_res/";
 
-    TFile *datafile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_"+era+"_1050_corr.root");
+    TFile *datafile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_"+era+"_corr.root");
     TTree *datatree = (TTree*)datafile->Get("mytree");
-    TFile *mcfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_1050_corr.root");
+    TFile *mcfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_corr.root");
     TTree *mctree = (TTree*)mcfile->Get("mytree");
 
-    std::ifstream infile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+"/binning_1050.json");
+    std::ifstream infile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+"/binning.json");
     nlohmann::json binning;
     infile >> binning;
 
@@ -63,10 +63,10 @@ int ip_res(int iera, int idx) {
 
     datatree->Project("h_d0_pt_loeta_tmp", "pv_trk_d0_pvunbiased", ptcut+"abs(pv_trk_eta) < 1.4");
     datatree->Project("h_dz_pt_loeta_tmp", "pv_trk_dz_pvunbiased", ptcut+"abs(pv_trk_eta) < 1.4");
-    datatree->Project("h_d0_pt_hieta_tmp", "pv_trk_d0_pvunbiased", ptcut+"abs(pv_trk_eta) < 3");
-    datatree->Project("h_dz_pt_hieta_tmp", "pv_trk_dz_pvunbiased", ptcut+"abs(pv_trk_eta) < 3");
-    datatree->Project("h_d0_pt_eta_tmp", "pv_trk_d0_pvunbiased", ptcut+"abs(pv_trk_eta) > 1.4"+"abs(pv_trk_eta) < 3");
-    datatree->Project("h_dz_pt_eta_tmp", "pv_trk_dz_pvunbiased", ptcut+"abs(pv_trk_eta) > 1.4"+"abs(pv_trk_eta) < 3");
+    datatree->Project("h_d0_pt_g_tmp", "pv_trk_d0_pvunbiased", ptcut+"abs(pv_trk_eta) > 1.4"+"abs(pv_trk_eta) < 3");
+    datatree->Project("h_dz_pt_g_tmp", "pv_trk_dz_pvunbiased", ptcut+"abs(pv_trk_eta) > 1.4"+"abs(pv_trk_eta) < 3");
+    datatree->Project("h_d0_pt_eta_tmp", "pv_trk_d0_pvunbiased", ptcut+"abs(pv_trk_eta) < 3");
+    datatree->Project("h_dz_pt_eta_tmp", "pv_trk_dz_pvunbiased", ptcut+"abs(pv_trk_eta) < 3");
 
     datatree->Project("h_d0_eta_lopt_tmp", "pv_trk_d0_pvunbiased", etacut+"pv_trk_pt>0.1 && pv_trk_pt<1");
     datatree->Project("h_dz_eta_lopt_tmp", "pv_trk_dz_pvunbiased", etacut+"pv_trk_pt>0.1 && pv_trk_pt<1");
@@ -147,10 +147,10 @@ int ip_res(int iera, int idx) {
 
     TH1F *h_data_d0_pt_loeta = new TH1F("h_data_d0_pt_loeta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<1.4};Track IP #it{d_{xy}} [#mum];# tracks", 500, d0_pt_loeta_mean-8*d0_pt_loeta_stddev, d0_pt_loeta_mean+8*d0_pt_loeta_stddev);
     TH1F *h_data_dz_pt_loeta = new TH1F("h_data_dz_pt_loeta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<1.4};Track IP #it{d_{z}} [mm];# tracks", 500, dz_pt_loeta_mean-8*dz_pt_loeta_stddev, dz_pt_loeta_mean+8*dz_pt_loeta_stddev);
-    TH1F *h_data_d0_pt_hieta = new TH1F("h_data_d0_pt_hieta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<3.0};Track IP #it{d_{xy}} [#mum];# tracks", 500, d0_pt_hieta_mean-8*d0_pt_hieta_stddev, d0_pt_hieta_mean+8*d0_pt_hieta_stddev);
-    TH1F *h_data_dz_pt_hieta = new TH1F("h_data_dz_pt_hieta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<3.0};Track IP #it{d_{z}} [mm];# tracks", 500, dz_pt_hieta_mean-8*dz_pt_hieta_stddev, dz_pt_hieta_mean+8*dz_pt_hieta_stddev);
-    TH1F *h_data_d0_pt_eta = new TH1F("h_data_d0_pt_eta", "#splitline{"+ptcut_title+"}{1.4<|#it{#eta}|<3.0};Track IP #it{d_{xy}} [#mum];# tracks", 500, d0_pt_eta_mean-8*d0_pt_eta_stddev, d0_pt_eta_mean+8*d0_pt_eta_stddev);
-    TH1F *h_data_dz_pt_eta = new TH1F("h_data_dz_pt_eta", "#splitline{"+ptcut_title+"}{1.4<|#it{#eta}|<3.0};Track IP #it{d_{z}} [mm];# tracks", 500, dz_pt_eta_mean-8*dz_pt_eta_stddev, dz_pt_eta_mean+8*dz_pt_eta_stddev);
+    TH1F *h_data_d0_pt_hieta = new TH1F("h_data_d0_pt_hieta", "#splitline{"+ptcut_title+"}{1.4<|#it{#hieta}|<3.0};Track IP #it{d_{xy}} [#mum];# tracks", 500, d0_pt_hieta_mean-8*d0_pt_hieta_stddev, d0_pt_hieta_mean+8*d0_pt_hieta_stddev);
+    TH1F *h_data_dz_pt_hieta = new TH1F("h_data_dz_pt_hieta", "#splitline{"+ptcut_title+"}{1.4<|#it{#hieta}|<3.0};Track IP #it{d_{z}} [mm];# tracks", 500, dz_pt_hieta_mean-8*dz_pt_hieta_stddev, dz_pt_hieta_mean+8*dz_pt_hieta_stddev);
+    TH1F *h_data_d0_pt_eta = new TH1F("h_data_d0_pt_eta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<3.0};Track IP #it{d_{xy}} [#mum];# tracks", 500, d0_pt_eta_mean-8*d0_pt_eta_stddev, d0_pt_eta_mean+8*d0_pt_eta_stddev);
+    TH1F *h_data_dz_pt_eta = new TH1F("h_data_dz_pt_eta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<3.0};Track IP #it{d_{z}} [mm];# tracks", 500, dz_pt_eta_mean-8*dz_pt_eta_stddev, dz_pt_eta_mean+8*dz_pt_eta_stddev);
 
     TH1F *h_data_d0_eta_lopt = new TH1F("h_data_d0_eta_lopt", "#splitline{"+etacut_title+"}{0.1<#it{p_{T}}<1 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 500, d0_eta_lopt_mean-8*d0_eta_lopt_stddev, d0_eta_lopt_mean+8*d0_eta_lopt_stddev);
     TH1F *h_data_dz_eta_lopt = new TH1F("h_data_dz_eta_lopt", "#splitline{"+etacut_title+"}{0.1<#it{p_{T}}<1 GeV};Track IP #it{d_{z}} [mm];# tracks", 500, dz_eta_lopt_mean-8*dz_eta_lopt_stddev, dz_eta_lopt_mean+8*dz_eta_lopt_stddev);
@@ -168,10 +168,10 @@ int ip_res(int iera, int idx) {
 
     datatree->Project("h_data_d0_pt_loeta", "pv_trk_d0_pvunbiased", ptcut+"abs(pv_trk_eta) < 1.4");
     datatree->Project("h_data_dz_pt_loeta", "pv_trk_dz_pvunbiased", ptcut+"abs(pv_trk_eta) < 1.4");
-    datatree->Project("h_data_d0_pt_hieta", "pv_trk_d0_pvunbiased", ptcut+"abs(pv_trk_eta) < 3");
-    datatree->Project("h_data_dz_pt_hieta", "pv_trk_dz_pvunbiased", ptcut+"abs(pv_trk_eta) < 3");
-    datatree->Project("h_data_d0_pt_eta", "pv_trk_d0_pvunbiased", ptcut+"abs(pv_trk_eta) > 1.4"+"abs(pv_trk_eta) < 3");
-    datatree->Project("h_data_dz_pt_eta", "pv_trk_dz_pvunbiased", ptcut+"abs(pv_trk_eta) > 1.4"+"abs(pv_trk_eta) < 3");
+    datatree->Project("h_data_d0_pt_hieta", "pv_trk_d0_pvunbiased", ptcut+"abs(pv_trk_hieta) > 1.4"+"abs(pv_trk_hieta) < 3");
+    datatree->Project("h_data_dz_pt_hieta", "pv_trk_dz_pvunbiased", ptcut+"abs(pv_trk_hieta) > 1.4"+"abs(pv_trk_hieta) < 3");
+    datatree->Project("h_data_d0_pt_eta", "pv_trk_d0_pvunbiased", ptcut+"abs(pv_trk_eta) < 3");
+    datatree->Project("h_data_dz_pt_eta", "pv_trk_dz_pvunbiased", ptcut+"abs(pv_trk_eta) < 3");
 
     datatree->Project("h_data_d0_eta_lopt", "pv_trk_d0_pvunbiased", etacut+"pv_trk_pt>0.1 && pv_trk_pt<1");
     datatree->Project("h_data_dz_eta_lopt", "pv_trk_dz_pvunbiased", etacut+"pv_trk_pt>0.1 && pv_trk_pt<1");
@@ -187,68 +187,68 @@ int ip_res(int iera, int idx) {
     datatree->Project("h_data_d0_phi_ulpt", "pv_trk_d0_pvunbiased", phicut+"pv_trk_pt>3 && pv_trk_pt<10");
     datatree->Project("h_data_dz_phi_ulpt", "pv_trk_dz_pvunbiased", phicut+"pv_trk_pt>3 && pv_trk_pt<10");
 
-    TH1F *h_mc_d0_pt_loeta = new TH1F("h_mc_d0_pt_loeta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<1.4};Track IP #it{d_{xy}} [#mum];# tracks", 500, d0_pt_loeta_mean-8*d0_pt_loeta_stddev, d0_pt_loeta_mean+8*d0_pt_loeta_stddev);
-    TH1F *h_mc_dz_pt_loeta = new TH1F("h_mc_dz_pt_loeta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<1.4};Track IP #it{d_{z}} [mm];# tracks", 500, dz_pt_loeta_mean-8*dz_pt_loeta_stddev, dz_pt_loeta_mean+8*dz_pt_loeta_stddev);
-    TH1F *h_mc_d0_pt_hieta = new TH1F("h_mc_d0_pt_hieta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<3.0};Track IP #it{d_{xy}} [#mum];# tracks", 500, d0_pt_hieta_mean-8*d0_pt_hieta_stddev, d0_pt_hieta_mean+8*d0_pt_hieta_stddev);
-    TH1F *h_mc_dz_pt_hieta = new TH1F("h_mc_dz_pt_hieta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<3.0};Track IP #it{d_{z}} [mm];# tracks", 500, dz_pt_hieta_mean-8*dz_pt_hieta_stddev, dz_pt_hieta_mean+8*dz_pt_hieta_stddev);
-    TH1F *h_mc_d0_pt_eta = new TH1F("h_mc_d0_pt_eta", "#splitline{"+ptcut_title+"}{1.4<|#it{#eta}|<3.0};Track IP #it{d_{xy}} [#mum];# tracks", 500, d0_pt_eta_mean-8*d0_pt_eta_stddev, d0_pt_eta_mean+8*d0_pt_eta_stddev);
-    TH1F *h_mc_dz_pt_eta = new TH1F("h_mc_dz_pt_eta", "#splitline{"+ptcut_title+"}{1.4<|#it{#eta}|<3.0};Track IP #it{d_{z}} [mm];# tracks", 500, dz_pt_eta_mean-8*dz_pt_eta_stddev, dz_pt_eta_mean+8*dz_pt_eta_stddev);
+    TH1F *h_mc_d0_pt_loeta = new TH1F("h_mc_d0_pt_loeta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<1.4};Track IP #it{d_{xy}} [#mum];# tracks", 100, d0_pt_loeta_mean-8*d0_pt_loeta_stddev, d0_pt_loeta_mean+8*d0_pt_loeta_stddev);
+    TH1F *h_mc_dz_pt_loeta = new TH1F("h_mc_dz_pt_loeta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<1.4};Track IP #it{d_{z}} [mm];# tracks", 100, dz_pt_loeta_mean-8*dz_pt_loeta_stddev, dz_pt_loeta_mean+8*dz_pt_loeta_stddev);
+    TH1F *h_mc_d0_pt_hieta = new TH1F("h_mc_d0_pt_hieta", "#splitline{"+ptcut_title+"}{1.4<|#it{#hieta}|<3.0};Track IP #it{d_{xy}} [#mum];# tracks", 100, d0_pt_hieta_mean-8*d0_pt_hieta_stddev, d0_pt_hieta_mean+8*d0_pt_hieta_stddev);
+    TH1F *h_mc_dz_pt_hieta = new TH1F("h_mc_dz_pt_hieta", "#splitline{"+ptcut_title+"}{1.4<|#it{#hieta}|<3.0};Track IP #it{d_{z}} [mm];# tracks", 100, dz_pt_hieta_mean-8*dz_pt_hieta_stddev, dz_pt_hieta_mean+8*dz_pt_hieta_stddev);
+    TH1F *h_mc_d0_pt_eta = new TH1F("h_mc_d0_pt_eta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<3.0};Track IP #it{d_{xy}} [#mum];# tracks", 100, d0_pt_eta_mean-8*d0_pt_eta_stddev, d0_pt_eta_mean+8*d0_pt_eta_stddev);
+    TH1F *h_mc_dz_pt_eta = new TH1F("h_mc_dz_pt_eta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<3.0};Track IP #it{d_{z}} [mm];# tracks", 100, dz_pt_eta_mean-8*dz_pt_eta_stddev, dz_pt_eta_mean+8*dz_pt_eta_stddev);
 
-    TH1F *h_mc_d0_eta_lopt = new TH1F("h_mc_d0_eta_lopt", "#splitline{"+etacut_title+"}{0.1<#it{p_{T}}<1 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 500, d0_eta_lopt_mean-8*d0_eta_lopt_stddev, d0_eta_lopt_mean+8*d0_eta_lopt_stddev);
-    TH1F *h_mc_dz_eta_lopt = new TH1F("h_mc_dz_eta_lopt", "#splitline{"+etacut_title+"}{0.1<#it{p_{T}}<1 GeV};Track IP #it{d_{z}} [mm];# tracks", 500, dz_eta_lopt_mean-8*dz_eta_lopt_stddev, dz_eta_lopt_mean+8*dz_eta_lopt_stddev);
-    TH1F *h_mc_d0_eta_hipt = new TH1F("h_mc_d0_eta_hipt", "#splitline{"+etacut_title+"}{1<#it{p_{T}}<3 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 500, d0_eta_hipt_mean-8*d0_eta_hipt_stddev, d0_eta_hipt_mean+8*d0_eta_hipt_stddev);
-    TH1F *h_mc_dz_eta_hipt = new TH1F("h_mc_dz_eta_hipt", "#splitline{"+etacut_title+"}{1<#it{p_{T}}<3 GeV};Track IP #it{d_{z}} [mm];# tracks", 500, dz_eta_hipt_mean-8*dz_eta_hipt_stddev, dz_eta_hipt_mean+8*dz_eta_hipt_stddev);
-    TH1F *h_mc_d0_eta_ulpt = new TH1F("h_mc_d0_eta_ulpt", "#splitline{"+etacut_title+"}{3<#it{p_{T}}<10 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 500, d0_eta_ulpt_mean-8*d0_eta_ulpt_stddev, d0_eta_ulpt_mean+8*d0_eta_ulpt_stddev);
-    TH1F *h_mc_dz_eta_ulpt = new TH1F("h_mc_dz_eta_ulpt", "#splitline{"+etacut_title+"}{3<#it{p_{T}}<10 GeV};Track IP #it{d_{z}} [mm];# tracks", 500, dz_eta_ulpt_mean-8*dz_eta_ulpt_stddev, dz_eta_ulpt_mean+8*dz_eta_ulpt_stddev);
+    TH1F *h_mc_d0_eta_lopt = new TH1F("h_mc_d0_eta_lopt", "#splitline{"+etacut_title+"}{0.1<#it{p_{T}}<1 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 100, d0_eta_lopt_mean-8*d0_eta_lopt_stddev, d0_eta_lopt_mean+8*d0_eta_lopt_stddev);
+    TH1F *h_mc_dz_eta_lopt = new TH1F("h_mc_dz_eta_lopt", "#splitline{"+etacut_title+"}{0.1<#it{p_{T}}<1 GeV};Track IP #it{d_{z}} [mm];# tracks", 100, dz_eta_lopt_mean-8*dz_eta_lopt_stddev, dz_eta_lopt_mean+8*dz_eta_lopt_stddev);
+    TH1F *h_mc_d0_eta_hipt = new TH1F("h_mc_d0_eta_hipt", "#splitline{"+etacut_title+"}{1<#it{p_{T}}<3 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 100, d0_eta_hipt_mean-8*d0_eta_hipt_stddev, d0_eta_hipt_mean+8*d0_eta_hipt_stddev);
+    TH1F *h_mc_dz_eta_hipt = new TH1F("h_mc_dz_eta_hipt", "#splitline{"+etacut_title+"}{1<#it{p_{T}}<3 GeV};Track IP #it{d_{z}} [mm];# tracks", 100, dz_eta_hipt_mean-8*dz_eta_hipt_stddev, dz_eta_hipt_mean+8*dz_eta_hipt_stddev);
+    TH1F *h_mc_d0_eta_ulpt = new TH1F("h_mc_d0_eta_ulpt", "#splitline{"+etacut_title+"}{3<#it{p_{T}}<10 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 100, d0_eta_ulpt_mean-8*d0_eta_ulpt_stddev, d0_eta_ulpt_mean+8*d0_eta_ulpt_stddev);
+    TH1F *h_mc_dz_eta_ulpt = new TH1F("h_mc_dz_eta_ulpt", "#splitline{"+etacut_title+"}{3<#it{p_{T}}<10 GeV};Track IP #it{d_{z}} [mm];# tracks", 100, dz_eta_ulpt_mean-8*dz_eta_ulpt_stddev, dz_eta_ulpt_mean+8*dz_eta_ulpt_stddev);
 
-    TH1F *h_mc_d0_phi_lopt = new TH1F("h_mc_d0_phi_lopt", "#splitline{"+phicut_title+"}{0.1<#it{p_{T}}<1 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 500, d0_phi_lopt_mean-8*d0_phi_lopt_stddev, d0_phi_lopt_mean+8*d0_phi_lopt_stddev);
-    TH1F *h_mc_dz_phi_lopt = new TH1F("h_mc_dz_phi_lopt", "#splitline{"+phicut_title+"}{0.1<#it{p_{T}}<1 GeV};Track IP #it{d_{z}} [mm];# tracks", 500, dz_phi_lopt_mean-8*dz_phi_lopt_stddev, dz_phi_lopt_mean+8*dz_phi_lopt_stddev);
-    TH1F *h_mc_d0_phi_hipt = new TH1F("h_mc_d0_phi_hipt", "#splitline{"+phicut_title+"}{1<#it{p_{T}}<3 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 500, d0_phi_hipt_mean-8*d0_phi_hipt_stddev, d0_phi_hipt_mean+8*d0_phi_hipt_stddev);
-    TH1F *h_mc_dz_phi_hipt = new TH1F("h_mc_dz_phi_hipt", "#splitline{"+phicut_title+"}{1<#it{p_{T}}<3 GeV};Track IP #it{d_{z}} [mm];# tracks", 500, dz_phi_hipt_mean-8*dz_phi_hipt_stddev, dz_phi_hipt_mean+8*dz_phi_hipt_stddev);
-    TH1F *h_mc_d0_phi_ulpt = new TH1F("h_mc_d0_phi_ulpt", "#splitline{"+phicut_title+"}{3<#it{p_{T}}<10 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 500, d0_phi_ulpt_mean-8*d0_phi_ulpt_stddev, d0_phi_ulpt_mean+8*d0_phi_ulpt_stddev);
-    TH1F *h_mc_dz_phi_ulpt = new TH1F("h_mc_dz_phi_ulpt", "#splitline{"+phicut_title+"}{3<#it{p_{T}}<10 GeV};Track IP #it{d_{z}} [mm];# tracks", 500, dz_phi_ulpt_mean-8*dz_phi_ulpt_stddev, dz_phi_ulpt_mean+8*dz_phi_ulpt_stddev);
+    TH1F *h_mc_d0_phi_lopt = new TH1F("h_mc_d0_phi_lopt", "#splitline{"+phicut_title+"}{0.1<#it{p_{T}}<1 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 100, d0_phi_lopt_mean-8*d0_phi_lopt_stddev, d0_phi_lopt_mean+8*d0_phi_lopt_stddev);
+    TH1F *h_mc_dz_phi_lopt = new TH1F("h_mc_dz_phi_lopt", "#splitline{"+phicut_title+"}{0.1<#it{p_{T}}<1 GeV};Track IP #it{d_{z}} [mm];# tracks", 100, dz_phi_lopt_mean-8*dz_phi_lopt_stddev, dz_phi_lopt_mean+8*dz_phi_lopt_stddev);
+    TH1F *h_mc_d0_phi_hipt = new TH1F("h_mc_d0_phi_hipt", "#splitline{"+phicut_title+"}{1<#it{p_{T}}<3 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 100, d0_phi_hipt_mean-8*d0_phi_hipt_stddev, d0_phi_hipt_mean+8*d0_phi_hipt_stddev);
+    TH1F *h_mc_dz_phi_hipt = new TH1F("h_mc_dz_phi_hipt", "#splitline{"+phicut_title+"}{1<#it{p_{T}}<3 GeV};Track IP #it{d_{z}} [mm];# tracks", 100, dz_phi_hipt_mean-8*dz_phi_hipt_stddev, dz_phi_hipt_mean+8*dz_phi_hipt_stddev);
+    TH1F *h_mc_d0_phi_ulpt = new TH1F("h_mc_d0_phi_ulpt", "#splitline{"+phicut_title+"}{3<#it{p_{T}}<10 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 100, d0_phi_ulpt_mean-8*d0_phi_ulpt_stddev, d0_phi_ulpt_mean+8*d0_phi_ulpt_stddev);
+    TH1F *h_mc_dz_phi_ulpt = new TH1F("h_mc_dz_phi_ulpt", "#splitline{"+phicut_title+"}{3<#it{p_{T}}<10 GeV};Track IP #it{d_{z}} [mm];# tracks", 100, dz_phi_ulpt_mean-8*dz_phi_ulpt_stddev, dz_phi_ulpt_mean+8*dz_phi_ulpt_stddev);
 
-    mctree->Project("h_mc_d0_pt_loeta", "pv_trk_d0_pvunbiased", TString("xsecweight * PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 1.4").GetTitle() + ")");
-    mctree->Project("h_mc_dz_pt_loeta", "pv_trk_dz_pvunbiased", TString("xsecweight * PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 1.4").GetTitle() + ")");
-    mctree->Project("h_mc_d0_pt_hieta", "pv_trk_d0_pvunbiased", TString("xsecweight * PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 3").GetTitle() + ")");
-    mctree->Project("h_mc_dz_pt_hieta", "pv_trk_dz_pvunbiased", TString("xsecweight * PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 3").GetTitle() + ")");
-    mctree->Project("h_mc_d0_pt_eta", "pv_trk_d0_pvunbiased", TString("xsecweight * PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 3").GetTitle() + ")");
-    mctree->Project("h_mc_dz_pt_eta", "pv_trk_dz_pvunbiased", TString("xsecweight * PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 3").GetTitle() + ")");
+    mctree->Project("h_mc_d0_pt_loeta", "pv_trk_d0_pvunbiased", TString("xsecweight * PSweight * PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 1.4").GetTitle() + ")");
+    mctree->Project("h_mc_dz_pt_loeta", "pv_trk_dz_pvunbiased", TString("xsecweight * PSweight * PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 1.4").GetTitle() + ")");
+    mctree->Project("h_mc_d0_pt_hieta", "pv_trk_d0_pvunbiased", TString("xsecweight * PSweight * PU_factor * (") + (ptcut+"abs(pv_trk_hieta) > 1.4"+"abs(pv_trk_hieta) < 3").GetTitle() + ")");
+    mctree->Project("h_mc_dz_pt_hieta", "pv_trk_dz_pvunbiased", TString("xsecweight * PSweight * PU_factor * (") + (ptcut+"abs(pv_trk_hieta) > 1.4"+"abs(pv_trk_hieta) < 3").GetTitle() + ")");
+    mctree->Project("h_mc_d0_pt_eta", "pv_trk_d0_pvunbiased", TString("xsecweight * PSweight * PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 3").GetTitle() + ")");
+    mctree->Project("h_mc_dz_pt_eta", "pv_trk_dz_pvunbiased", TString("xsecweight * PSweight * PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 3").GetTitle() + ")");
 
-    mctree->Project("h_mc_d0_eta_lopt", "pv_trk_d0_pvunbiased", TString("xsecweight * PU_factor * (") + (etacut+"pv_trk_pt>0.1 && pv_trk_pt<1").GetTitle() + ")");
-    mctree->Project("h_mc_dz_eta_lopt", "pv_trk_dz_pvunbiased", TString("xsecweight * PU_factor * (") + (etacut+"pv_trk_pt>0.1 && pv_trk_pt<1").GetTitle() + ")");
-    mctree->Project("h_mc_d0_eta_hipt", "pv_trk_d0_pvunbiased", TString("xsecweight * PU_factor * (") + (etacut+"pv_trk_pt>1 && pv_trk_pt<3").GetTitle() + ")");
-    mctree->Project("h_mc_dz_eta_hipt", "pv_trk_dz_pvunbiased", TString("xsecweight * PU_factor * (") + (etacut+"pv_trk_pt>1 && pv_trk_pt<3").GetTitle() + ")");
-    mctree->Project("h_mc_d0_eta_ulpt", "pv_trk_d0_pvunbiased", TString("xsecweight * PU_factor * (") + (etacut+"pv_trk_pt>3 && pv_trk_pt<10").GetTitle() + ")");
-    mctree->Project("h_mc_dz_eta_ulpt", "pv_trk_dz_pvunbiased", TString("xsecweight * PU_factor * (") + (etacut+"pv_trk_pt>3 && pv_trk_pt<10").GetTitle() + ")");
+    mctree->Project("h_mc_d0_eta_lopt", "pv_trk_d0_pvunbiased", TString("xsecweight * PSweight * PU_factor * (") + (etacut+"pv_trk_pt > 0.1 && pv_trk_pt <1").GetTitle() + ")");
+    mctree->Project("h_mc_dz_eta_lopt", "pv_trk_dz_pvunbiased", TString("xsecweight * PSweight * PU_factor * (") + (etacut+"pv_trk_pt > 0.1 && pv_trk_pt < 1").GetTitle() + ")");
+    mctree->Project("h_mc_d0_eta_hipt", "pv_trk_d0_pvunbiased", TString("xsecweight * PSweight * PU_factor * (") + (etacut+"pv_trk_pt > 1 && pv_trk_pt < 3").GetTitle() + ")");
+    mctree->Project("h_mc_dz_eta_hipt", "pv_trk_dz_pvunbiased", TString("xsecweight * PSweight * PU_factor * (") + (etacut+"pv_trk_pt > 1 && pv_trk_pt < 3").GetTitle() + ")");
+    mctree->Project("h_mc_d0_eta_ulpt", "pv_trk_d0_pvunbiased", TString("xsecweight * PSweight * PU_factor * (") + (etacut+"pv_trk_pt > 3 && pv_trk_pt < 10").GetTitle() + ")");
+    mctree->Project("h_mc_dz_eta_ulpt", "pv_trk_dz_pvunbiased", TString("xsecweight * PSweight * PU_factor * (") + (etacut+"pv_trk_pt > 3 && pv_trk_pt < 10").GetTitle() + ")");
 
-    mctree->Project("h_mc_d0_phi_lopt", "pv_trk_d0_pvunbiased", TString("xsecweight * PU_factor * (") + (phicut+"pv_trk_pt>0.1 && pv_trk_pt<1").GetTitle() + ")");
-    mctree->Project("h_mc_dz_phi_lopt", "pv_trk_dz_pvunbiased", TString("xsecweight * PU_factor * (") + (phicut+"pv_trk_pt>0.1 && pv_trk_pt<1").GetTitle() + ")");
-    mctree->Project("h_mc_d0_phi_hipt", "pv_trk_d0_pvunbiased", TString("xsecweight * PU_factor * (") + (phicut+"pv_trk_pt>1 && pv_trk_pt<3").GetTitle() + ")");
-    mctree->Project("h_mc_dz_phi_hipt", "pv_trk_dz_pvunbiased", TString("xsecweight * PU_factor * (") + (phicut+"pv_trk_pt>1 && pv_trk_pt<3").GetTitle() + ")");
-    mctree->Project("h_mc_d0_phi_ulpt", "pv_trk_d0_pvunbiased", TString("xsecweight * PU_factor * (") + (phicut+"pv_trk_pt>3 && pv_trk_pt<10").GetTitle() + ")");
-    mctree->Project("h_mc_dz_phi_ulpt", "pv_trk_dz_pvunbiased", TString("xsecweight * PU_factor * (") + (phicut+"pv_trk_pt>3 && pv_trk_pt<10").GetTitle() + ")");
+    mctree->Project("h_mc_d0_phi_lopt", "pv_trk_d0_pvunbiased", TString("xsecweight * PSweight * PU_factor * (") + (phicut+"pv_trk_pt > 0.1 && pv_trk_pt < 1").GetTitle() + ")");
+    mctree->Project("h_mc_dz_phi_lopt", "pv_trk_dz_pvunbiased", TString("xsecweight * PSweight * PU_factor * (") + (phicut+"pv_trk_pt > 0.1 && pv_trk_pt < 1").GetTitle() + ")");
+    mctree->Project("h_mc_d0_phi_hipt", "pv_trk_d0_pvunbiased", TString("xsecweight * PSweight * PU_factor * (") + (phicut+"pv_trk_pt > 1 && pv_trk_pt < 3").GetTitle() + ")");
+    mctree->Project("h_mc_dz_phi_hipt", "pv_trk_dz_pvunbiased", TString("xsecweight * PSweight * PU_factor * (") + (phicut+"pv_trk_pt > 1 && pv_trk_pt < 3").GetTitle() + ")");
+    mctree->Project("h_mc_d0_phi_ulpt", "pv_trk_d0_pvunbiased", TString("xsecweight * PSweight * PU_factor * (") + (phicut+"pv_trk_pt > 3 && pv_trk_pt < 10").GetTitle() + ")");
+    mctree->Project("h_mc_dz_phi_ulpt", "pv_trk_dz_pvunbiased", TString("xsecweight * PSweight * PU_factor * (") + (phicut+"pv_trk_pt > 3 && pv_trk_pt < 10").GetTitle() + ")");
 
-    auto result_reso_d0_pt_loeta = fit_compare(h_data_d0_pt_loeta, h_mc_d0_pt_loeta, era, figdir+Form("ippv_xy_fit/redo_pt_loeta_%d", idx), 0.1);
-    auto result_reso_dz_pt_loeta = fit_compare(h_data_dz_pt_loeta, h_mc_dz_pt_loeta, era, figdir+Form("ippv_z_fit/redo_pt_loeta_%d", idx), 0.1);
-    auto result_reso_d0_pt_hieta = fit_compare(h_data_d0_pt_hieta, h_mc_d0_pt_hieta, era, figdir+Form("ippv_xy_fit/redo_pt_hieta_%d", idx), 0.1);
-    auto result_reso_dz_pt_hieta = fit_compare(h_data_dz_pt_hieta, h_mc_dz_pt_hieta, era, figdir+Form("ippv_z_fit/redo_pt_hieta_%d", idx), 0.1);
-    auto result_reso_d0_pt_eta = fit_compare(h_data_d0_pt_eta, h_mc_d0_pt_eta, era, figdir+Form("ippv_xy_fit/redo_pt_eta_%d", idx), 0.1);
-    auto result_reso_dz_pt_eta = fit_compare(h_data_dz_pt_eta, h_mc_dz_pt_eta, era, figdir+Form("ippv_z_fit/redo_pt_eta_%d", idx), 0.1);
+    auto result_reso_d0_pt_loeta = fit_compare(h_data_d0_pt_loeta, h_mc_d0_pt_loeta, era, figdir+Form("ippv_xy_fit/data_pt_loeta_%d", idx), figdir+Form("ippv_xy_fit/mc_pt_loeta_%d", idx), 0.1);
+    auto result_reso_dz_pt_loeta = fit_compare(h_data_dz_pt_loeta, h_mc_dz_pt_loeta, era, figdir+Form("ippv_z_fit/data_pt_loeta_%d", idx), figdir+Form("ippv_z_fit/mc_pt_loeta_%d", idx), 0.1);
+    auto result_reso_d0_pt_hieta = fit_compare(h_data_d0_pt_hieta, h_mc_d0_pt_hieta, era, figdir+Form("ippv_xy_fit/data_pt_hieta_%d", idx), figdir+Form("ippv_xy_fit/mc_pt_hieta_%d", idx), 0.1);
+    auto result_reso_dz_pt_hieta = fit_compare(h_data_dz_pt_hieta, h_mc_dz_pt_hieta, era, figdir+Form("ippv_z_fit/data_pt_hieta_%d", idx), figdir+Form("ippv_z_fit/mc_pt_hieta_%d", idx), 0.1);
+    auto result_reso_d0_pt_eta = fit_compare(h_data_d0_pt_eta, h_mc_d0_pt_eta, era, figdir+Form("ippv_xy_fit/data_pt_eta_%d", idx), figdir+Form("ippv_xy_fit/mc_pt_eta_%d", idx), 0.1);
+    auto result_reso_dz_pt_eta = fit_compare(h_data_dz_pt_eta, h_mc_dz_pt_eta, era, figdir+Form("ippv_z_fit/data_pt_eta_%d", idx), figdir+Form("ippv_z_fit/mc_pt_eta_%d", idx), 0.1);
 
-    auto result_reso_d0_eta_lopt = fit_compare(h_data_d0_eta_lopt, h_mc_d0_eta_lopt, era, figdir+Form("ippv_xy_fit/redo_eta_lopt_%d", idx), 0.1);
-    auto result_reso_dz_eta_lopt = fit_compare(h_data_dz_eta_lopt, h_mc_dz_eta_lopt, era, figdir+Form("ippv_z_fit/redo_eta_lopt_%d", idx), 0.1);
-    auto result_reso_d0_eta_hipt = fit_compare(h_data_d0_eta_hipt, h_mc_d0_eta_hipt, era, figdir+Form("ippv_xy_fit/redo_eta_hipt_%d", idx), 0.1);
-    auto result_reso_dz_eta_hipt = fit_compare(h_data_dz_eta_hipt, h_mc_dz_eta_hipt, era, figdir+Form("ippv_z_fit/redo_eta_hipt_%d", idx), 0.1);
-    auto result_reso_d0_eta_ulpt = fit_compare(h_data_d0_eta_ulpt, h_mc_d0_eta_ulpt, era, figdir+Form("ippv_xy_fit/redo_eta_ulpt_%d", idx), 0.1);
-    auto result_reso_dz_eta_ulpt = fit_compare(h_data_dz_eta_ulpt, h_mc_dz_eta_ulpt, era, figdir+Form("ippv_z_fit/redo_eta_ulpt_%d", idx), 0.1);
+    auto result_reso_d0_eta_lopt = fit_compare(h_data_d0_eta_lopt, h_mc_d0_eta_lopt, era, figdir+Form("ippv_xy_fit/data_eta_lopt_%d", idx), figdir+Form("ippv_xy_fit/mc_eta_lopt_%d", idx), 0.1);
+    auto result_reso_dz_eta_lopt = fit_compare(h_data_dz_eta_lopt, h_mc_dz_eta_lopt, era, figdir+Form("ippv_z_fit/data_eta_lopt_%d", idx), figdir+Form("ippv_z_fit/mc_eta_lopt_%d", idx), 0.1);
+    auto result_reso_d0_eta_hipt = fit_compare(h_data_d0_eta_hipt, h_mc_d0_eta_hipt, era, figdir+Form("ippv_xy_fit/data_eta_hipt_%d", idx), figdir+Form("ippv_xy_fit/mc_eta_hipt_%d", idx), 0.1);
+    auto result_reso_dz_eta_hipt = fit_compare(h_data_dz_eta_hipt, h_mc_dz_eta_hipt, era, figdir+Form("ippv_z_fit/data_eta_hipt_%d", idx), figdir+Form("ippv_z_fit/mc_eta_hipt_%d", idx), 0.1);
+    auto result_reso_d0_eta_ulpt = fit_compare(h_data_d0_eta_ulpt, h_mc_d0_eta_ulpt, era, figdir+Form("ippv_xy_fit/data_eta_ulpt_%d", idx), figdir+Form("ippv_xy_fit/mc_eta_ulpt_%d", idx), 0.1);
+    auto result_reso_dz_eta_ulpt = fit_compare(h_data_dz_eta_ulpt, h_mc_dz_eta_ulpt, era, figdir+Form("ippv_z_fit/data_eta_ulpt_%d", idx), figdir+Form("ippv_z_fit/mc_eta_ulpt_%d", idx), 0.1);
 
-    auto result_reso_d0_phi_lopt = fit_compare(h_data_d0_phi_lopt, h_mc_d0_phi_lopt, era, figdir+Form("ippv_xy_fit/redo_phi_lopt_%d", idx), 0.1);
-    auto result_reso_dz_phi_lopt = fit_compare(h_data_dz_phi_lopt, h_mc_dz_phi_lopt, era, figdir+Form("ippv_z_fit/redo_phi_lopt_%d", idx), 0.1);
-    auto result_reso_d0_phi_hipt = fit_compare(h_data_d0_phi_hipt, h_mc_d0_phi_hipt, era, figdir+Form("ippv_xy_fit/redo_phi_hipt_%d", idx), 0.1);
-    auto result_reso_dz_phi_hipt = fit_compare(h_data_dz_phi_hipt, h_mc_dz_phi_hipt, era, figdir+Form("ippv_z_fit/redo_phi_hipt_%d", idx), 0.1);
-    auto result_reso_d0_phi_ulpt = fit_compare(h_data_d0_phi_ulpt, h_mc_d0_phi_ulpt, era, figdir+Form("ippv_xy_fit/redo_phi_ulpt_%d", idx), 0.1);
-    auto result_reso_dz_phi_ulpt = fit_compare(h_data_dz_phi_ulpt, h_mc_dz_phi_ulpt, era, figdir+Form("ippv_z_fit/redo_phi_ulpt_%d", idx), 0.1);
+    auto result_reso_d0_phi_lopt = fit_compare(h_data_d0_phi_lopt, h_mc_d0_phi_lopt, era, figdir+Form("ippv_xy_fit/data_phi_lopt_%d", idx), figdir+Form("ippv_xy_fit/mc_phi_lopt_%d", idx), 0.1);
+    auto result_reso_dz_phi_lopt = fit_compare(h_data_dz_phi_lopt, h_mc_dz_phi_lopt, era, figdir+Form("ippv_z_fit/data_phi_lopt_%d", idx), figdir+Form("ippv_z_fit/mc_phi_lopt_%d", idx), 0.1);
+    auto result_reso_d0_phi_hipt = fit_compare(h_data_d0_phi_hipt, h_mc_d0_phi_hipt, era, figdir+Form("ippv_xy_fit/data_phi_hipt_%d", idx), figdir+Form("ippv_xy_fit/mc_phi_hipt_%d", idx), 0.1);
+    auto result_reso_dz_phi_hipt = fit_compare(h_data_dz_phi_hipt, h_mc_dz_phi_hipt, era, figdir+Form("ippv_z_fit/data_phi_hipt_%d", idx), figdir+Form("ippv_z_fit/mc_phi_hipt_%d", idx), 0.1);
+    auto result_reso_d0_phi_ulpt = fit_compare(h_data_d0_phi_ulpt, h_mc_d0_phi_ulpt, era, figdir+Form("ippv_xy_fit/data_phi_ulpt_%d", idx), figdir+Form("ippv_xy_fit/mc_phi_ulpt_%d", idx), 0.1);
+    auto result_reso_dz_phi_ulpt = fit_compare(h_data_dz_phi_ulpt, h_mc_dz_phi_ulpt, era, figdir+Form("ippv_z_fit/data_phi_ulpt_%d", idx), figdir+Form("ippv_z_fit/mc_phi_ulpt_%d", idx), 0.1);
 
     nlohmann::json resojson;
     resojson["pt"] = (pv_trk_pt_edges[idx] + pv_trk_pt_edges[idx+1])/2;

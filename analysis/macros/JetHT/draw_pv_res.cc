@@ -14,11 +14,11 @@
 #include "../../functions/compare_gr.cc"
 
 const TString datatype_text = "High-q^{2} multi-jet events";
-const int nbins = 50;
+const int nbins = 20;
 
-int draw_pv_res(TString era, TString trigHT){
+int draw_pv_res(TString era){
 
-    TString figdir = "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/JetHT_"+era+"/pv_res_"+trigHT+"/";
+    TString figdir = "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/JetHT_"+era+"/pv_res/";
 
     setTDRStyle();
     lumi_sqrtS = "13.6 TeV, 2022 " + era;
@@ -48,7 +48,7 @@ int draw_pv_res(TString era, TString trigHT){
 
     for(int i=0; i<nbins; i++){
         nlohmann::json results;
-        std::ifstream infile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+"/pv_res_"+trigHT+Form("/fit_%d.json",i));
+        std::ifstream infile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+Form("/pv_res/fit_%d.json",i));
         infile >> results;
 
         sumpt2_sqrt[i] = results["sumpt2_sqrt"];
@@ -114,9 +114,9 @@ int draw_pv_res(TString era, TString trigHT){
     float floor_pvy = std::min(floor_data_pvy, floor_mc_pvy);
     float floor_pvz = std::min(floor_data_pvz, floor_mc_pvz);
 
-    compare_gr(gr_data_pvx, gr_mc_pvx, gr_div_pvx, height_pvx, floor_pvx, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", era, datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in x [#mum]", figdir + "pvx");
-    compare_gr(gr_data_pvy, gr_mc_pvy, gr_div_pvy, height_pvy, floor_pvy, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", era, datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in y [#mum]", figdir + "pvy");
-    compare_gr(gr_data_pvz, gr_mc_pvz, gr_div_pvz, height_pvz, floor_pvz, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", era, datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in z [#mum]", figdir + "pvz");
+    compare_gr(gr_data_pvx, gr_mc_pvx, gr_div_pvx, height_pvx, floor_pvx, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.9, 1.5, "Data", "Simulation", era, datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in x [#mum]", figdir + "pvx");
+    compare_gr(gr_data_pvy, gr_mc_pvy, gr_div_pvy, height_pvy, floor_pvy, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.9, 1.5, "Data", "Simulation", era, datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in y [#mum]", figdir + "pvy");
+    compare_gr(gr_data_pvz, gr_mc_pvz, gr_div_pvz, height_pvz, floor_pvz, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.9, 1.5, "Data", "Simulation", era, datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV resolution in z [#mum]", figdir + "pvz");
 
     compare_gr(gr_data_pullx, gr_mc_pullx, gr_div_pullx, 1.5, 0.5, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", era, datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in x", figdir + "pullx");
     compare_gr(gr_data_pully, gr_mc_pully, gr_div_pully, 1.5, 0.5, sumpt2_sqrt[0], sumpt2_sqrt[nbins-1], 0.8, 1.2, "Data", "Simulation", era, datatype_text, "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "PV pull in y", figdir + "pully");

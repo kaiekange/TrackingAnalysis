@@ -1,8 +1,9 @@
 #!/bin/bash
-ERAS=( "preEE" )
-# ERAS=( "preEE" "postEE" )
+IERAS=( 1 )
+# IERAS=( 0 1 )
+ERAS=( "preEE" "postEE" )
 
-for IERA in "${!ERAS[@]}"; do
+for IERA in "${IERAS[@]}"; do
     ERA=${ERAS[$IERA]}
     
     rm -rf "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/logs/JetHT/ip_res_${ERA}/"

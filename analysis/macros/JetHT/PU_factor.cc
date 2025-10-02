@@ -9,23 +9,19 @@
 
 const int nbins = 90;
 
-int PU_factor(TString era, TString trigHT){
+int PU_factor(TString era){
 
     ROOT::RDataFrame dataDF("mytree", "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_"+era+".root");
-    ROOT::RDataFrame mcDF("mytree", "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_xsec.root");
+    ROOT::RDataFrame mcDF("mytree", "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_PS.root");
 
-    TString trigcut = "trig_PFHT"+trigHT+"_pass";
+    auto dataDF_trig = dataDF.Filter("trig_PFHT1050_pass || trig_PFHT890_pass || trig_PFHT780_pass || trig_PFHT680_pass || trig_PFHT590_pass || trig_PFHT510_pass || trig_PFHT430_pass || trig_PFHT370_pass || trig_PFHT250_pass || trig_PFHT180_pass");
+    auto mcDF_trig = mcDF.Filter("trig_PFHT1050_pass || trig_PFHT890_pass || trig_PFHT780_pass || trig_PFHT680_pass || trig_PFHT590_pass || trig_PFHT510_pass || trig_PFHT430_pass || trig_PFHT370_pass || trig_PFHT250_pass || trig_PFHT180_pass");
 
-    auto dataDF_filter = dataDF.Filter(trigcut.Data());
-    auto mcDF_filter = mcDF.Filter(trigcut.Data());
-
-    /* dataDF_filter.Snapshot("mytree", "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_"+era+"_"+trigHT+"_corr.root"); */
-
-    auto h_data_auto = dataDF_filter.Histo1D({"h_data_auto", "", nbins, 0.5, nbins+0.5}, "ev_nPV");
+    auto h_data_auto = dataDF_trig.Histo1D({"h_data_auto", "", nbins, 0.5, nbins+0.5}, "ev_nPV");
     TH1D * h_data = h_data_auto.GetPtr();
     h_data->Scale(1./h_data->Integral());
 
-    auto h_mc_auto = mcDF_filter.Histo1D({"h_mc_auto", "", nbins, 0.5, nbins+0.5}, "ev_nPV", "xsecweight");
+    auto h_mc_auto = mcDF_trig.Define("totweight", "xsecweight * PSweight").Histo1D({"h_mc_auto", "", nbins, 0.5, nbins+0.5}, "ev_nPV", "totweight");
     TH1D * h_mc = h_mc_auto.GetPtr();
     h_mc->Scale(1./h_mc->Integral());
 
@@ -37,9 +33,11 @@ int PU_factor(TString era, TString trigHT){
         mcPU_fac.push_back(h_ratio->GetBinContent(i+1));
     }
 
-    mcDF_filter.Define("PU_factor", [&mcPU_fac](int nPV) {
+    dataDF_trig.Snapshot("mytree" ,"/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_"+era+"_corr.root");
+
+    mcDF_trig.Define("PU_factor", [&mcPU_fac](int nPV) {
         return mcPU_fac[nPV-1];
-    }, {"ev_nPV"}).Snapshot("mytree" ,"/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_"+trigHT+"_corr.root");
+    }, {"ev_nPV"}).Snapshot("mytree" ,"/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_corr.root");
 
     return 0;
 }
