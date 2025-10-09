@@ -14,7 +14,7 @@
 #include "../../functions/compare_gr.cc"
 
 const TString datatype_text = "High-q^{2} multi-jet events";
-const int nbins = 20;
+const int nbins = 30;
 
 int draw_pv_res(TString era){
 

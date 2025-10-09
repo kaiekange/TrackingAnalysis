@@ -11,7 +11,6 @@
 const TString datatype_text = "High-q^{2} multi-jet events";
 
 #include "../../functions/fit_res.cc"
-/* #include "../../functions/single_gauss_fit_res.cc" */
 
 int pv_res(int iera, int idx) {
 
@@ -121,50 +120,6 @@ int pv_res(int iera, int idx) {
     resojson["reso_mc_pullx"] = result_reso_pullx.second;
     resojson["reso_mc_pully"] = result_reso_pully.second;
     resojson["reso_mc_pullz"] = result_reso_pullz.second;
-
-    /* std::vector<float> result_reso_pvx = fit_compare(h_data_diff_x, h_mc_diff_x, era, figdir+Form("pvx_fit/data_pt_%d", idx), figdir+Form("pvx_fit/mc_pt_%d", idx), 0.01); */
-    /* std::vector<float> result_reso_pvy = fit_compare(h_data_diff_y, h_mc_diff_y, era, figdir+Form("pvy_fit/data_pt_%d", idx), figdir+Form("pvy_fit/mc_pt_%d", idx), 0.01); */
-    /* std::vector<float> result_reso_pvz = fit_compare(h_data_diff_z, h_mc_diff_z, era, figdir+Form("pvz_fit/data_pt_%d", idx), figdir+Form("pvz_fit/mc_pt_%d", idx), 0.01); */
-
-    /* std::vector<float> result_reso_pullx = fit_compare(h_data_pull_x, h_mc_pull_x, era, figdir+Form("pullx_fit/data_pt_%d", idx), figdir+Form("pullx_fit/mc_pt_%d", idx), 0.01); */
-    /* std::vector<float> result_reso_pully = fit_compare(h_data_pull_y, h_mc_pull_y, era, figdir+Form("pully_fit/data_pt_%d", idx), figdir+Form("pully_fit/mc_pt_%d", idx), 0.01); */
-    /* std::vector<float> result_reso_pullz = fit_compare(h_data_pull_z, h_mc_pull_z, era, figdir+Form("pullz_fit/data_pt_%d", idx), figdir+Form("pullz_fit/mc_pt_%d", idx), 0.01); */
-
-    /* nlohmann::json resojson; */
-
-    /* resojson["sumpt2_sqrt"] = (pv_SumTrackPt2_sqrt_edges[idx] + pv_SumTrackPt2_sqrt_edges[idx+1])/2; */
-
-    /* resojson["reso_data_pvx"] = result_reso_pvx[0]; */
-    /* resojson["reso_data_pvy"] = result_reso_pvy[0]; */
-    /* resojson["reso_data_pvz"] = result_reso_pvz[0]; */
-
-    /* resojson["reso_data_pullx"] = result_reso_pullx[0]; */
-    /* resojson["reso_data_pully"] = result_reso_pully[0]; */
-    /* resojson["reso_data_pullz"] = result_reso_pullz[0]; */
-
-    /* resojson["reso_error_data_pvx"] = result_reso_pvx[1]; */
-    /* resojson["reso_error_data_pvy"] = result_reso_pvy[1]; */
-    /* resojson["reso_error_data_pvz"] = result_reso_pvz[1]; */
-
-    /* resojson["reso_error_data_pullx"] = result_reso_pullx[1]; */
-    /* resojson["reso_error_data_pully"] = result_reso_pully[1]; */
-    /* resojson["reso_error_data_pullz"] = result_reso_pullz[1]; */
-
-    /* resojson["reso_mc_pvx"] = result_reso_pvx[2]; */
-    /* resojson["reso_mc_pvy"] = result_reso_pvy[2]; */
-    /* resojson["reso_mc_pvz"] = result_reso_pvz[2]; */
-
-    /* resojson["reso_mc_pullx"] = result_reso_pullx[2]; */
-    /* resojson["reso_mc_pully"] = result_reso_pully[2]; */
-    /* resojson["reso_mc_pullz"] = result_reso_pullz[2]; */
-    
-    /* resojson["reso_error_mc_pvx"] = result_reso_pvx[3]; */
-    /* resojson["reso_error_mc_pvy"] = result_reso_pvy[3]; */
-    /* resojson["reso_error_mc_pvz"] = result_reso_pvz[3]; */
-
-    /* resojson["reso_error_mc_pullx"] = result_reso_pullx[3]; */
-    /* resojson["reso_error_mc_pully"] = result_reso_pully[3]; */
-    /* resojson["reso_error_mc_pullz"] = result_reso_pullz[3]; */
 
     std::ofstream outFile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+Form("/pv_res/fit_%d.json",idx));
     outFile << resojson.dump(4);

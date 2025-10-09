@@ -1,7 +1,7 @@
 # mkfile.sub -- submit job to run prepare simplified tuples
 
 executable = mkfile.sh
-arguments = $(Era) $(Process)
+arguments = $(IERA) $(Process)
 
 log = ./condor_logs/mkfile_$(JobName).log
 

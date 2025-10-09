@@ -23,7 +23,6 @@ int mkfile( TString infilename, TString outfilename ) {
     
     bool trig_PFHT180_pass; 
     bool trig_PFHT250_pass; 
-    bool trig_PFHT350_pass; 
     bool trig_PFHT370_pass; 
     bool trig_PFHT430_pass; 
     bool trig_PFHT510_pass; 
@@ -66,7 +65,6 @@ int mkfile( TString infilename, TString outfilename ) {
 
     intree->SetBranchAddress("trig_PFHT180_pass", &trig_PFHT180_pass); 
     intree->SetBranchAddress("trig_PFHT250_pass", &trig_PFHT250_pass); 
-    intree->SetBranchAddress("trig_PFHT350_pass", &trig_PFHT350_pass); 
     intree->SetBranchAddress("trig_PFHT370_pass", &trig_PFHT370_pass); 
     intree->SetBranchAddress("trig_PFHT430_pass", &trig_PFHT430_pass); 
     intree->SetBranchAddress("trig_PFHT510_pass", &trig_PFHT510_pass); 
@@ -146,7 +144,6 @@ int mkfile( TString infilename, TString outfilename ) {
 
     outtree->Branch("trig_PFHT180_pass", &trig_PFHT180_pass); 
     outtree->Branch("trig_PFHT250_pass", &trig_PFHT250_pass); 
-    outtree->Branch("trig_PFHT350_pass", &trig_PFHT350_pass); 
     outtree->Branch("trig_PFHT370_pass", &trig_PFHT370_pass); 
     outtree->Branch("trig_PFHT430_pass", &trig_PFHT430_pass); 
     outtree->Branch("trig_PFHT510_pass", &trig_PFHT510_pass); 
@@ -203,7 +200,7 @@ int mkfile( TString infilename, TString outfilename ) {
 
         ev_PFHT = 0;
 
-        if( (!trig_PFHT180_pass) && (!trig_PFHT250_pass) && (!trig_PFHT350_pass) && (!trig_PFHT370_pass) && (!trig_PFHT430_pass) && (!trig_PFHT510_pass) && (!trig_PFHT590_pass) && (!trig_PFHT680_pass) && (!trig_PFHT780_pass) && (!trig_PFHT890_pass) && (!trig_PFHT1050_pass) ) continue; 
+        if( (!trig_PFHT180_pass) && (!trig_PFHT250_pass) && (!trig_PFHT370_pass) && (!trig_PFHT430_pass) && (!trig_PFHT510_pass) && (!trig_PFHT590_pass) && (!trig_PFHT680_pass) && (!trig_PFHT780_pass) && (!trig_PFHT890_pass) && (!trig_PFHT1050_pass) ) continue; 
 
         ev_run = myev_run;
         ev_lumi = myev_lumi;

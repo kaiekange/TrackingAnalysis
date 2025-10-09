@@ -18,27 +18,6 @@ void ResTree::Init()
 
     trig_ZeroBias_pass = 0;
 
-    trig_PFJet15_pass = 0;
-    trig_PFJet25_pass = 0;
-    trig_PFJet40_pass = 0;
-    trig_PFJet60_pass = 0;
-    trig_PFJet80_pass = 0;
-    trig_PFJet110_pass = 0;
-    trig_PFJet140_pass = 0;
-    trig_PFJet200_pass = 0;
-    trig_PFJet260_pass = 0;
-    trig_PFJet320_pass = 0;
-    trig_PFJet400_pass = 0;
-    trig_PFJet450_pass = 0;
-    trig_PFJet500_pass = 0;
-    trig_PFJet550_pass = 0;
-
-    trig_AK4PFJet30_pass = 0;
-    trig_AK4PFJet50_pass = 0;
-    trig_AK4PFJet80_pass = 0;
-    trig_AK4PFJet100_pass = 0;
-    trig_AK4PFJet120_pass = 0;
-
     trig_PFHT180_pass = 0;
     trig_PFHT250_pass = 0;
     trig_PFHT370_pass = 0;
@@ -509,27 +488,6 @@ void ResTree::CreateBranches(int buff = 32000, bool runOnData = false)
     tree->Branch("ev_nPV", &ev_nPV, "ev_nPV/I", buff);
 
     tree->Branch("trig_ZeroBias_pass", &trig_ZeroBias_pass, "trig_ZeroBias_pass/O", buff);
-
-    tree->Branch("trig_PFJet15_pass", &trig_PFJet15_pass, "trig_PFJet15_pass/O", buff);
-    tree->Branch("trig_PFJet25_pass", &trig_PFJet25_pass, "trig_PFJet25_pass/O", buff);
-    tree->Branch("trig_PFJet40_pass", &trig_PFJet40_pass, "trig_PFJet40_pass/O", buff);
-    tree->Branch("trig_PFJet60_pass", &trig_PFJet60_pass, "trig_PFJet60_pass/O", buff);
-    tree->Branch("trig_PFJet80_pass", &trig_PFJet80_pass, "trig_PFJet80_pass/O", buff);
-    tree->Branch("trig_PFJet110_pass", &trig_PFJet110_pass, "trig_PFJet110_pass/O", buff);
-    tree->Branch("trig_PFJet140_pass", &trig_PFJet140_pass, "trig_PFJet140_pass/O", buff);
-    tree->Branch("trig_PFJet200_pass", &trig_PFJet200_pass, "trig_PFJet200_pass/O", buff);
-    tree->Branch("trig_PFJet260_pass", &trig_PFJet260_pass, "trig_PFJet260_pass/O", buff);
-    tree->Branch("trig_PFJet320_pass", &trig_PFJet320_pass, "trig_PFJet320_pass/O", buff);
-    tree->Branch("trig_PFJet400_pass", &trig_PFJet400_pass, "trig_PFJet400_pass/O", buff);
-    tree->Branch("trig_PFJet450_pass", &trig_PFJet450_pass, "trig_PFJet450_pass/O", buff);
-    tree->Branch("trig_PFJet500_pass", &trig_PFJet500_pass, "trig_PFJet500_pass/O", buff);
-    tree->Branch("trig_PFJet550_pass", &trig_PFJet550_pass, "trig_PFJet550_pass/O", buff);
-
-    tree->Branch("trig_AK4PFJet30_pass", &trig_AK4PFJet30_pass, "trig_AK4PFJet30_pass/O", buff);
-    tree->Branch("trig_AK4PFJet50_pass", &trig_AK4PFJet50_pass, "trig_AK4PFJet50_pass/O", buff);
-    tree->Branch("trig_AK4PFJet80_pass", &trig_AK4PFJet80_pass, "trig_AK4PFJet80_pass/O", buff);
-    tree->Branch("trig_AK4PFJet100_pass", &trig_AK4PFJet100_pass, "trig_AK4PFJet100_pass/O", buff);
-    tree->Branch("trig_AK4PFJet120_pass", &trig_AK4PFJet120_pass, "trig_AK4PFJet120_pass/O", buff);
 
     tree->Branch("trig_PFHT180_pass", &trig_PFHT180_pass, "trig_PFHT180_pass/O", buff);
     tree->Branch("trig_PFHT250_pass", &trig_PFHT250_pass, "trig_PFHT250_pass/O", buff);

@@ -2,7 +2,6 @@
 
 era=$1
 iPT=$2
-
 PTranges=(
     "50to80"
     "80to120"
@@ -19,4 +18,4 @@ PTranges=(
     "3200"
 )
 
-root -l -b -q "PSweight.cc(\"${era}\", \"${PTranges[$iPT]}\")"
+root -l -b -q "XsecPSweight.cc(\"${era}\", \"${PTranges[$iPT]}\", ${iPT})"

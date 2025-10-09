@@ -11,99 +11,39 @@
 int splitbin(TString era) {
 
     if(gSystem->AccessPathName("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_" + era)) gSystem->MakeDirectory("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era);
-    TFile *myfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_"+era+"_corr.root");
+    TFile *myfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_corr.root");
 
     TTree *mytree = (TTree*)myfile->Get("mytree");
 
-    float mypv_SumTrackPt2;
-    std::vector<float> * mypv_trk_pt = nullptr; 
-    std::vector<float> * mypv_trk_eta = nullptr; 
-    std::vector<float> * mypv_trk_phi = nullptr; 
-    mytree->SetBranchAddress("pv_SumTrackPt2", &mypv_SumTrackPt2);
-    mytree->SetBranchAddress("pv_trk_pt", &mypv_trk_pt);
-    mytree->SetBranchAddress("pv_trk_eta", &mypv_trk_eta);
-    mytree->SetBranchAddress("pv_trk_phi", &mypv_trk_phi);
+    TH1F *h_pv_SumTrackPt = new TH1F("h_pv_SumTrackPt", "", 500, 30, 400);
+    /* TH1F *h_pv_trk_pt = new TH1F("h_pv_trk_pt", "", 500, 0.1, 15); */
+    /* TH1F *h_pv_trk_eta = new TH1F("h_pv_trk_eta", "", 500, -3, 3); */
+    /* TH1F *h_pv_trk_phi = new TH1F("h_pv_trk_phi", "", 500, -3.1416, 3.1416); */
 
-    std::vector<float> pv_SumTrackPt_vec;
-    std::vector<float> pv_trk_pt_vec;
-    std::vector<float> pv_trk_eta_vec;
-    std::vector<float> pv_trk_phi_vec;
-
-    Long64_t nentries = mytree->GetEntries();
-
-    for (Long64_t i=0; i<nentries; ++i) {
-        mytree->GetEntry(i);
-
-        if ( (std::sqrt(mypv_SumTrackPt2)) >= 5 && (std::sqrt(mypv_SumTrackPt2) <= 300) ){
-            pv_SumTrackPt_vec.push_back(std::sqrt(mypv_SumTrackPt2));
-        }
-
-        for(Long64_t j=0; j<mypv_trk_pt->size(); ++j){
-            if ( (mypv_trk_pt->at(j)) >= 0.1 && (mypv_trk_pt->at(j) <= 15) ){
-                pv_trk_pt_vec.push_back(mypv_trk_pt->at(j));
-            }
-        }
-
-        for(Long64_t j=0; j<mypv_trk_eta->size(); ++j){
-            if ( (mypv_trk_eta->at(j)) >= -3 && (mypv_trk_eta->at(j) <= 3) ){
-                pv_trk_eta_vec.push_back(mypv_trk_eta->at(j));
-            }
-        }
-
-        for(Long64_t j=0; j<mypv_trk_phi->size(); ++j){
-            if ( (mypv_trk_phi->at(j)) >= -3.1416 && (mypv_trk_phi->at(j) <= 3.1416) ){
-                pv_trk_phi_vec.push_back(mypv_trk_phi->at(j));
-            }
-        }
-    }
-
-    int nbins = 20;
-    std::sort(pv_SumTrackPt_vec.begin(), pv_SumTrackPt_vec.end());
-    std::vector<float> pv_SumTrackPt_binedges;
-    pv_SumTrackPt_binedges.reserve(nbins + 1);
-    pv_SumTrackPt_binedges.push_back(5.0f);
-    for (int i=1; i<nbins; ++i) {
-        size_t idx = static_cast<size_t>(i * (pv_SumTrackPt_vec.size() - 1) / nbins);
-        pv_SumTrackPt_binedges.push_back(pv_SumTrackPt_vec[idx]);
-    }
-    pv_SumTrackPt_binedges.push_back(300.0f);
-
-    nbins = 100;
-    std::sort(pv_trk_pt_vec.begin(), pv_trk_pt_vec.end());
-    std::vector<float> pv_trk_pt_binedges;
-    pv_trk_pt_binedges.reserve(nbins + 1);
-    pv_trk_pt_binedges.push_back(0.1f);
-    for (int i=1; i<nbins; ++i) {
-        size_t idx = static_cast<size_t>(i * (pv_trk_pt_vec.size() - 1) / nbins);
-        pv_trk_pt_binedges.push_back(pv_trk_pt_vec[idx]);
-    }
-    pv_trk_pt_binedges.push_back(15.0f);
-
-    std::sort(pv_trk_eta_vec.begin(), pv_trk_eta_vec.end());
-    std::vector<float> pv_trk_eta_binedges;
-    pv_trk_eta_binedges.reserve(nbins + 1);
-    pv_trk_eta_binedges.push_back(-3.0f);
-    for (int i=1; i<nbins; ++i) {
-        size_t idx = static_cast<size_t>(i * (pv_trk_eta_vec.size() - 1) / nbins);
-        pv_trk_eta_binedges.push_back(pv_trk_eta_vec[idx]);
-    }
-    pv_trk_eta_binedges.push_back(3.0f);
-
-    std::sort(pv_trk_phi_vec.begin(), pv_trk_phi_vec.end());
-    std::vector<float> pv_trk_phi_binedges;
-    pv_trk_phi_binedges.reserve(nbins + 1);
-    pv_trk_phi_binedges.push_back(-3.1416f);
-    for (int i=1; i<nbins; ++i) {
-        size_t idx = static_cast<size_t>(i * (pv_trk_phi_vec.size() - 1) / nbins);
-        pv_trk_phi_binedges.push_back(pv_trk_phi_vec[idx]);
-    }
-    pv_trk_phi_binedges.push_back(3.1416f);
+    mytree->Project("h_pv_SumTrackPt", "sqrt(pv_SumTrackPt2)", "xsecweight * PSweight * PU_factor");
+    /* mytree->Project("h_pv_trk_pt", "pv_trk_pt", "xsecweight * PSweight * PU_factor"); */
+    /* mytree->Project("h_pv_trk_eta", "pv_trk_pt", "xsecweight * PSweight * PU_factor"); */
+    /* mytree->Project("h_pv_trk_phi", "pv_trk_phi", "xsecweight * PSweight * PU_factor"); */
+    
+    double p30[31];
+    for (int i=0; i<31; i++) p30[i] = i / 30.0;
+    /* double p100[101]; */
+    /* for (int i=0; i<101; i++) p100[i] = i / 100.0; */
+    
+    double q_pv_SumTrackPt[31];
+    h_pv_SumTrackPt->GetQuantiles(31, q_pv_SumTrackPt, p30);
+    /* double q_pv_trk_pt[101]; */
+    /* h_pv_trk_pt->GetQuantiles(101, q_pv_trk_pt, p100); */
+    /* double q_pv_trk_eta[101]; */
+    /* h_pv_trk_eta->GetQuantiles(101, q_pv_trk_eta, p100); */
+    /* double q_pv_trk_phi[101]; */
+    /* h_pv_trk_phi->GetQuantiles(101, q_pv_trk_phi, p100); */
 
     nlohmann::json splitparams;
-    splitparams["pv_SumTrackPt2_sqrt"] = pv_SumTrackPt_binedges;
-    splitparams["pv_trk_pt"] = pv_trk_pt_binedges;
-    splitparams["pv_trk_eta"] = pv_trk_eta_binedges;
-    splitparams["pv_trk_phi"] = pv_trk_phi_binedges;
+    splitparams["pv_SumTrackPt2_sqrt"] = std::vector<double>(q_pv_SumTrackPt, q_pv_SumTrackPt + 31);
+    /* splitparams["pv_trk_pt"] = std::vector<double>(q_pv_trk_pt, q_pv_trk_pt + 101); */
+    /* splitparams["pv_trk_eta"] = std::vector<double>(q_pv_trk_eta, q_pv_trk_eta + 101); */
+    /* splitparams["pv_trk_phi"] = std::vector<double>(q_pv_trk_phi, q_pv_trk_phi + 101); */
 
     std::ofstream outfile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+"/binning.json");
     outfile << splitparams.dump(4);

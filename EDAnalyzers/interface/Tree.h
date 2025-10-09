@@ -31,27 +31,6 @@ class ResTree
 
         bool trig_ZeroBias_pass;
 
-        bool trig_PFJet15_pass;
-        bool trig_PFJet25_pass;
-        bool trig_PFJet40_pass;
-        bool trig_PFJet60_pass;
-        bool trig_PFJet80_pass;
-        bool trig_PFJet110_pass;
-        bool trig_PFJet140_pass;
-        bool trig_PFJet200_pass;
-        bool trig_PFJet260_pass;
-        bool trig_PFJet320_pass;
-        bool trig_PFJet400_pass;
-        bool trig_PFJet450_pass;
-        bool trig_PFJet500_pass;
-        bool trig_PFJet550_pass;
-        
-        bool trig_AK4PFJet30_pass;
-        bool trig_AK4PFJet50_pass;
-        bool trig_AK4PFJet80_pass;
-        bool trig_AK4PFJet100_pass;
-        bool trig_AK4PFJet120_pass;
-
         bool trig_PFHT180_pass;
         bool trig_PFHT250_pass;
         bool trig_PFHT370_pass;
