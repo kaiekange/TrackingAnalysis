@@ -21,7 +21,7 @@ void drawdraw(TString era, TChain *mytree, TString myvar, TString xtitle, TStrin
 
     TH1F *h1 = new TH1F("h1", "", nbins, varmin, varmax);
     /* mytree->Project("h1", myvar); */
-    mytree->Project("h1", myvar, "xsecweight * PSweight * PU_factor");
+    mytree->Project("h1", myvar, "xsecweight * PSweight * PU_factor * cell_mask");
     h1->SetLineColor(kBlack);
     h1->SetMarkerColor(kBlack);
     h1->SetMarkerSize(0.7);
@@ -53,10 +53,10 @@ int draw_fig(TString era="preEE"){
     if(gSystem->AccessPathName(figdir)) gSystem->MakeDirectory(figdir);
 
     TChain *mytree = new TChain("mytree");
-    mytree->Add("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_corr.root");
+    mytree->Add("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_corrmask.root");
     /* mytree->Add("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_"+era+"_corr.root"); */
 
-    drawdraw(era, mytree, "sqrt(pv_SumTrackPt2)", "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "weighted # events", 500, 0, 500, figdir+"mc2_sumPt2.png");
+    drawdraw(era, mytree, "sqrt(pv_SumTrackPt2)", "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "weighted # events", 500, 0, 500, figdir+"mc3_sumPt2.png");
     /* drawdraw(era, mytree, "sqrt(pv_SumTrackPt2)", "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "# events", 500, 0, 500, figdir+"data_sumPt2.png"); */
 
     return 0;

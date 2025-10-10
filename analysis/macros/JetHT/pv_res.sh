@@ -10,4 +10,4 @@ era=${eras[$iera]}
     source /cvmfs/cms.cern.ch/cmsset_default.sh
     cd /user/kakang/IPres/CMSSW_14_0_10/src
     cmssw-el8 -- "cmsenv; cd TrackingAnalysis/analysis/macros/JetHT; root -l -b -q \"pv_res.cc(${iera},${process})\""
-} &> "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/logs/JetHT/pv_res_${era}/PFHT/run_${process}.log"
+} &> "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/logs/JetHT/pv_res_${era}/run_${process}.log"

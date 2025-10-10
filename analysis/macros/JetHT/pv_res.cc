@@ -14,6 +14,8 @@ const TString datatype_text = "High-q^{2} multi-jet events";
 
 int pv_res(int iera, int idx) {
 
+    ROOT::EnableImplicitMT();
+
     TString eras[] = {"preEE", "postEE"};
 
     TString era = eras[iera];
@@ -25,7 +27,7 @@ int pv_res(int iera, int idx) {
     TFile *mcfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_corr.root");
     TTree *mctree = (TTree*)mcfile->Get("mytree");
 
-    std::ifstream infile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+"/binning.json");
+    std::ifstream infile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+"/binning_pv_res.json");
     nlohmann::json binning;
     infile >> binning;
 
@@ -79,19 +81,19 @@ int pv_res(int iera, int idx) {
     datatree->Project("h_data_pull_y", "(pv_y_p1 - pv_y_p2)/sqrt(pow(pv_yError_p1,2)+pow(pv_yError_p2,2))", ptcut+ynull_cut);
     datatree->Project("h_data_pull_z", "(pv_z_p1 - pv_z_p2)/sqrt(pow(pv_zError_p1,2)+pow(pv_zError_p2,2))", ptcut+znull_cut);
 
-    TH1F *h_mc_diff_x = new TH1F("h_mc_diff_x", ptcut_title+";(#it{x}_{1}-#it{x}_{2})/#sqrt{2} [#mum];# PV", 50, diff_x_mean-8*diff_x_stddev, diff_x_mean+8*diff_x_stddev);
-    TH1F *h_mc_diff_y = new TH1F("h_mc_diff_y", ptcut_title+";(#it{y}_{1}-#it{y}_{2})/#sqrt{2} [#mum];# PV", 50, diff_y_mean-8*diff_y_stddev, diff_y_mean+8*diff_y_stddev);
-    TH1F *h_mc_diff_z = new TH1F("h_mc_diff_z", ptcut_title+";(#it{z}_{1}-#it{z}_{2})/#sqrt{2} [mm];# PV", 50, diff_z_mean-8*diff_z_stddev, diff_z_mean+8*diff_z_stddev);
-    TH1F *h_mc_pull_x = new TH1F("h_mc_pull_x", ptcut_title+";(#it{x}_{1}-#it{x}_{2})/#sqrt{#Delta#it{x}_{1}^{2}+#Delta#it{x}_{2}^{2}};# PV", 50, pull_x_mean-8*pull_x_stddev, pull_x_mean+8*pull_x_stddev);
-    TH1F *h_mc_pull_y = new TH1F("h_mc_pull_y", ptcut_title+";(#it{y}_{1}-#it{y}_{2})/#sqrt{#Delta#it{y}_{1}^{2}+#Delta#it{y}_{2}^{2}};# PV", 50, pull_y_mean-8*pull_y_stddev, pull_y_mean+8*pull_y_stddev);
-    TH1F *h_mc_pull_z = new TH1F("h_mc_pull_z", ptcut_title+";(#it{z}_{1}-#it{z}_{2})/#sqrt{#Delta#it{z}_{1}^{2}+#Delta#it{z}_{2}^{2}};# PV", 50, pull_z_mean-8*pull_z_stddev, pull_z_mean+8*pull_z_stddev);
+    TH1F *h_mc_diff_x = new TH1F("h_mc_diff_x", ptcut_title+";(#it{x}_{1}-#it{x}_{2})/#sqrt{2} [#mum];# PV", 100, diff_x_mean-8*diff_x_stddev, diff_x_mean+8*diff_x_stddev);
+    TH1F *h_mc_diff_y = new TH1F("h_mc_diff_y", ptcut_title+";(#it{y}_{1}-#it{y}_{2})/#sqrt{2} [#mum];# PV", 100, diff_y_mean-8*diff_y_stddev, diff_y_mean+8*diff_y_stddev);
+    TH1F *h_mc_diff_z = new TH1F("h_mc_diff_z", ptcut_title+";(#it{z}_{1}-#it{z}_{2})/#sqrt{2} [mm];# PV", 100, diff_z_mean-8*diff_z_stddev, diff_z_mean+8*diff_z_stddev);
+    TH1F *h_mc_pull_x = new TH1F("h_mc_pull_x", ptcut_title+";(#it{x}_{1}-#it{x}_{2})/#sqrt{#Delta#it{x}_{1}^{2}+#Delta#it{x}_{2}^{2}};# PV", 100, pull_x_mean-8*pull_x_stddev, pull_x_mean+8*pull_x_stddev);
+    TH1F *h_mc_pull_y = new TH1F("h_mc_pull_y", ptcut_title+";(#it{y}_{1}-#it{y}_{2})/#sqrt{#Delta#it{y}_{1}^{2}+#Delta#it{y}_{2}^{2}};# PV", 100, pull_y_mean-8*pull_y_stddev, pull_y_mean+8*pull_y_stddev);
+    TH1F *h_mc_pull_z = new TH1F("h_mc_pull_z", ptcut_title+";(#it{z}_{1}-#it{z}_{2})/#sqrt{#Delta#it{z}_{1}^{2}+#Delta#it{z}_{2}^{2}};# PV", 100, pull_z_mean-8*pull_z_stddev, pull_z_mean+8*pull_z_stddev);
 
-    mctree->Project("h_mc_diff_x", "(pv_x_p1 - pv_x_p2)/sqrt(2)", TString("xsecweight * PSweight * PU_factor * (") + (ptcut+xnull_cut).GetTitle() + ")");
-    mctree->Project("h_mc_diff_y", "(pv_y_p1 - pv_y_p2)/sqrt(2)", TString("xsecweight * PSweight * PU_factor * (") + (ptcut+ynull_cut).GetTitle() + ")");
-    mctree->Project("h_mc_diff_z", "(pv_z_p1 - pv_z_p2)/sqrt(2)", TString("xsecweight * PSweight * PU_factor * (") + (ptcut+znull_cut).GetTitle() + ")");
-    mctree->Project("h_mc_pull_x", "(pv_x_p1 - pv_x_p2)/sqrt(pow(pv_xError_p1,2)+pow(pv_xError_p2,2))", TString("xsecweight * PSweight * PU_factor * (") + (ptcut+xnull_cut).GetTitle() + ")");
-    mctree->Project("h_mc_pull_y", "(pv_y_p1 - pv_y_p2)/sqrt(pow(pv_yError_p1,2)+pow(pv_yError_p2,2))", TString("xsecweight * PSweight * PU_factor * (") + (ptcut+ynull_cut).GetTitle() + ")");
-    mctree->Project("h_mc_pull_z", "(pv_z_p1 - pv_z_p2)/sqrt(pow(pv_zError_p1,2)+pow(pv_zError_p2,2))", TString("xsecweight * PSweight * PU_factor * (") + (ptcut+znull_cut).GetTitle() + ")");
+    mctree->Project("h_mc_diff_x", "(pv_x_p1 - pv_x_p2)/sqrt(2)", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (ptcut+xnull_cut).GetTitle() + ")");
+    mctree->Project("h_mc_diff_y", "(pv_y_p1 - pv_y_p2)/sqrt(2)", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (ptcut+ynull_cut).GetTitle() + ")");
+    mctree->Project("h_mc_diff_z", "(pv_z_p1 - pv_z_p2)/sqrt(2)", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (ptcut+znull_cut).GetTitle() + ")");
+    mctree->Project("h_mc_pull_x", "(pv_x_p1 - pv_x_p2)/sqrt(pow(pv_xError_p1,2)+pow(pv_xError_p2,2))", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (ptcut+xnull_cut).GetTitle() + ")");
+    mctree->Project("h_mc_pull_y", "(pv_y_p1 - pv_y_p2)/sqrt(pow(pv_yError_p1,2)+pow(pv_yError_p2,2))", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (ptcut+ynull_cut).GetTitle() + ")");
+    mctree->Project("h_mc_pull_z", "(pv_z_p1 - pv_z_p2)/sqrt(pow(pv_zError_p1,2)+pow(pv_zError_p2,2))", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (ptcut+znull_cut).GetTitle() + ")");
 
     auto result_reso_pvx = fit_compare(h_data_diff_x, h_mc_diff_x, era, figdir+Form("pvx_fit/data_pt_%d", idx), figdir+Form("pvx_fit/mc_pt_%d", idx), 0.01);
     auto result_reso_pvy = fit_compare(h_data_diff_y, h_mc_diff_y, era, figdir+Form("pvy_fit/data_pt_%d", idx), figdir+Form("pvy_fit/mc_pt_%d", idx), 0.01);

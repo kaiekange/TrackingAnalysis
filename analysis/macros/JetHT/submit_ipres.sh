@@ -1,5 +1,5 @@
 #!/bin/bash
-IERAS=( 1 )
+IERAS=( 0 )
 # IERAS=( 0 1 )
 ERAS=( "preEE" "postEE" )
 

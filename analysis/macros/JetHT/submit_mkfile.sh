@@ -17,7 +17,7 @@
 # condor_submit mkfile.sub IERA=11 JobName=2022_mc_120to170_preEE_S5M1 NumJobs=30
 # condor_submit mkfile.sub IERA=12 JobName=2022_mc_120to170_preEE_S5M2 NumJobs=30
 # condor_submit mkfile.sub IERA=13 JobName=2022_mc_120to170_preEE_S5M3 NumJobs=30
-condor_submit mkfile.sub IERA=14 JobName=2022_mc_120to170_preEE_S5M4 NumJobs=30
+# condor_submit mkfile.sub IERA=14 JobName=2022_mc_120to170_preEE_S5M4 NumJobs=30
 
 #all done
 # condor_submit mkfile.sub IERA=15 JobName=2022_mc_170to300_preEE_S5M0 NumJobs=20
@@ -87,3 +87,25 @@ condor_submit mkfile.sub IERA=14 JobName=2022_mc_120to170_preEE_S5M4 NumJobs=30
 # condor_submit mkfile.sub IERA=62 JobName=2022_mc_3200_preEE_S5M2 NumJobs=7
 # condor_submit mkfile.sub IERA=63 JobName=2022_mc_3200_preEE_S5M3 NumJobs=7
 # condor_submit mkfile.sub IERA=64 JobName=2022_mc_3200_preEE_S5M4 NumJobs=7
+
+# condor_submit mkfile.sub IERA=65 JobName=2022_mc_50to80_postEE NumJobs=241
+condor_submit mkfile.sub IERA=66 JobName=2022_mc_80to120_postEE NumJobs=387
+condor_submit mkfile.sub IERA=67 JobName=2022_mc_120to170_postEE NumJobs=250
+condor_submit mkfile.sub IERA=68 JobName=2022_mc_170to300_postEE NumJobs=228
+condor_submit mkfile.sub IERA=69 JobName=2022_mc_300to470_postEE NumJobs=463
+condor_submit mkfile.sub IERA=70 JobName=2022_mc_470to600_postEE NumJobs=417
+condor_submit mkfile.sub IERA=71 JobName=2022_mc_600to800_postEE NumJobs=685
+condor_submit mkfile.sub IERA=72 JobName=2022_mc_800to1000_postEE NumJobs=392
+condor_submit mkfile.sub IERA=73 JobName=2022_mc_1000to1400_postEE NumJobs=201
+condor_submit mkfile.sub IERA=74 JobName=2022_mc_1400to1800_postEE NumJobs=114
+condor_submit mkfile.sub IERA=75 JobName=2022_mc_1800to2400_postEE NumJobs=67
+condor_submit mkfile.sub IERA=76 JobName=2022_mc_2400to3200_postEE NumJobs=21
+condor_submit mkfile.sub IERA=77 JobName=2022_mc_3200_postEE NumJobs=13
+
+condor_submit mkfile.sub IERA=78 JobName=2022_data_B NumJobs=233
+condor_submit mkfile.sub IERA=79 JobName=2022_data_C NumJobs=954
+condor_submit mkfile.sub IERA=80 JobName=2022_data_D NumJobs=540
+
+condor_submit mkfile.sub IERA=81 JobName=2022_data_E0 NumJobs=1000
+condor_submit mkfile.sub IERA=82 JobName=2022_data_E1 NumJobs=1000
+condor_submit mkfile.sub IERA=83 JobName=2022_data_E2 NumJobs=187

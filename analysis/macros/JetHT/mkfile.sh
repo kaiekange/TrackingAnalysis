@@ -2,8 +2,6 @@
 
 iera=$1
 process=$(( $2 + 1 ))
-# offset=( 1 1 1 1 1001 2001 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1)
-# process=$(( $2 + ${offset[$iera]} ))
 
 eras=(
     "2022_mc_50to80_preEE/S5M0"
@@ -71,6 +69,28 @@ eras=(
     "2022_mc_3200_preEE/S5M2"
     "2022_mc_3200_preEE/S5M3"
     "2022_mc_3200_preEE/S5M4"
+
+    "2022_mc_50to80_postEE/"
+    "2022_mc_80to120_postEE/"
+    "2022_mc_120to170_postEE/"
+    "2022_mc_170to300_postEE/"
+    "2022_mc_300to470_postEE/"
+    "2022_mc_470to600_postEE/"
+    "2022_mc_600to800_postEE/"
+    "2022_mc_800to1000_postEE/"
+    "2022_mc_1000to1400_postEE/"
+    "2022_mc_1400to1800_postEE/"
+    "2022_mc_1800to2400_postEE/"
+    "2022_mc_2400to3200_postEE/"
+    "2022_mc_3200_postEE/"
+
+    "2022_data_B"
+    "2022_data_C"
+    "2022_data_D"
+
+    "2022_data_E0"
+    "2022_data_E1"
+    "2022_data_E2"
 )
 
 infilepaths=(
@@ -139,6 +159,28 @@ infilepaths=(
     "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20251002/QCD_PT-3200_TuneCP5_13p6TeV_pythia8/Run3Summer22_MINIAODSIM_S5M2/251002_144540/0000"
     "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20251002/QCD_PT-3200_TuneCP5_13p6TeV_pythia8/Run3Summer22_MINIAODSIM_S5M3/251002_144554/0000"
     "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20251002/QCD_PT-3200_TuneCP5_13p6TeV_pythia8/Run3Summer22_MINIAODSIM_S5M4/251002_144609/0000"
+
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/QCD_PT-1000to1400_TuneCP5_13p6TeV_pythia8/Run3Summer22EE_MINIAODSIM/250828_143810/0000"
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/QCD_PT-120to170_TuneCP5_13p6TeV_pythia8/Run3Summer22EE_MINIAODSIM/250828_143726/0000"
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/QCD_PT-1400to1800_TuneCP5_13p6TeV_pythia8/Run3Summer22EE_MINIAODSIM/250828_143819/0000"
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/QCD_PT-170to300_TuneCP5_13p6TeV_pythia8/Run3Summer22EE_MINIAODSIM/250828_143735/0000"
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/QCD_PT-1800to2400_TuneCP5_13p6TeV_pythia8/Run3Summer22EE_MINIAODSIM/250828_143827/0000"
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/QCD_PT-2400to3200_TuneCP5_13p6TeV_pythia8/Run3Summer22EE_MINIAODSIM/250828_143836/0000"
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/QCD_PT-300to470_TuneCP5_13p6TeV_pythia8/Run3Summer22EE_MINIAODSIM/250828_143744/0000"
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/QCD_PT-3200_TuneCP5_13p6TeV_pythia8/Run3Summer22EE_MINIAODSIM/250828_143844/0000"
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/QCD_PT-470to600_TuneCP5_13p6TeV_pythia8/Run3Summer22EE_MINIAODSIM/250828_143752/0000"
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/QCD_PT-50to80_TuneCP5_13p6TeV_pythia8/Run3Summer22EE_MINIAODSIM/250828_143710/0000"
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/QCD_PT-600to800_TuneCP5_13p6TeV_pythia8/Run3Summer22EE_MINIAODSIM/250821_155001/0000"
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/QCD_PT-800to1000_TuneCP5_13p6TeV_pythia8/Run3Summer22EE_MINIAODSIM/250828_143801/0000"
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/QCD_PT-80to120_TuneCP5_13p6TeV_pythia8/Run3Summer22EE_MINIAODSIM/250828_143718/0000"
+
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/JetHT/Run2022B_27Jun2023_v2_MINIAOD/250825_075652/0000"
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/JetMET/Run2022C_27Jun2023_v1_MINIAOD/250825_075701/0000"
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/JetMET/Run2022D_27Jun2023_v2_MINIAOD/250825_075710/0000"
+
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/JetMET/Run2022E_27Jun2023_v1_MINIAOD/250825_080349/0000"
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/JetMET/Run2022E_27Jun2023_v1_MINIAOD/250825_080349/0001"
+    "/pnfs/iihe/cms/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20250819/JetMET/Run2022E_27Jun2023_v1_MINIAOD/250825_080349/0002"
 )
 
 infile="${infilepaths[$iera]}/output_${process}.root"

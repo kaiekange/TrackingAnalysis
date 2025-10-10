@@ -6,6 +6,8 @@
 
 int mkfile( TString infilename, TString outfilename ) {
 
+    ROOT::EnableImplicitMT();
+
     /* gErrorIgnoreLevel = kError; */
     gInterpreter->GenerateDictionary("vector<vector<float>>", "vector");
 
@@ -20,7 +22,7 @@ int mkfile( TString infilename, TString outfilename ) {
         infile->Close();
         return 1;
     }
-    
+
     bool trig_PFHT180_pass; 
     bool trig_PFHT250_pass; 
     bool trig_PFHT370_pass; 
@@ -107,7 +109,7 @@ int mkfile( TString infilename, TString outfilename ) {
 
     TFile *outfile = new TFile(outfilename, "RECREATE");
     TTree *outtree = new TTree("mytree", "");
-  
+
     int ev_run;
     int ev_lumi;
     int ev_nPV;
