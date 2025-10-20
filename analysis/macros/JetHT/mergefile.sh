@@ -12,6 +12,9 @@
 # hadd /pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_D.root /pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/2022_data_D/skimmed_*.root
 # rm -rf /pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/2022_data_D/
 
-# rm -rf /pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_postEE.root
-# hadd /pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_postEE.root /pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/2022_data_E/skimmed_*.root
+# rm -rf /pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_preEE.root
+# hadd /pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_preEE.root /pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/2022_data_B/skimmed_*.root /pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/2022_data_C/skimmed_*.root /pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/2022_data_D/skimmed_*.root
+
+rm -rf /pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_postEE.root
+hadd /pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_postEE.root /pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/2022_data_E0/skimmed_*.root /pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/2022_data_E1/skimmed_*.root /pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/2022_data_E2/skimmed_*.root
 # rm -rf /pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/2022_data_E/

@@ -64,16 +64,16 @@ const double PSweights_preEE[10] = {
 };
 
 const double PSweights_postEE[10] = {
-    8.371926083E+03,
-    3.701355044E+02,
-    1.127954482E+02,
-    2.876832298E+01,
-    7.449626204E+00,
-    1.961165419E+00,
-    2.307090802E-01,
-    3.790584761E-02,
-    3.040074513E-03,
-    3.327949802E-04
+    8.367887020E+03,
+    3.700056908E+02,
+    1.127610026E+02,
+    2.875279127E+01,
+    7.448824704E+00,
+    1.960143771E+00,
+    2.306340269E-01,
+    3.788380970E-02,
+    3.038814991E-03,
+    3.326681393E-04
 };
 
 double selectPSweight(const bool trig_pass[10], const double* myweight) {
@@ -94,7 +94,8 @@ int XsecPSweight(TString era, int iPT, TString PTrange){
 
     ROOT::EnableImplicitMT();
 
-    ROOT::RDataFrame myDF("mytree", "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/2022_mc_"+PTrange+"_"+era+"/S5M*/skimmed_*.root");
+    // ROOT::RDataFrame myDF("mytree", "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/2022_mc_"+PTrange+"_"+era+"/S5M*/skimmed_*.root");
+    ROOT::RDataFrame myDF("mytree", "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/2022_mc_"+PTrange+"_"+era+"/skimmed_*.root");
 
     std::vector<int> nevents;
 

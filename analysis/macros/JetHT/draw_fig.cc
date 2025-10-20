@@ -52,12 +52,13 @@ int draw_fig(TString era="preEE"){
 
     if(gSystem->AccessPathName(figdir)) gSystem->MakeDirectory(figdir);
 
-    TChain *mytree = new TChain("mytree");
-    mytree->Add("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_corrmask.root");
-    /* mytree->Add("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_"+era+"_corr.root"); */
-
-    drawdraw(era, mytree, "sqrt(pv_SumTrackPt2)", "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "weighted # events", 500, 0, 500, figdir+"mc3_sumPt2.png");
-    /* drawdraw(era, mytree, "sqrt(pv_SumTrackPt2)", "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "# events", 500, 0, 500, figdir+"data_sumPt2.png"); */
+    /* TChain *datatree = new TChain("mytree"); */
+    /* datatree->Add("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_"+era+".root"); */
+    /* drawdraw(era, datatree, "sqrt(pv_SumTrackPt2)", "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "# events", 500, 0, 500, figdir+"data_sumPt2.png"); */
+    
+    TChain *mctree = new TChain("mytree");
+    mctree->Add("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_corr.root");
+    drawdraw(era, mctree, "sqrt(pv_SumTrackPt2)", "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "weighted # events", 500, 0, 500, figdir+"mc_sumPt2.png");
 
     return 0;
 }
