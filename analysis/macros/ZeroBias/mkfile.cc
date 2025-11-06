@@ -20,7 +20,7 @@ int mkfile( TString infilename, TString outfilename ) {
         infile->Close();
         return 1;
     }
-    
+
     bool trig_ZeroBias_pass; 
     int myev_run;
     int myev_lumi;
@@ -89,7 +89,7 @@ int mkfile( TString infilename, TString outfilename ) {
 
     TFile *outfile = new TFile(outfilename, "RECREATE");
     TTree *outtree = new TTree("mytree", "");
-  
+
     int ev_run;
     int ev_lumi;
     int ev_nPV;
@@ -155,7 +155,6 @@ int mkfile( TString infilename, TString outfilename ) {
     outtree->Branch("pv_trk_pt", &pv_trk_pt);
     outtree->Branch("pv_trk_eta", &pv_trk_eta);
     outtree->Branch("pv_trk_phi", &pv_trk_phi);
-
 
     int nentries = intree->GetEntries();
     for(int i=0; i<nentries; i++){

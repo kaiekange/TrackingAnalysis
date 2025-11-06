@@ -14,11 +14,13 @@
 #include "../../functions/compare_gr.cc"
 
 const TString datatype_text = "High-q^{2} multi-jet events";
-const int nbins = 500;
+/* const int nbins = 500; */
+const int nbins = 499;
 
 int draw_ip_res(TString era){
 
-    TString figdir = "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/JetHT_"+era+"/ip_res/";
+    /* TString figdir = "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/JetHT_"+era+"/ip_res/"; */
+    TString figdir = "/user/kakang/IPres/CMSSW_14_0_10/src/TrackingAnalysis/analysis/macros/JetHT/figures/JetHT_"+era+"/ip_res/";
 
     setTDRStyle();
     lumi_sqrtS = "13.6 TeV, 2022 " + era;
@@ -90,9 +92,13 @@ int draw_ip_res(TString era){
     float phi[nbins];
     float pt[nbins];
 
-    for(int i=0; i<nbins; i++){
+    /* for(int i=0; i<nbins; i++){ */
+    int i=0;
+    for(int idx=0; idx<500; idx++){
+        if(idx==383) continue;
         nlohmann::json results;
-        std::ifstream infile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+Form("/ip_res/fit_%d.json",i));
+        /* std::ifstream infile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+Form("/ip_res/fit_%d.json",i)); */
+        std::ifstream infile("/user/kakang/IPres/CMSSW_14_0_10/src/TrackingAnalysis/analysis/macros/JetHT/json/JetHT_"+era+Form("/ip_res/fit_%d.json",idx));
         infile >> results;
 
         eta[i] = results["eta"];
@@ -162,6 +168,7 @@ int draw_ip_res(TString era){
         reso_div_d0_phi_ulpt[i] = reso_data_d0_phi_ulpt[i] / reso_mc_d0_phi_ulpt[i];
         reso_div_dz_phi_ulpt[i] = reso_data_dz_phi_ulpt[i] / reso_mc_dz_phi_ulpt[i];
 
+        i++;
     }
 
     TGraph * gr_data_d0_pt_loeta = new TGraph(nbins, pt, reso_data_d0_pt_loeta);

@@ -30,24 +30,24 @@ void ResTree::Init()
     trig_PFHT1050_pass = 0;
     trig_PFHT350_pass = 0;
 
-    mc_pu_intime_NumInt = null;
-    mc_pu_trueNumInt = null;
-    mc_pu_before_npu = null;
-    mc_pu_after_npu = null;
+    /* mc_pu_intime_NumInt = null; */
+    /* mc_pu_trueNumInt = null; */
+    /* mc_pu_before_npu = null; */
+    /* mc_pu_after_npu = null; */
 
-    mc_pu_Npvi = null;
-    mc_pu_Nzpositions.clear();
-    mc_pu_BunchCrossing.clear();
-    for(unsigned int i=0;i<mc_pu_zpositions.size();i++) mc_pu_zpositions[i].clear(); 
-    mc_pu_zpositions.clear();
-    for(unsigned int i=0;i<mc_pu_sumpT_lowpT.size();i++) mc_pu_sumpT_lowpT[i].clear(); 
-    mc_pu_sumpT_lowpT.clear();
-    for(unsigned int i=0;i<mc_pu_sumpT_highpT.size();i++) mc_pu_sumpT_highpT[i].clear(); 
-    mc_pu_sumpT_highpT.clear();
-    for(unsigned int i=0;i<mc_pu_ntrks_lowpT.size();i++) mc_pu_ntrks_lowpT[i].clear(); 
-    mc_pu_ntrks_lowpT.clear();
-    for(unsigned int i=0;i<mc_pu_ntrks_highpT.size();i++) mc_pu_ntrks_highpT[i].clear(); 
-    mc_pu_ntrks_highpT.clear();
+    /* mc_pu_Npvi = null; */
+    /* mc_pu_Nzpositions.clear(); */
+    /* mc_pu_BunchCrossing.clear(); */
+    /* for(unsigned int i=0;i<mc_pu_zpositions.size();i++) mc_pu_zpositions[i].clear(); */ 
+    /* mc_pu_zpositions.clear(); */
+    /* for(unsigned int i=0;i<mc_pu_sumpT_lowpT.size();i++) mc_pu_sumpT_lowpT[i].clear(); */ 
+    /* mc_pu_sumpT_lowpT.clear(); */
+    /* for(unsigned int i=0;i<mc_pu_sumpT_highpT.size();i++) mc_pu_sumpT_highpT[i].clear(); */ 
+    /* mc_pu_sumpT_highpT.clear(); */
+    /* for(unsigned int i=0;i<mc_pu_ntrks_lowpT.size();i++) mc_pu_ntrks_lowpT[i].clear(); */ 
+    /* mc_pu_ntrks_lowpT.clear(); */
+    /* for(unsigned int i=0;i<mc_pu_ntrks_highpT.size();i++) mc_pu_ntrks_highpT[i].clear(); */ 
+    /* mc_pu_ntrks_highpT.clear(); */
 
     bs_type = null;
     bs_x0 = null;
@@ -99,8 +99,8 @@ void ResTree::Init()
         pv_trk_idx[i].clear();
 
         pv_trk_pvN[i].clear();
-        pv_trk_pv1N[i].clear();
-        pv_trk_pv2N[i].clear();
+        /* pv_trk_pv1N[i].clear(); */
+        /* pv_trk_pv2N[i].clear(); */
 
         pv_trk_pvunbiased_IsValid[i].clear();
         pv_trk_pvunbiased_IsFake[i].clear();
@@ -121,43 +121,43 @@ void ResTree::Init()
         pv_trk_dz_pvunbiased[i].clear();
         pv_trk_d0_bs_zpvunbiased[i].clear();
 
-        pv_trk_pvunbiased_IsValid_p1[i].clear();
-        pv_trk_pvunbiased_IsFake_p1[i].clear();
-        pv_trk_pvunbiased_NTracks_p1[i].clear();
-        pv_trk_pvunbiased_SumTrackPt_p1[i].clear();
-        pv_trk_pvunbiased_SumTrackPt2_p1[i].clear();
-        pv_trk_pvunbiased_fracHighPurity_p1[i].clear();
-        pv_trk_pvunbiased_chi2_p1[i].clear();
-        pv_trk_pvunbiased_ndof_p1[i].clear();
-        pv_trk_pvunbiased_x_p1[i].clear();
-        pv_trk_pvunbiased_y_p1[i].clear();
-        pv_trk_pvunbiased_z_p1[i].clear();
-        pv_trk_pvunbiased_xError_p1[i].clear();
-        pv_trk_pvunbiased_yError_p1[i].clear();
-        pv_trk_pvunbiased_zError_p1[i].clear();
+        /* pv_trk_pvunbiased_IsValid_p1[i].clear(); */
+        /* pv_trk_pvunbiased_IsFake_p1[i].clear(); */
+        /* pv_trk_pvunbiased_NTracks_p1[i].clear(); */
+        /* pv_trk_pvunbiased_SumTrackPt_p1[i].clear(); */
+        /* pv_trk_pvunbiased_SumTrackPt2_p1[i].clear(); */
+        /* pv_trk_pvunbiased_fracHighPurity_p1[i].clear(); */
+        /* pv_trk_pvunbiased_chi2_p1[i].clear(); */
+        /* pv_trk_pvunbiased_ndof_p1[i].clear(); */
+        /* pv_trk_pvunbiased_x_p1[i].clear(); */
+        /* pv_trk_pvunbiased_y_p1[i].clear(); */
+        /* pv_trk_pvunbiased_z_p1[i].clear(); */
+        /* pv_trk_pvunbiased_xError_p1[i].clear(); */
+        /* pv_trk_pvunbiased_yError_p1[i].clear(); */
+        /* pv_trk_pvunbiased_zError_p1[i].clear(); */
 
-        pv_trk_d0_pvunbiased_p1[i].clear();
-        pv_trk_dz_pvunbiased_p1[i].clear();
-        pv_trk_d0_bs_zpvunbiased_p1[i].clear();
+        /* pv_trk_d0_pvunbiased_p1[i].clear(); */
+        /* pv_trk_dz_pvunbiased_p1[i].clear(); */
+        /* pv_trk_d0_bs_zpvunbiased_p1[i].clear(); */
 
-        pv_trk_pvunbiased_IsValid_p2[i].clear();
-        pv_trk_pvunbiased_IsFake_p2[i].clear();
-        pv_trk_pvunbiased_NTracks_p2[i].clear();
-        pv_trk_pvunbiased_SumTrackPt_p2[i].clear();
-        pv_trk_pvunbiased_SumTrackPt2_p2[i].clear();
-        pv_trk_pvunbiased_fracHighPurity_p2[i].clear();
-        pv_trk_pvunbiased_chi2_p2[i].clear();
-        pv_trk_pvunbiased_ndof_p2[i].clear();
-        pv_trk_pvunbiased_x_p2[i].clear();
-        pv_trk_pvunbiased_y_p2[i].clear();
-        pv_trk_pvunbiased_z_p2[i].clear();
-        pv_trk_pvunbiased_xError_p2[i].clear();
-        pv_trk_pvunbiased_yError_p2[i].clear();
-        pv_trk_pvunbiased_zError_p2[i].clear();
+        /* pv_trk_pvunbiased_IsValid_p2[i].clear(); */
+        /* pv_trk_pvunbiased_IsFake_p2[i].clear(); */
+        /* pv_trk_pvunbiased_NTracks_p2[i].clear(); */
+        /* pv_trk_pvunbiased_SumTrackPt_p2[i].clear(); */
+        /* pv_trk_pvunbiased_SumTrackPt2_p2[i].clear(); */
+        /* pv_trk_pvunbiased_fracHighPurity_p2[i].clear(); */
+        /* pv_trk_pvunbiased_chi2_p2[i].clear(); */
+        /* pv_trk_pvunbiased_ndof_p2[i].clear(); */
+        /* pv_trk_pvunbiased_x_p2[i].clear(); */
+        /* pv_trk_pvunbiased_y_p2[i].clear(); */
+        /* pv_trk_pvunbiased_z_p2[i].clear(); */
+        /* pv_trk_pvunbiased_xError_p2[i].clear(); */
+        /* pv_trk_pvunbiased_yError_p2[i].clear(); */
+        /* pv_trk_pvunbiased_zError_p2[i].clear(); */
 
-        pv_trk_d0_pvunbiased_p2[i].clear();
-        pv_trk_dz_pvunbiased_p2[i].clear();
-        pv_trk_d0_bs_zpvunbiased_p2[i].clear();
+        /* pv_trk_d0_pvunbiased_p2[i].clear(); */
+        /* pv_trk_dz_pvunbiased_p2[i].clear(); */
+        /* pv_trk_d0_bs_zpvunbiased_p2[i].clear(); */
 
         pv_trk_pt[i].clear();
         pv_trk_px[i].clear();
@@ -167,50 +167,50 @@ void ResTree::Init()
         pv_trk_eta[i].clear();
         pv_trk_phi[i].clear();
 
-        pv_trk_nTrackerLayers[i].clear();
-        pv_trk_nPixelBarrelLayers[i].clear();
-        pv_trk_nPixelEndcapLayers[i].clear();
-        pv_trk_nStripLayers[i].clear();
+        /* pv_trk_nTrackerLayers[i].clear(); */
+        /* pv_trk_nPixelBarrelLayers[i].clear(); */
+        /* pv_trk_nPixelEndcapLayers[i].clear(); */
+        /* pv_trk_nStripLayers[i].clear(); */
 
-        pv_trk_nValid[i].clear();
-        pv_trk_fValid[i].clear();
-        pv_trk_nValidTracker[i].clear();
-        pv_trk_nValidPixelBarrel[i].clear();
-        pv_trk_nValidPixelEndcap[i].clear();
-        pv_trk_nValidStrip[i].clear();
+        /* pv_trk_nValid[i].clear(); */
+        /* pv_trk_fValid[i].clear(); */
+        /* pv_trk_nValidTracker[i].clear(); */
+        /* pv_trk_nValidPixelBarrel[i].clear(); */
+        /* pv_trk_nValidPixelEndcap[i].clear(); */
+        /* pv_trk_nValidStrip[i].clear(); */
 
-        pv_trk_nMissed[i].clear();
-        pv_trk_nMissedOut[i].clear();
-        pv_trk_nMissedIn[i].clear();
-        pv_trk_nMissedTrackerOut[i].clear();
-        pv_trk_nMissedTrackerIn[i].clear();
-        pv_trk_nMissedPixelBarrelOut[i].clear();
-        pv_trk_nMissedPixelBarrelIn[i].clear();
-        pv_trk_nMissedPixelEndcapOut[i].clear();
-        pv_trk_nMissedPixelEndcapIn[i].clear();
+        /* pv_trk_nMissed[i].clear(); */
+        /* pv_trk_nMissedOut[i].clear(); */
+        /* pv_trk_nMissedIn[i].clear(); */
+        /* pv_trk_nMissedTrackerOut[i].clear(); */
+        /* pv_trk_nMissedTrackerIn[i].clear(); */
+        /* pv_trk_nMissedPixelBarrelOut[i].clear(); */
+        /* pv_trk_nMissedPixelBarrelIn[i].clear(); */
+        /* pv_trk_nMissedPixelEndcapOut[i].clear(); */
+        /* pv_trk_nMissedPixelEndcapIn[i].clear(); */
 
-        pv_trk_hasPixelBarrelLayer1[i].clear();
-        pv_trk_hasPixelEndcapLayer1[i].clear();
-        pv_trk_hasPixelBarrelLayer2[i].clear();
-        pv_trk_hasPixelEndcapLayer2[i].clear();
-        pv_trk_hasPixelBarrelLayer3[i].clear();
-        pv_trk_hasPixelEndcapLayer3[i].clear();
-        pv_trk_hasPixelBarrelLayer4[i].clear();
-        pv_trk_hasPixelEndcapLayer4[i].clear();
+        /* pv_trk_hasPixelBarrelLayer1[i].clear(); */
+        /* pv_trk_hasPixelEndcapLayer1[i].clear(); */
+        /* pv_trk_hasPixelBarrelLayer2[i].clear(); */
+        /* pv_trk_hasPixelEndcapLayer2[i].clear(); */
+        /* pv_trk_hasPixelBarrelLayer3[i].clear(); */
+        /* pv_trk_hasPixelEndcapLayer3[i].clear(); */
+        /* pv_trk_hasPixelBarrelLayer4[i].clear(); */
+        /* pv_trk_hasPixelEndcapLayer4[i].clear(); */
 
-        pv_trk_quality[i].clear();
-        pv_trk_normalizedChi2[i].clear();
-        pv_trk_ndof[i].clear();
-        pv_trk_charge[i].clear();
-        pv_trk_qoverp[i].clear();
-        pv_trk_qoverpError[i].clear();
-        pv_trk_theta[i].clear();
-        pv_trk_thetaError[i].clear();
-        pv_trk_lambda[i].clear();
-        pv_trk_lambdaError[i].clear();
-        pv_trk_ptError[i].clear();
-        pv_trk_etaError[i].clear();
-        pv_trk_phiError[i].clear();
+        /* pv_trk_quality[i].clear(); */
+        /* pv_trk_normalizedChi2[i].clear(); */
+        /* pv_trk_ndof[i].clear(); */
+        /* pv_trk_charge[i].clear(); */
+        /* pv_trk_qoverp[i].clear(); */
+        /* pv_trk_qoverpError[i].clear(); */
+        /* pv_trk_theta[i].clear(); */
+        /* pv_trk_thetaError[i].clear(); */
+        /* pv_trk_lambda[i].clear(); */
+        /* pv_trk_lambdaError[i].clear(); */
+        /* pv_trk_ptError[i].clear(); */
+        /* pv_trk_etaError[i].clear(); */
+        /* pv_trk_phiError[i].clear(); */
 
         pv_trk_d0[i].clear();
         pv_trk_dz[i].clear();
@@ -232,8 +232,8 @@ void ResTree::Init()
     pv_trk_idx.clear();
 
     pv_trk_pvN.clear();
-    pv_trk_pv1N.clear();
-    pv_trk_pv2N.clear();
+    /* pv_trk_pv1N.clear(); */
+    /* pv_trk_pv2N.clear(); */
 
     pv_trk_pvunbiased_IsValid.clear();
     pv_trk_pvunbiased_IsFake.clear();
@@ -254,43 +254,43 @@ void ResTree::Init()
     pv_trk_dz_pvunbiased.clear();
     pv_trk_d0_bs_zpvunbiased.clear();
 
-    pv_trk_pvunbiased_IsValid_p1.clear();
-    pv_trk_pvunbiased_IsFake_p1.clear();
-    pv_trk_pvunbiased_NTracks_p1.clear();
-    pv_trk_pvunbiased_SumTrackPt_p1.clear();
-    pv_trk_pvunbiased_SumTrackPt2_p1.clear();
-    pv_trk_pvunbiased_fracHighPurity_p1.clear();
-    pv_trk_pvunbiased_chi2_p1.clear();
-    pv_trk_pvunbiased_ndof_p1.clear();
-    pv_trk_pvunbiased_x_p1.clear();
-    pv_trk_pvunbiased_y_p1.clear();
-    pv_trk_pvunbiased_z_p1.clear();
-    pv_trk_pvunbiased_xError_p1.clear();
-    pv_trk_pvunbiased_yError_p1.clear();
-    pv_trk_pvunbiased_zError_p1.clear();
+    /* pv_trk_pvunbiased_IsValid_p1.clear(); */
+    /* pv_trk_pvunbiased_IsFake_p1.clear(); */
+    /* pv_trk_pvunbiased_NTracks_p1.clear(); */
+    /* pv_trk_pvunbiased_SumTrackPt_p1.clear(); */
+    /* pv_trk_pvunbiased_SumTrackPt2_p1.clear(); */
+    /* pv_trk_pvunbiased_fracHighPurity_p1.clear(); */
+    /* pv_trk_pvunbiased_chi2_p1.clear(); */
+    /* pv_trk_pvunbiased_ndof_p1.clear(); */
+    /* pv_trk_pvunbiased_x_p1.clear(); */
+    /* pv_trk_pvunbiased_y_p1.clear(); */
+    /* pv_trk_pvunbiased_z_p1.clear(); */
+    /* pv_trk_pvunbiased_xError_p1.clear(); */
+    /* pv_trk_pvunbiased_yError_p1.clear(); */
+    /* pv_trk_pvunbiased_zError_p1.clear(); */
 
-    pv_trk_d0_pvunbiased_p1.clear();
-    pv_trk_dz_pvunbiased_p1.clear();
-    pv_trk_d0_bs_zpvunbiased_p1.clear();
+    /* pv_trk_d0_pvunbiased_p1.clear(); */
+    /* pv_trk_dz_pvunbiased_p1.clear(); */
+    /* pv_trk_d0_bs_zpvunbiased_p1.clear(); */
 
-    pv_trk_pvunbiased_IsValid_p2.clear();
-    pv_trk_pvunbiased_IsFake_p2.clear();
-    pv_trk_pvunbiased_NTracks_p2.clear();
-    pv_trk_pvunbiased_SumTrackPt_p2.clear();
-    pv_trk_pvunbiased_SumTrackPt2_p2.clear();
-    pv_trk_pvunbiased_fracHighPurity_p2.clear();
-    pv_trk_pvunbiased_chi2_p2.clear();
-    pv_trk_pvunbiased_ndof_p2.clear();
-    pv_trk_pvunbiased_x_p2.clear();
-    pv_trk_pvunbiased_y_p2.clear();
-    pv_trk_pvunbiased_z_p2.clear();
-    pv_trk_pvunbiased_xError_p2.clear();
-    pv_trk_pvunbiased_yError_p2.clear();
-    pv_trk_pvunbiased_zError_p2.clear();
+    /* pv_trk_pvunbiased_IsValid_p2.clear(); */
+    /* pv_trk_pvunbiased_IsFake_p2.clear(); */
+    /* pv_trk_pvunbiased_NTracks_p2.clear(); */
+    /* pv_trk_pvunbiased_SumTrackPt_p2.clear(); */
+    /* pv_trk_pvunbiased_SumTrackPt2_p2.clear(); */
+    /* pv_trk_pvunbiased_fracHighPurity_p2.clear(); */
+    /* pv_trk_pvunbiased_chi2_p2.clear(); */
+    /* pv_trk_pvunbiased_ndof_p2.clear(); */
+    /* pv_trk_pvunbiased_x_p2.clear(); */
+    /* pv_trk_pvunbiased_y_p2.clear(); */
+    /* pv_trk_pvunbiased_z_p2.clear(); */
+    /* pv_trk_pvunbiased_xError_p2.clear(); */
+    /* pv_trk_pvunbiased_yError_p2.clear(); */
+    /* pv_trk_pvunbiased_zError_p2.clear(); */
 
-    pv_trk_d0_pvunbiased_p2.clear();
-    pv_trk_dz_pvunbiased_p2.clear();
-    pv_trk_d0_bs_zpvunbiased_p2.clear();
+    /* pv_trk_d0_pvunbiased_p2.clear(); */
+    /* pv_trk_dz_pvunbiased_p2.clear(); */
+    /* pv_trk_d0_bs_zpvunbiased_p2.clear(); */
 
     pv_trk_pt.clear();
     pv_trk_px.clear();
@@ -300,50 +300,50 @@ void ResTree::Init()
     pv_trk_eta.clear();
     pv_trk_phi.clear();
 
-    pv_trk_nTrackerLayers.clear();
-    pv_trk_nPixelBarrelLayers.clear();
-    pv_trk_nPixelEndcapLayers.clear();
-    pv_trk_nStripLayers.clear();
+    /* pv_trk_nTrackerLayers.clear(); */
+    /* pv_trk_nPixelBarrelLayers.clear(); */
+    /* pv_trk_nPixelEndcapLayers.clear(); */
+    /* pv_trk_nStripLayers.clear(); */
 
-    pv_trk_nValid.clear();
-    pv_trk_fValid.clear();
-    pv_trk_nValidTracker.clear();
-    pv_trk_nValidPixelBarrel.clear();
-    pv_trk_nValidPixelEndcap.clear();
-    pv_trk_nValidStrip.clear();
+    /* pv_trk_nValid.clear(); */
+    /* pv_trk_fValid.clear(); */
+    /* pv_trk_nValidTracker.clear(); */
+    /* pv_trk_nValidPixelBarrel.clear(); */
+    /* pv_trk_nValidPixelEndcap.clear(); */
+    /* pv_trk_nValidStrip.clear(); */
 
-    pv_trk_nMissed.clear();
-    pv_trk_nMissedOut.clear();
-    pv_trk_nMissedIn.clear();
-    pv_trk_nMissedTrackerOut.clear();
-    pv_trk_nMissedTrackerIn.clear();
-    pv_trk_nMissedPixelBarrelOut.clear();
-    pv_trk_nMissedPixelBarrelIn.clear();
-    pv_trk_nMissedPixelEndcapOut.clear();
-    pv_trk_nMissedPixelEndcapIn.clear();
+    /* pv_trk_nMissed.clear(); */
+    /* pv_trk_nMissedOut.clear(); */
+    /* pv_trk_nMissedIn.clear(); */
+    /* pv_trk_nMissedTrackerOut.clear(); */
+    /* pv_trk_nMissedTrackerIn.clear(); */
+    /* pv_trk_nMissedPixelBarrelOut.clear(); */
+    /* pv_trk_nMissedPixelBarrelIn.clear(); */
+    /* pv_trk_nMissedPixelEndcapOut.clear(); */
+    /* pv_trk_nMissedPixelEndcapIn.clear(); */
 
-    pv_trk_hasPixelBarrelLayer1.clear();
-    pv_trk_hasPixelEndcapLayer1.clear();
-    pv_trk_hasPixelBarrelLayer2.clear();
-    pv_trk_hasPixelEndcapLayer2.clear();
-    pv_trk_hasPixelBarrelLayer3.clear();
-    pv_trk_hasPixelEndcapLayer3.clear();
-    pv_trk_hasPixelBarrelLayer4.clear();
-    pv_trk_hasPixelEndcapLayer4.clear();
+    /* pv_trk_hasPixelBarrelLayer1.clear(); */
+    /* pv_trk_hasPixelEndcapLayer1.clear(); */
+    /* pv_trk_hasPixelBarrelLayer2.clear(); */
+    /* pv_trk_hasPixelEndcapLayer2.clear(); */
+    /* pv_trk_hasPixelBarrelLayer3.clear(); */
+    /* pv_trk_hasPixelEndcapLayer3.clear(); */
+    /* pv_trk_hasPixelBarrelLayer4.clear(); */
+    /* pv_trk_hasPixelEndcapLayer4.clear(); */
 
-    pv_trk_quality.clear();
-    pv_trk_normalizedChi2.clear();
-    pv_trk_ndof.clear();
-    pv_trk_charge.clear();
-    pv_trk_qoverp.clear();
-    pv_trk_qoverpError.clear();
-    pv_trk_theta.clear();
-    pv_trk_thetaError.clear();
-    pv_trk_lambda.clear();
-    pv_trk_lambdaError.clear();
-    pv_trk_ptError.clear();
-    pv_trk_etaError.clear();
-    pv_trk_phiError.clear();
+    /* pv_trk_quality.clear(); */
+    /* pv_trk_normalizedChi2.clear(); */
+    /* pv_trk_ndof.clear(); */
+    /* pv_trk_charge.clear(); */
+    /* pv_trk_qoverp.clear(); */
+    /* pv_trk_qoverpError.clear(); */
+    /* pv_trk_theta.clear(); */
+    /* pv_trk_thetaError.clear(); */
+    /* pv_trk_lambda.clear(); */
+    /* pv_trk_lambdaError.clear(); */
+    /* pv_trk_ptError.clear(); */
+    /* pv_trk_etaError.clear(); */
+    /* pv_trk_phiError.clear(); */
 
     pv_trk_d0.clear();
     pv_trk_dz.clear();
@@ -362,8 +362,8 @@ void ResTree::Init()
     pv_SumTrackPt_p1.clear();
     pv_SumTrackPt2_p1.clear();
     pv_fracHighPurity_p1.clear();
-    for(unsigned int i=0;i<pv_vtxTkIdx_p1.size();i++) pv_vtxTkIdx_p1[i].clear();
-    pv_vtxTkIdx_p1.clear();
+    /* for(unsigned int i=0;i<pv_vtxTkIdx_p1.size();i++) pv_vtxTkIdx_p1[i].clear(); */
+    /* pv_vtxTkIdx_p1.clear(); */
     pv_chi2_p1.clear();
     pv_ndof_p1.clear();
     pv_x_p1.clear();
@@ -379,8 +379,8 @@ void ResTree::Init()
     pv_SumTrackPt_p2.clear();
     pv_SumTrackPt2_p2.clear();
     pv_fracHighPurity_p2.clear();
-    for(unsigned int i=0;i<pv_vtxTkIdx_p2.size();i++) pv_vtxTkIdx_p2[i].clear();
-    pv_vtxTkIdx_p2.clear();
+    /* for(unsigned int i=0;i<pv_vtxTkIdx_p2.size();i++) pv_vtxTkIdx_p2[i].clear(); */
+    /* pv_vtxTkIdx_p2.clear(); */
     pv_chi2_p2.clear();
     pv_ndof_p2.clear();
     pv_x_p2.clear();
@@ -390,11 +390,11 @@ void ResTree::Init()
     pv_yError_p2.clear();
     pv_zError_p2.clear();
 
-    pfjet_n = null;
-    pfjet_pt.clear();
-    pfjet_eta.clear();
-    pfjet_phi.clear();
-    pfjet_E.clear();
+    /* pfjet_n = null; */
+    /* pfjet_pt.clear(); */
+    /* pfjet_eta.clear(); */
+    /* pfjet_phi.clear(); */
+    /* pfjet_E.clear(); */
 
     // Tracks from PFJets
 
@@ -501,22 +501,22 @@ void ResTree::CreateBranches(int buff = 32000, bool runOnData = false)
     tree->Branch("trig_PFHT1050_pass", &trig_PFHT1050_pass, "trig_PFHT1050_pass/O", buff);
     tree->Branch("trig_PFHT350_pass", &trig_PFHT350_pass, "trig_PFHT350_pass/O", buff);
 
-    if( !runOnData ) 
-    {
-        tree->Branch("mc_pu_intime_NumInt", &mc_pu_intime_NumInt, "mc_pu_intime_NumInt/I", buff);
-        tree->Branch("mc_pu_trueNumInt", &mc_pu_trueNumInt, "mc_pu_trueNumInt/I", buff);
-        tree->Branch("mc_pu_before_npu", &mc_pu_before_npu, "mc_pu_before_npu/I", buff);
-        tree->Branch("mc_pu_after_npu", &mc_pu_after_npu, "mc_pu_after_npu/I", buff);
+    /* if( !runOnData ) */ 
+    /* { */
+    /*     tree->Branch("mc_pu_intime_NumInt", &mc_pu_intime_NumInt, "mc_pu_intime_NumInt/I", buff); */
+    /*     tree->Branch("mc_pu_trueNumInt", &mc_pu_trueNumInt, "mc_pu_trueNumInt/I", buff); */
+    /*     tree->Branch("mc_pu_before_npu", &mc_pu_before_npu, "mc_pu_before_npu/I", buff); */
+    /*     tree->Branch("mc_pu_after_npu", &mc_pu_after_npu, "mc_pu_after_npu/I", buff); */
 
-        tree->Branch("mc_pu_Npvi", &mc_pu_Npvi, "mc_pu_Npvi/I", buff);
-        tree->Branch("mc_pu_Nzpositions", "std::vector<int>", &mc_pu_Nzpositions, buff);
-        tree->Branch("mc_pu_BunchCrossing", "std::vector<int>", &mc_pu_BunchCrossing, buff);
-        tree->Branch("mc_pu_zpositions", "std::vector<std::vector<float> >", &mc_pu_zpositions, buff);
-        tree->Branch("mc_pu_sumpT_lowpT", "std::vector<std::vector<float> >", &mc_pu_sumpT_lowpT, buff);
-        tree->Branch("mc_pu_sumpT_highpT", "std::vector<std::vector<float> >", &mc_pu_sumpT_highpT, buff);
-        tree->Branch("mc_pu_ntrks_lowpT", "std::vector<std::vector<int> >", &mc_pu_ntrks_lowpT, buff);
-        tree->Branch("mc_pu_ntrks_highpT", "std::vector<std::vector<int> >", &mc_pu_ntrks_highpT, buff);
-    }   
+    /*     tree->Branch("mc_pu_Npvi", &mc_pu_Npvi, "mc_pu_Npvi/I", buff); */
+    /*     tree->Branch("mc_pu_Nzpositions", "std::vector<int>", &mc_pu_Nzpositions, buff); */
+    /*     tree->Branch("mc_pu_BunchCrossing", "std::vector<int>", &mc_pu_BunchCrossing, buff); */
+    /*     tree->Branch("mc_pu_zpositions", "std::vector<std::vector<float> >", &mc_pu_zpositions, buff); */
+    /*     tree->Branch("mc_pu_sumpT_lowpT", "std::vector<std::vector<float> >", &mc_pu_sumpT_lowpT, buff); */
+    /*     tree->Branch("mc_pu_sumpT_highpT", "std::vector<std::vector<float> >", &mc_pu_sumpT_highpT, buff); */
+    /*     tree->Branch("mc_pu_ntrks_lowpT", "std::vector<std::vector<int> >", &mc_pu_ntrks_lowpT, buff); */
+    /*     tree->Branch("mc_pu_ntrks_highpT", "std::vector<std::vector<int> >", &mc_pu_ntrks_highpT, buff); */
+    /* } */   
 
     tree->Branch("bs_type", &bs_type, "bs_type/I", buff);
     tree->Branch("bs_x0", &bs_x0, "bs_x0/F", buff);
@@ -564,8 +564,8 @@ void ResTree::CreateBranches(int buff = 32000, bool runOnData = false)
     tree->Branch("pv_trk_idx", "std::vector<std::vector<int> >", &pv_trk_idx, buff);
 
     tree->Branch("pv_trk_pvN", "std::vector<std::vector<int> >", &pv_trk_pvN, buff);
-    tree->Branch("pv_trk_pv1N", "std::vector<std::vector<int> >", &pv_trk_pv1N, buff);
-    tree->Branch("pv_trk_pv2N", "std::vector<std::vector<int> >", &pv_trk_pv2N, buff);
+    /* tree->Branch("pv_trk_pv1N", "std::vector<std::vector<int> >", &pv_trk_pv1N, buff); */
+    /* tree->Branch("pv_trk_pv2N", "std::vector<std::vector<int> >", &pv_trk_pv2N, buff); */
 
     tree->Branch("pv_trk_pvunbiased_IsValid", "std::vector<std::vector<bool> >", &pv_trk_pvunbiased_IsValid, buff);
     tree->Branch("pv_trk_pvunbiased_IsFake", "std::vector<std::vector<bool> >", &pv_trk_pvunbiased_IsFake, buff);
@@ -586,43 +586,43 @@ void ResTree::CreateBranches(int buff = 32000, bool runOnData = false)
     tree->Branch("pv_trk_dz_pvunbiased", "std::vector<std::vector<float> >", &pv_trk_dz_pvunbiased, buff);
     tree->Branch("pv_trk_d0_bs_zpvunbiased", "std::vector<std::vector<float> >", &pv_trk_d0_bs_zpvunbiased, buff);
 
-    tree->Branch("pv_trk_pvunbiased_IsValid_p1", "std::vector<std::vector<bool> >", &pv_trk_pvunbiased_IsValid_p1, buff);
-    tree->Branch("pv_trk_pvunbiased_IsFake_p1", "std::vector<std::vector<bool> >", &pv_trk_pvunbiased_IsFake_p1, buff);
-    tree->Branch("pv_trk_pvunbiased_NTracks_p1", "std::vector<std::vector<int> >", &pv_trk_pvunbiased_NTracks_p1, buff);
-    tree->Branch("pv_trk_pvunbiased_SumTrackPt_p1", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_SumTrackPt_p1, buff);
-    tree->Branch("pv_trk_pvunbiased_SumTrackPt2_p1", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_SumTrackPt2_p1, buff);
-    tree->Branch("pv_trk_pvunbiased_fracHighPurity_p1", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_fracHighPurity_p1, buff);
-    tree->Branch("pv_trk_pvunbiased_chi2_p1", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_chi2_p1, buff);
-    tree->Branch("pv_trk_pvunbiased_ndof_p1", "std::vector<std::vector<int> >", &pv_trk_pvunbiased_ndof_p1, buff);
-    tree->Branch("pv_trk_pvunbiased_x_p1", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_x_p1, buff);
-    tree->Branch("pv_trk_pvunbiased_y_p1", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_y_p1, buff);
-    tree->Branch("pv_trk_pvunbiased_z_p1", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_z_p1, buff);
-    tree->Branch("pv_trk_pvunbiased_xError_p1", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_xError_p1, buff);
-    tree->Branch("pv_trk_pvunbiased_yError_p1", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_yError_p1, buff);
-    tree->Branch("pv_trk_pvunbiased_zError_p1", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_zError_p1, buff);
+    /* tree->Branch("pv_trk_pvunbiased_IsValid_p1", "std::vector<std::vector<bool> >", &pv_trk_pvunbiased_IsValid_p1, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_IsFake_p1", "std::vector<std::vector<bool> >", &pv_trk_pvunbiased_IsFake_p1, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_NTracks_p1", "std::vector<std::vector<int> >", &pv_trk_pvunbiased_NTracks_p1, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_SumTrackPt_p1", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_SumTrackPt_p1, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_SumTrackPt2_p1", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_SumTrackPt2_p1, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_fracHighPurity_p1", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_fracHighPurity_p1, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_chi2_p1", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_chi2_p1, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_ndof_p1", "std::vector<std::vector<int> >", &pv_trk_pvunbiased_ndof_p1, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_x_p1", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_x_p1, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_y_p1", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_y_p1, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_z_p1", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_z_p1, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_xError_p1", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_xError_p1, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_yError_p1", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_yError_p1, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_zError_p1", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_zError_p1, buff); */
 
-    tree->Branch("pv_trk_d0_pvunbiased_p1", "std::vector<std::vector<float> >", &pv_trk_d0_pvunbiased_p1, buff);
-    tree->Branch("pv_trk_dz_pvunbiased_p1", "std::vector<std::vector<float> >", &pv_trk_dz_pvunbiased_p1, buff);
-    tree->Branch("pv_trk_d0_bs_zpvunbiased_p1", "std::vector<std::vector<float> >", &pv_trk_d0_bs_zpvunbiased_p1, buff);
+    /* tree->Branch("pv_trk_d0_pvunbiased_p1", "std::vector<std::vector<float> >", &pv_trk_d0_pvunbiased_p1, buff); */
+    /* tree->Branch("pv_trk_dz_pvunbiased_p1", "std::vector<std::vector<float> >", &pv_trk_dz_pvunbiased_p1, buff); */
+    /* tree->Branch("pv_trk_d0_bs_zpvunbiased_p1", "std::vector<std::vector<float> >", &pv_trk_d0_bs_zpvunbiased_p1, buff); */
 
-    tree->Branch("pv_trk_pvunbiased_IsValid_p2", "std::vector<std::vector<bool> >", &pv_trk_pvunbiased_IsValid_p2, buff);
-    tree->Branch("pv_trk_pvunbiased_IsFake_p2", "std::vector<std::vector<bool> >", &pv_trk_pvunbiased_IsFake_p2, buff);
-    tree->Branch("pv_trk_pvunbiased_NTracks_p2", "std::vector<std::vector<int> >", &pv_trk_pvunbiased_NTracks_p2, buff);
-    tree->Branch("pv_trk_pvunbiased_SumTrackPt_p2", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_SumTrackPt_p2, buff);
-    tree->Branch("pv_trk_pvunbiased_SumTrackPt2_p2", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_SumTrackPt2_p2, buff);
-    tree->Branch("pv_trk_pvunbiased_fracHighPurity_p2", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_fracHighPurity_p2, buff);
-    tree->Branch("pv_trk_pvunbiased_chi2_p2", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_chi2_p2, buff);
-    tree->Branch("pv_trk_pvunbiased_ndof_p2", "std::vector<std::vector<int> >", &pv_trk_pvunbiased_ndof_p2, buff);
-    tree->Branch("pv_trk_pvunbiased_x_p2", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_x_p2, buff);
-    tree->Branch("pv_trk_pvunbiased_y_p2", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_y_p2, buff);
-    tree->Branch("pv_trk_pvunbiased_z_p2", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_z_p2, buff);
-    tree->Branch("pv_trk_pvunbiased_xError_p2", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_xError_p2, buff);
-    tree->Branch("pv_trk_pvunbiased_yError_p2", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_yError_p2, buff);
-    tree->Branch("pv_trk_pvunbiased_zError_p2", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_zError_p2, buff);
+    /* tree->Branch("pv_trk_pvunbiased_IsValid_p2", "std::vector<std::vector<bool> >", &pv_trk_pvunbiased_IsValid_p2, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_IsFake_p2", "std::vector<std::vector<bool> >", &pv_trk_pvunbiased_IsFake_p2, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_NTracks_p2", "std::vector<std::vector<int> >", &pv_trk_pvunbiased_NTracks_p2, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_SumTrackPt_p2", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_SumTrackPt_p2, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_SumTrackPt2_p2", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_SumTrackPt2_p2, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_fracHighPurity_p2", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_fracHighPurity_p2, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_chi2_p2", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_chi2_p2, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_ndof_p2", "std::vector<std::vector<int> >", &pv_trk_pvunbiased_ndof_p2, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_x_p2", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_x_p2, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_y_p2", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_y_p2, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_z_p2", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_z_p2, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_xError_p2", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_xError_p2, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_yError_p2", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_yError_p2, buff); */
+    /* tree->Branch("pv_trk_pvunbiased_zError_p2", "std::vector<std::vector<float> >", &pv_trk_pvunbiased_zError_p2, buff); */
 
-    tree->Branch("pv_trk_d0_pvunbiased_p2", "std::vector<std::vector<float> >", &pv_trk_d0_pvunbiased_p2, buff);
-    tree->Branch("pv_trk_dz_pvunbiased_p2", "std::vector<std::vector<float> >", &pv_trk_dz_pvunbiased_p2, buff);
-    tree->Branch("pv_trk_d0_bs_zpvunbiased_p2", "std::vector<std::vector<float> >", &pv_trk_d0_bs_zpvunbiased_p2, buff);
+    /* tree->Branch("pv_trk_d0_pvunbiased_p2", "std::vector<std::vector<float> >", &pv_trk_d0_pvunbiased_p2, buff); */
+    /* tree->Branch("pv_trk_dz_pvunbiased_p2", "std::vector<std::vector<float> >", &pv_trk_dz_pvunbiased_p2, buff); */
+    /* tree->Branch("pv_trk_d0_bs_zpvunbiased_p2", "std::vector<std::vector<float> >", &pv_trk_d0_bs_zpvunbiased_p2, buff); */
 
     tree->Branch("pv_trk_pt", "std::vector<std::vector<float> >", &pv_trk_pt, buff);
     tree->Branch("pv_trk_px", "std::vector<std::vector<float> >", &pv_trk_px, buff);
@@ -632,50 +632,50 @@ void ResTree::CreateBranches(int buff = 32000, bool runOnData = false)
     tree->Branch("pv_trk_eta", "std::vector<std::vector<float> >", &pv_trk_eta, buff);
     tree->Branch("pv_trk_phi", "std::vector<std::vector<float> >", &pv_trk_phi, buff);
 
-    tree->Branch("pv_trk_nTrackerLayers", "std::vector<std::vector<int> >", &pv_trk_nTrackerLayers, buff);
-    tree->Branch("pv_trk_nPixelBarrelLayers", "std::vector<std::vector<int> >", &pv_trk_nPixelBarrelLayers, buff);
-    tree->Branch("pv_trk_nPixelEndcapLayers", "std::vector<std::vector<int> >", &pv_trk_nPixelEndcapLayers, buff);
-    tree->Branch("pv_trk_nStripLayers", "std::vector<std::vector<int> >", &pv_trk_nStripLayers, buff);
+    /* tree->Branch("pv_trk_nTrackerLayers", "std::vector<std::vector<int> >", &pv_trk_nTrackerLayers, buff); */
+    /* tree->Branch("pv_trk_nPixelBarrelLayers", "std::vector<std::vector<int> >", &pv_trk_nPixelBarrelLayers, buff); */
+    /* tree->Branch("pv_trk_nPixelEndcapLayers", "std::vector<std::vector<int> >", &pv_trk_nPixelEndcapLayers, buff); */
+    /* tree->Branch("pv_trk_nStripLayers", "std::vector<std::vector<int> >", &pv_trk_nStripLayers, buff); */
 
-    tree->Branch("pv_trk_nValid", "std::vector<std::vector<int> >", &pv_trk_nValid, buff);
-    tree->Branch("pv_trk_fValid", "std::vector<std::vector<float> >", &pv_trk_fValid, buff);
-    tree->Branch("pv_trk_nValidTracker", "std::vector<std::vector<int> >", &pv_trk_nValidTracker, buff);
-    tree->Branch("pv_trk_nValidPixelBarrel", "std::vector<std::vector<int> >", &pv_trk_nValidPixelBarrel, buff);
-    tree->Branch("pv_trk_nValidPixelEndcap", "std::vector<std::vector<int> >", &pv_trk_nValidPixelEndcap, buff);
-    tree->Branch("pv_trk_nValidStrip", "std::vector<std::vector<int> >", &pv_trk_nValidStrip, buff);
+    /* tree->Branch("pv_trk_nValid", "std::vector<std::vector<int> >", &pv_trk_nValid, buff); */
+    /* tree->Branch("pv_trk_fValid", "std::vector<std::vector<float> >", &pv_trk_fValid, buff); */
+    /* tree->Branch("pv_trk_nValidTracker", "std::vector<std::vector<int> >", &pv_trk_nValidTracker, buff); */
+    /* tree->Branch("pv_trk_nValidPixelBarrel", "std::vector<std::vector<int> >", &pv_trk_nValidPixelBarrel, buff); */
+    /* tree->Branch("pv_trk_nValidPixelEndcap", "std::vector<std::vector<int> >", &pv_trk_nValidPixelEndcap, buff); */
+    /* tree->Branch("pv_trk_nValidStrip", "std::vector<std::vector<int> >", &pv_trk_nValidStrip, buff); */
 
-    tree->Branch("pv_trk_nMissed", "std::vector<std::vector<int> >", &pv_trk_nMissed, buff);
-    tree->Branch("pv_trk_nMissedOut", "std::vector<std::vector<int> >", &pv_trk_nMissedOut, buff);
-    tree->Branch("pv_trk_nMissedIn", "std::vector<std::vector<int> >", &pv_trk_nMissedIn, buff);
-    tree->Branch("pv_trk_nMissedTrackerOut", "std::vector<std::vector<int> >", &pv_trk_nMissedTrackerOut, buff);
-    tree->Branch("pv_trk_nMissedTrackerIn", "std::vector<std::vector<int> >", &pv_trk_nMissedTrackerIn, buff);
-    tree->Branch("pv_trk_nMissedPixelBarrelOut", "std::vector<std::vector<int> >", &pv_trk_nMissedPixelBarrelOut, buff);
-    tree->Branch("pv_trk_nMissedPixelBarrelIn", "std::vector<std::vector<int> >", &pv_trk_nMissedPixelBarrelIn, buff);
-    tree->Branch("pv_trk_nMissedPixelEndcapOut", "std::vector<std::vector<int> >", &pv_trk_nMissedPixelEndcapOut, buff);
-    tree->Branch("pv_trk_nMissedPixelEndcapIn", "std::vector<std::vector<int> >", &pv_trk_nMissedPixelEndcapIn, buff);
+    /* tree->Branch("pv_trk_nMissed", "std::vector<std::vector<int> >", &pv_trk_nMissed, buff); */
+    /* tree->Branch("pv_trk_nMissedOut", "std::vector<std::vector<int> >", &pv_trk_nMissedOut, buff); */
+    /* tree->Branch("pv_trk_nMissedIn", "std::vector<std::vector<int> >", &pv_trk_nMissedIn, buff); */
+    /* tree->Branch("pv_trk_nMissedTrackerOut", "std::vector<std::vector<int> >", &pv_trk_nMissedTrackerOut, buff); */
+    /* tree->Branch("pv_trk_nMissedTrackerIn", "std::vector<std::vector<int> >", &pv_trk_nMissedTrackerIn, buff); */
+    /* tree->Branch("pv_trk_nMissedPixelBarrelOut", "std::vector<std::vector<int> >", &pv_trk_nMissedPixelBarrelOut, buff); */
+    /* tree->Branch("pv_trk_nMissedPixelBarrelIn", "std::vector<std::vector<int> >", &pv_trk_nMissedPixelBarrelIn, buff); */
+    /* tree->Branch("pv_trk_nMissedPixelEndcapOut", "std::vector<std::vector<int> >", &pv_trk_nMissedPixelEndcapOut, buff); */
+    /* tree->Branch("pv_trk_nMissedPixelEndcapIn", "std::vector<std::vector<int> >", &pv_trk_nMissedPixelEndcapIn, buff); */
 
-    tree->Branch("pv_trk_hasPixelBarrelLayer1", "std::vector<std::vector<bool> >", &pv_trk_hasPixelBarrelLayer1, buff);
-    tree->Branch("pv_trk_hasPixelEndcapLayer1", "std::vector<std::vector<bool> >", &pv_trk_hasPixelEndcapLayer1, buff);
-    tree->Branch("pv_trk_hasPixelBarrelLayer2", "std::vector<std::vector<bool> >", &pv_trk_hasPixelBarrelLayer2, buff);
-    tree->Branch("pv_trk_hasPixelEndcapLayer2", "std::vector<std::vector<bool> >", &pv_trk_hasPixelEndcapLayer2, buff);
-    tree->Branch("pv_trk_hasPixelBarrelLayer3", "std::vector<std::vector<bool> >", &pv_trk_hasPixelBarrelLayer3, buff);
-    tree->Branch("pv_trk_hasPixelEndcapLayer3", "std::vector<std::vector<bool> >", &pv_trk_hasPixelEndcapLayer3, buff);
-    tree->Branch("pv_trk_hasPixelBarrelLayer4", "std::vector<std::vector<bool> >", &pv_trk_hasPixelBarrelLayer4, buff);
-    tree->Branch("pv_trk_hasPixelEndcapLayer4", "std::vector<std::vector<bool> >", &pv_trk_hasPixelEndcapLayer4, buff);
+    /* tree->Branch("pv_trk_hasPixelBarrelLayer1", "std::vector<std::vector<bool> >", &pv_trk_hasPixelBarrelLayer1, buff); */
+    /* tree->Branch("pv_trk_hasPixelEndcapLayer1", "std::vector<std::vector<bool> >", &pv_trk_hasPixelEndcapLayer1, buff); */
+    /* tree->Branch("pv_trk_hasPixelBarrelLayer2", "std::vector<std::vector<bool> >", &pv_trk_hasPixelBarrelLayer2, buff); */
+    /* tree->Branch("pv_trk_hasPixelEndcapLayer2", "std::vector<std::vector<bool> >", &pv_trk_hasPixelEndcapLayer2, buff); */
+    /* tree->Branch("pv_trk_hasPixelBarrelLayer3", "std::vector<std::vector<bool> >", &pv_trk_hasPixelBarrelLayer3, buff); */
+    /* tree->Branch("pv_trk_hasPixelEndcapLayer3", "std::vector<std::vector<bool> >", &pv_trk_hasPixelEndcapLayer3, buff); */
+    /* tree->Branch("pv_trk_hasPixelBarrelLayer4", "std::vector<std::vector<bool> >", &pv_trk_hasPixelBarrelLayer4, buff); */
+    /* tree->Branch("pv_trk_hasPixelEndcapLayer4", "std::vector<std::vector<bool> >", &pv_trk_hasPixelEndcapLayer4, buff); */
 
-    tree->Branch("pv_trk_quality", "std::vector<std::vector<int> >", &pv_trk_quality, buff);
-    tree->Branch("pv_trk_normalizedChi2", "std::vector<std::vector<float> >", &pv_trk_normalizedChi2, buff);
-    tree->Branch("pv_trk_ndof", "std::vector<std::vector<int> >", &pv_trk_ndof, buff);
-    tree->Branch("pv_trk_charge", "std::vector<std::vector<int> >", &pv_trk_charge, buff);
-    tree->Branch("pv_trk_qoverp", "std::vector<std::vector<float> >", &pv_trk_qoverp, buff);
-    tree->Branch("pv_trk_qoverpError", "std::vector<std::vector<float> >", &pv_trk_qoverpError, buff);
-    tree->Branch("pv_trk_theta", "std::vector<std::vector<float> >", &pv_trk_theta, buff);
-    tree->Branch("pv_trk_thetaError", "std::vector<std::vector<float> >", &pv_trk_thetaError, buff);
-    tree->Branch("pv_trk_lambda", "std::vector<std::vector<float> >", &pv_trk_lambda, buff);
-    tree->Branch("pv_trk_lambdaError", "std::vector<std::vector<float> >", &pv_trk_lambdaError, buff);
-    tree->Branch("pv_trk_ptError", "std::vector<std::vector<float> >", &pv_trk_ptError, buff);
-    tree->Branch("pv_trk_etaError", "std::vector<std::vector<float> >", &pv_trk_etaError, buff);
-    tree->Branch("pv_trk_phiError", "std::vector<std::vector<float> >", &pv_trk_phiError, buff);
+    /* tree->Branch("pv_trk_quality", "std::vector<std::vector<int> >", &pv_trk_quality, buff); */
+    /* tree->Branch("pv_trk_normalizedChi2", "std::vector<std::vector<float> >", &pv_trk_normalizedChi2, buff); */
+    /* tree->Branch("pv_trk_ndof", "std::vector<std::vector<int> >", &pv_trk_ndof, buff); */
+    /* tree->Branch("pv_trk_charge", "std::vector<std::vector<int> >", &pv_trk_charge, buff); */
+    /* tree->Branch("pv_trk_qoverp", "std::vector<std::vector<float> >", &pv_trk_qoverp, buff); */
+    /* tree->Branch("pv_trk_qoverpError", "std::vector<std::vector<float> >", &pv_trk_qoverpError, buff); */
+    /* tree->Branch("pv_trk_theta", "std::vector<std::vector<float> >", &pv_trk_theta, buff); */
+    /* tree->Branch("pv_trk_thetaError", "std::vector<std::vector<float> >", &pv_trk_thetaError, buff); */
+    /* tree->Branch("pv_trk_lambda", "std::vector<std::vector<float> >", &pv_trk_lambda, buff); */
+    /* tree->Branch("pv_trk_lambdaError", "std::vector<std::vector<float> >", &pv_trk_lambdaError, buff); */
+    /* tree->Branch("pv_trk_ptError", "std::vector<std::vector<float> >", &pv_trk_ptError, buff); */
+    /* tree->Branch("pv_trk_etaError", "std::vector<std::vector<float> >", &pv_trk_etaError, buff); */
+    /* tree->Branch("pv_trk_phiError", "std::vector<std::vector<float> >", &pv_trk_phiError, buff); */
 
     tree->Branch("pv_trk_d0", "std::vector<std::vector<float> >", &pv_trk_d0, buff);
     tree->Branch("pv_trk_dz", "std::vector<std::vector<float> >", &pv_trk_dz, buff);
@@ -694,7 +694,7 @@ void ResTree::CreateBranches(int buff = 32000, bool runOnData = false)
     tree->Branch("pv_SumTrackPt_p1", "std::vector<float>", &pv_SumTrackPt_p1, buff);
     tree->Branch("pv_SumTrackPt2_p1", "std::vector<float>", &pv_SumTrackPt2_p1, buff);
     tree->Branch("pv_fracHighPurity_p1", "std::vector<float>", &pv_fracHighPurity_p1, buff);
-    tree->Branch("pv_vtxTkIdx_p1", "std::vector<std::vector<int> >", &pv_vtxTkIdx_p1, buff);
+    /* tree->Branch("pv_vtxTkIdx_p1", "std::vector<std::vector<int> >", &pv_vtxTkIdx_p1, buff); */
     tree->Branch("pv_chi2_p1", "std::vector<float>", &pv_chi2_p1, buff);
     tree->Branch("pv_ndof_p1", "std::vector<int>", &pv_ndof_p1, buff);
     tree->Branch("pv_x_p1", "std::vector<float>", &pv_x_p1, buff);
@@ -710,7 +710,7 @@ void ResTree::CreateBranches(int buff = 32000, bool runOnData = false)
     tree->Branch("pv_SumTrackPt_p2", "std::vector<float>", &pv_SumTrackPt_p2, buff);
     tree->Branch("pv_SumTrackPt2_p2", "std::vector<float>", &pv_SumTrackPt2_p2, buff);
     tree->Branch("pv_fracHighPurity_p2", "std::vector<float>", &pv_fracHighPurity_p2, buff);
-    tree->Branch("pv_vtxTkIdx_p2", "std::vector<std::vector<int> >", &pv_vtxTkIdx_p2, buff);
+    /* tree->Branch("pv_vtxTkIdx_p2", "std::vector<std::vector<int> >", &pv_vtxTkIdx_p2, buff); */
     tree->Branch("pv_chi2_p2", "std::vector<float>", &pv_chi2_p2, buff);
     tree->Branch("pv_ndof_p2", "std::vector<int>", &pv_ndof_p2, buff);
     tree->Branch("pv_x_p2", "std::vector<float>", &pv_x_p2, buff);
@@ -720,11 +720,11 @@ void ResTree::CreateBranches(int buff = 32000, bool runOnData = false)
     tree->Branch("pv_yError_p2", "std::vector<float>", &pv_yError_p2, buff);
     tree->Branch("pv_zError_p2", "std::vector<float>", &pv_zError_p2, buff);   
 
-    tree->Branch("pfjet_n", &pfjet_n, "pfjet_n/I", buff);
-    tree->Branch("pfjet_pt", "std::vector<float>", &pfjet_pt, buff);
-    tree->Branch("pfjet_eta", "std::vector<float>", &pfjet_eta, buff);
-    tree->Branch("pfjet_phi", "std::vector<float>", &pfjet_phi, buff);
-    tree->Branch("pfjet_E", "std::vector<float>", &pfjet_E, buff);
+    /* tree->Branch("pfjet_n", &pfjet_n, "pfjet_n/I", buff); */
+    /* tree->Branch("pfjet_pt", "std::vector<float>", &pfjet_pt, buff); */
+    /* tree->Branch("pfjet_eta", "std::vector<float>", &pfjet_eta, buff); */
+    /* tree->Branch("pfjet_phi", "std::vector<float>", &pfjet_phi, buff); */
+    /* tree->Branch("pfjet_E", "std::vector<float>", &pfjet_E, buff); */
 
     // Tracks from PFJets
 

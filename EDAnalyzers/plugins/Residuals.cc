@@ -264,8 +264,8 @@ Residuals::Residuals(const edm::ParameterSet& pset):
     rnd = new TRandom3();
 
     TFile& f = fs->file();
-    f.SetCompressionAlgorithm(ROOT::kZLIB);
-    f.SetCompressionLevel(9);
+    f.SetCompressionAlgorithm(ROOT::kZSTD);
+    f.SetCompressionLevel(5);
     ftree = new ResTree(fs->make<TTree>("tree", "tree"));
     ftree->CreateBranches(32000, runOnData);
 
@@ -405,47 +405,47 @@ void Residuals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
 
     // Pileup info
-    if( !runOnData )
-    {	
-        edm::Handle<std::vector< PileupSummaryInfo> > pileupInfo;
-        iEvent.getByToken(puInfoToken_,pileupInfo);
+    /* if( !runOnData ) */
+    /* { */	
+    /*     edm::Handle<std::vector< PileupSummaryInfo> > pileupInfo; */
+    /*     iEvent.getByToken(puInfoToken_,pileupInfo); */
 
-        ftree->mc_pu_Npvi = pileupInfo->size();
-        for(std::vector<PileupSummaryInfo>::const_iterator pvi=pileupInfo->begin();pvi!=pileupInfo->end();pvi++)
-        {
-            signed int n_bc = pvi->getBunchCrossing();
-            ftree->mc_pu_BunchCrossing.push_back(n_bc);
-            if( n_bc == 0 )
-            {		  
-                ftree->mc_pu_intime_NumInt = pvi->getPU_NumInteractions();
-                ftree->mc_pu_trueNumInt = pvi->getTrueNumInteractions();
-            }	     
-            else if( n_bc == -1 ) ftree->mc_pu_before_npu = pvi->getPU_NumInteractions();
-            else if( n_bc == +1 ) ftree->mc_pu_after_npu  = pvi->getPU_NumInteractions();
+    /*     ftree->mc_pu_Npvi = pileupInfo->size(); */
+    /*     for(std::vector<PileupSummaryInfo>::const_iterator pvi=pileupInfo->begin();pvi!=pileupInfo->end();pvi++) */
+    /*     { */
+    /*         signed int n_bc = pvi->getBunchCrossing(); */
+    /*         ftree->mc_pu_BunchCrossing.push_back(n_bc); */
+    /*         if( n_bc == 0 ) */
+    /*         { */		  
+    /*             ftree->mc_pu_intime_NumInt = pvi->getPU_NumInteractions(); */
+    /*             ftree->mc_pu_trueNumInt = pvi->getTrueNumInteractions(); */
+    /*         } */	     
+    /*         else if( n_bc == -1 ) ftree->mc_pu_before_npu = pvi->getPU_NumInteractions(); */
+    /*         else if( n_bc == +1 ) ftree->mc_pu_after_npu  = pvi->getPU_NumInteractions(); */
 
-            std::vector<float> mc_pu_zpositions;
-            std::vector<float> mc_pu_sumpT_lowpT;
-            std::vector<float> mc_pu_sumpT_highpT;
-            std::vector<int> mc_pu_ntrks_lowpT;
-            std::vector<int> mc_pu_ntrks_highpT;
+    /*         std::vector<float> mc_pu_zpositions; */
+    /*         std::vector<float> mc_pu_sumpT_lowpT; */
+    /*         std::vector<float> mc_pu_sumpT_highpT; */
+    /*         std::vector<int> mc_pu_ntrks_lowpT; */
+    /*         std::vector<int> mc_pu_ntrks_highpT; */
 
-            ftree->mc_pu_Nzpositions.push_back(pvi->getPU_zpositions().size());
-            for( unsigned int ipu=0;ipu<pvi->getPU_zpositions().size();ipu++ )
-            {		  
-                mc_pu_zpositions.push_back((pvi->getPU_zpositions())[ipu]);
-                mc_pu_sumpT_lowpT.push_back((pvi->getPU_sumpT_lowpT())[ipu]);
-                mc_pu_sumpT_highpT.push_back((pvi->getPU_sumpT_highpT())[ipu]);
-                mc_pu_ntrks_lowpT.push_back((pvi->getPU_ntrks_lowpT())[ipu]);
-                mc_pu_ntrks_highpT.push_back((pvi->getPU_ntrks_highpT())[ipu]);
-            }	     
+    /*         ftree->mc_pu_Nzpositions.push_back(pvi->getPU_zpositions().size()); */
+    /*         for( unsigned int ipu=0;ipu<pvi->getPU_zpositions().size();ipu++ ) */
+    /*         { */		  
+    /*             mc_pu_zpositions.push_back((pvi->getPU_zpositions())[ipu]); */
+    /*             mc_pu_sumpT_lowpT.push_back((pvi->getPU_sumpT_lowpT())[ipu]); */
+    /*             mc_pu_sumpT_highpT.push_back((pvi->getPU_sumpT_highpT())[ipu]); */
+    /*             mc_pu_ntrks_lowpT.push_back((pvi->getPU_ntrks_lowpT())[ipu]); */
+    /*             mc_pu_ntrks_highpT.push_back((pvi->getPU_ntrks_highpT())[ipu]); */
+    /*         } */	     
 
-            ftree->mc_pu_zpositions.push_back(mc_pu_zpositions);
-            ftree->mc_pu_sumpT_lowpT.push_back(mc_pu_sumpT_lowpT);
-            ftree->mc_pu_sumpT_highpT.push_back(mc_pu_sumpT_highpT);
-            ftree->mc_pu_ntrks_lowpT.push_back(mc_pu_ntrks_lowpT);
-            ftree->mc_pu_ntrks_highpT.push_back(mc_pu_ntrks_highpT);
-        }	
-    }   
+    /*         ftree->mc_pu_zpositions.push_back(mc_pu_zpositions); */
+    /*         ftree->mc_pu_sumpT_lowpT.push_back(mc_pu_sumpT_lowpT); */
+    /*         ftree->mc_pu_sumpT_highpT.push_back(mc_pu_sumpT_highpT); */
+    /*         ftree->mc_pu_ntrks_lowpT.push_back(mc_pu_ntrks_lowpT); */
+    /*         ftree->mc_pu_ntrks_highpT.push_back(mc_pu_ntrks_highpT); */
+    /*     } */	
+    /* } */   
 
     double micron = 10000;
 
@@ -519,43 +519,43 @@ void Residuals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         std::vector<float> pv_trk_dz_pvunbiased;
         std::vector<float> pv_trk_d0_bs_zpvunbiased;
 
-        std::vector<bool> pv_trk_pvunbiased_IsValid_p1;
-        std::vector<bool> pv_trk_pvunbiased_IsFake_p1;
-        std::vector<int> pv_trk_pvunbiased_NTracks_p1;
-        std::vector<float> pv_trk_pvunbiased_SumTrackPt_p1;
-        std::vector<float> pv_trk_pvunbiased_SumTrackPt2_p1;
-        std::vector<float> pv_trk_pvunbiased_fracHighPurity_p1;
-        std::vector<float> pv_trk_pvunbiased_chi2_p1;
-        std::vector<int> pv_trk_pvunbiased_ndof_p1;
-        std::vector<float> pv_trk_pvunbiased_x_p1;
-        std::vector<float> pv_trk_pvunbiased_y_p1;
-        std::vector<float> pv_trk_pvunbiased_z_p1;
-        std::vector<float> pv_trk_pvunbiased_xError_p1;
-        std::vector<float> pv_trk_pvunbiased_yError_p1;
-        std::vector<float> pv_trk_pvunbiased_zError_p1;
+        /* std::vector<bool> pv_trk_pvunbiased_IsValid_p1; */
+        /* std::vector<bool> pv_trk_pvunbiased_IsFake_p1; */
+        /* std::vector<int> pv_trk_pvunbiased_NTracks_p1; */
+        /* std::vector<float> pv_trk_pvunbiased_SumTrackPt_p1; */
+        /* std::vector<float> pv_trk_pvunbiased_SumTrackPt2_p1; */
+        /* std::vector<float> pv_trk_pvunbiased_fracHighPurity_p1; */
+        /* std::vector<float> pv_trk_pvunbiased_chi2_p1; */
+        /* std::vector<int> pv_trk_pvunbiased_ndof_p1; */
+        /* std::vector<float> pv_trk_pvunbiased_x_p1; */
+        /* std::vector<float> pv_trk_pvunbiased_y_p1; */
+        /* std::vector<float> pv_trk_pvunbiased_z_p1; */
+        /* std::vector<float> pv_trk_pvunbiased_xError_p1; */
+        /* std::vector<float> pv_trk_pvunbiased_yError_p1; */
+        /* std::vector<float> pv_trk_pvunbiased_zError_p1; */
 
-        std::vector<float> pv_trk_d0_pvunbiased_p1;
-        std::vector<float> pv_trk_dz_pvunbiased_p1;
-        std::vector<float> pv_trk_d0_bs_zpvunbiased_p1;
+        /* std::vector<float> pv_trk_d0_pvunbiased_p1; */
+        /* std::vector<float> pv_trk_dz_pvunbiased_p1; */
+        /* std::vector<float> pv_trk_d0_bs_zpvunbiased_p1; */
 
-        std::vector<bool> pv_trk_pvunbiased_IsValid_p2;
-        std::vector<bool> pv_trk_pvunbiased_IsFake_p2;
-        std::vector<int> pv_trk_pvunbiased_NTracks_p2;
-        std::vector<float> pv_trk_pvunbiased_SumTrackPt_p2;
-        std::vector<float> pv_trk_pvunbiased_SumTrackPt2_p2;
-        std::vector<float> pv_trk_pvunbiased_fracHighPurity_p2;
-        std::vector<float> pv_trk_pvunbiased_chi2_p2;
-        std::vector<int> pv_trk_pvunbiased_ndof_p2;
-        std::vector<float> pv_trk_pvunbiased_x_p2;
-        std::vector<float> pv_trk_pvunbiased_y_p2;
-        std::vector<float> pv_trk_pvunbiased_z_p2;
-        std::vector<float> pv_trk_pvunbiased_xError_p2;
-        std::vector<float> pv_trk_pvunbiased_yError_p2;
-        std::vector<float> pv_trk_pvunbiased_zError_p2;
+        /* std::vector<bool> pv_trk_pvunbiased_IsValid_p2; */
+        /* std::vector<bool> pv_trk_pvunbiased_IsFake_p2; */
+        /* std::vector<int> pv_trk_pvunbiased_NTracks_p2; */
+        /* std::vector<float> pv_trk_pvunbiased_SumTrackPt_p2; */
+        /* std::vector<float> pv_trk_pvunbiased_SumTrackPt2_p2; */
+        /* std::vector<float> pv_trk_pvunbiased_fracHighPurity_p2; */
+        /* std::vector<float> pv_trk_pvunbiased_chi2_p2; */
+        /* std::vector<int> pv_trk_pvunbiased_ndof_p2; */
+        /* std::vector<float> pv_trk_pvunbiased_x_p2; */
+        /* std::vector<float> pv_trk_pvunbiased_y_p2; */
+        /* std::vector<float> pv_trk_pvunbiased_z_p2; */
+        /* std::vector<float> pv_trk_pvunbiased_xError_p2; */
+        /* std::vector<float> pv_trk_pvunbiased_yError_p2; */
+        /* std::vector<float> pv_trk_pvunbiased_zError_p2; */
 
-        std::vector<float> pv_trk_d0_pvunbiased_p2;
-        std::vector<float> pv_trk_dz_pvunbiased_p2;
-        std::vector<float> pv_trk_d0_bs_zpvunbiased_p2;
+        /* std::vector<float> pv_trk_d0_pvunbiased_p2; */
+        /* std::vector<float> pv_trk_dz_pvunbiased_p2; */
+        /* std::vector<float> pv_trk_d0_bs_zpvunbiased_p2; */
 
         std::vector<float> pv_trk_pt;
         std::vector<float> pv_trk_px;
@@ -565,50 +565,50 @@ void Residuals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         std::vector<float> pv_trk_eta;
         std::vector<float> pv_trk_phi;
 
-        std::vector<int> pv_trk_nTrackerLayers;
-        std::vector<int> pv_trk_nPixelBarrelLayers;
-        std::vector<int> pv_trk_nPixelEndcapLayers;
-        std::vector<int> pv_trk_nStripLayers;
+        /* std::vector<int> pv_trk_nTrackerLayers; */
+        /* std::vector<int> pv_trk_nPixelBarrelLayers; */
+        /* std::vector<int> pv_trk_nPixelEndcapLayers; */
+        /* std::vector<int> pv_trk_nStripLayers; */
 
-        std::vector<int> pv_trk_nValid;
-        std::vector<float> pv_trk_fValid;
-        std::vector<int> pv_trk_nValidTracker;
-        std::vector<int> pv_trk_nValidPixelBarrel;
-        std::vector<int> pv_trk_nValidPixelEndcap;
-        std::vector<int> pv_trk_nValidStrip;
+        /* std::vector<int> pv_trk_nValid; */
+        /* std::vector<float> pv_trk_fValid; */
+        /* std::vector<int> pv_trk_nValidTracker; */
+        /* std::vector<int> pv_trk_nValidPixelBarrel; */
+        /* std::vector<int> pv_trk_nValidPixelEndcap; */
+        /* std::vector<int> pv_trk_nValidStrip; */
 
-        std::vector<int> pv_trk_nMissed;
-        std::vector<int> pv_trk_nMissedOut;
-        std::vector<int> pv_trk_nMissedIn;
-        std::vector<int> pv_trk_nMissedTrackerOut;
-        std::vector<int> pv_trk_nMissedTrackerIn;
-        std::vector<int> pv_trk_nMissedPixelBarrelOut;
-        std::vector<int> pv_trk_nMissedPixelBarrelIn;
-        std::vector<int> pv_trk_nMissedPixelEndcapOut;
-        std::vector<int> pv_trk_nMissedPixelEndcapIn;
+        /* std::vector<int> pv_trk_nMissed; */
+        /* std::vector<int> pv_trk_nMissedOut; */
+        /* std::vector<int> pv_trk_nMissedIn; */
+        /* std::vector<int> pv_trk_nMissedTrackerOut; */
+        /* std::vector<int> pv_trk_nMissedTrackerIn; */
+        /* std::vector<int> pv_trk_nMissedPixelBarrelOut; */
+        /* std::vector<int> pv_trk_nMissedPixelBarrelIn; */
+        /* std::vector<int> pv_trk_nMissedPixelEndcapOut; */
+        /* std::vector<int> pv_trk_nMissedPixelEndcapIn; */
 
-        std::vector<bool> pv_trk_hasPixelBarrelLayer1;
-        std::vector<bool> pv_trk_hasPixelEndcapLayer1;
-        std::vector<bool> pv_trk_hasPixelBarrelLayer2;
-        std::vector<bool> pv_trk_hasPixelEndcapLayer2;
-        std::vector<bool> pv_trk_hasPixelBarrelLayer3;
-        std::vector<bool> pv_trk_hasPixelEndcapLayer3;
-        std::vector<bool> pv_trk_hasPixelBarrelLayer4;
-        std::vector<bool> pv_trk_hasPixelEndcapLayer4;
+        /* std::vector<bool> pv_trk_hasPixelBarrelLayer1; */
+        /* std::vector<bool> pv_trk_hasPixelEndcapLayer1; */
+        /* std::vector<bool> pv_trk_hasPixelBarrelLayer2; */
+        /* std::vector<bool> pv_trk_hasPixelEndcapLayer2; */
+        /* std::vector<bool> pv_trk_hasPixelBarrelLayer3; */
+        /* std::vector<bool> pv_trk_hasPixelEndcapLayer3; */
+        /* std::vector<bool> pv_trk_hasPixelBarrelLayer4; */
+        /* std::vector<bool> pv_trk_hasPixelEndcapLayer4; */
 
-        std::vector<int> pv_trk_quality;
-        std::vector<float> pv_trk_normalizedChi2;
-        std::vector<int> pv_trk_ndof;
-        std::vector<int> pv_trk_charge;
-        std::vector<float> pv_trk_qoverp;
-        std::vector<float> pv_trk_qoverpError;
-        std::vector<float> pv_trk_theta;
-        std::vector<float> pv_trk_thetaError;
-        std::vector<float> pv_trk_lambda;
-        std::vector<float> pv_trk_lambdaError;
-        std::vector<float> pv_trk_ptError;
-        std::vector<float> pv_trk_etaError;
-        std::vector<float> pv_trk_phiError;
+        /* std::vector<int> pv_trk_quality; */
+        /* std::vector<float> pv_trk_normalizedChi2; */
+        /* std::vector<int> pv_trk_ndof; */
+        /* std::vector<int> pv_trk_charge; */
+        /* std::vector<float> pv_trk_qoverp; */
+        /* std::vector<float> pv_trk_qoverpError; */
+        /* std::vector<float> pv_trk_theta; */
+        /* std::vector<float> pv_trk_thetaError; */
+        /* std::vector<float> pv_trk_lambda; */
+        /* std::vector<float> pv_trk_lambdaError; */
+        /* std::vector<float> pv_trk_ptError; */
+        /* std::vector<float> pv_trk_etaError; */
+        /* std::vector<float> pv_trk_phiError; */
 
         std::vector<float> pv_trk_d0;
         std::vector<float> pv_trk_dz;
@@ -681,115 +681,115 @@ void Residuals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             // Remake vertices
             vector<TransientVertex> pvst = revertex->makeVertices(newPVTkCollection, *pvbeamspot, iSetup);
 
-            vector<TransientVertex> pvst1 = revertex->makeVertices(vtxTkCollection1, *pvbeamspot, iSetup);
-            vector<TransientVertex> pvst2 = revertex->makeVertices(vtxTkCollection2, *pvbeamspot, iSetup);
+            /* vector<TransientVertex> pvst1 = revertex->makeVertices(vtxTkCollection1, *pvbeamspot, iSetup); */
+            /* vector<TransientVertex> pvst2 = revertex->makeVertices(vtxTkCollection2, *pvbeamspot, iSetup); */
 
             pv_trk_pvN.push_back( pvst.size() );
-            pv_trk_pv1N.push_back( pvst1.size() );
-            pv_trk_pv2N.push_back( pvst2.size() );
+            /* pv_trk_pv1N.push_back( pvst1.size() ); */
+            /* pv_trk_pv2N.push_back( pvst2.size() ); */
 
-            if( !pvst1.empty() && !pvst2.empty() )
-            {
-                reco::Vertex vtx1 = reco::Vertex(pvst1.front());
-                reco::Vertex vtx2 = reco::Vertex(pvst2.front());
+            /* if( !pvst1.empty() && !pvst2.empty() ) */
+            /* { */
+            /*     reco::Vertex vtx1 = reco::Vertex(pvst1.front()); */
+            /*     reco::Vertex vtx2 = reco::Vertex(pvst2.front()); */
 
-                pv_trk_pvunbiased_IsValid_p1.push_back( vtx1.isValid() );
-                pv_trk_pvunbiased_IsValid_p2.push_back( vtx2.isValid() );
+            /*     pv_trk_pvunbiased_IsValid_p1.push_back( vtx1.isValid() ); */
+            /*     pv_trk_pvunbiased_IsValid_p2.push_back( vtx2.isValid() ); */
 
-                pv_trk_pvunbiased_IsFake_p1.push_back( vtx1.isFake() );
-                pv_trk_pvunbiased_IsFake_p2.push_back( vtx2.isFake() );
+            /*     pv_trk_pvunbiased_IsFake_p1.push_back( vtx1.isFake() ); */
+            /*     pv_trk_pvunbiased_IsFake_p2.push_back( vtx2.isFake() ); */
 
-                pv_trk_pvunbiased_NTracks_p1.push_back( vtxTkCollection1.size() );
-                pv_trk_pvunbiased_NTracks_p2.push_back( vtxTkCollection2.size() );
+            /*     pv_trk_pvunbiased_NTracks_p1.push_back( vtxTkCollection1.size() ); */
+            /*     pv_trk_pvunbiased_NTracks_p2.push_back( vtxTkCollection2.size() ); */
 
-                pv_trk_pvunbiased_SumTrackPt_p1.push_back( SumTrackPt_p1 );
-                pv_trk_pvunbiased_SumTrackPt_p2.push_back( SumTrackPt_p2 );
+            /*     pv_trk_pvunbiased_SumTrackPt_p1.push_back( SumTrackPt_p1 ); */
+            /*     pv_trk_pvunbiased_SumTrackPt_p2.push_back( SumTrackPt_p2 ); */
 
-                pv_trk_pvunbiased_SumTrackPt2_p1.push_back( SumTrackPt2_p1 );	     
-                pv_trk_pvunbiased_SumTrackPt2_p2.push_back( SumTrackPt2_p2 );
+            /*     pv_trk_pvunbiased_SumTrackPt2_p1.push_back( SumTrackPt2_p1 ); */	     
+            /*     pv_trk_pvunbiased_SumTrackPt2_p2.push_back( SumTrackPt2_p2 ); */
 
-                pv_trk_pvunbiased_fracHighPurity_p1.push_back( pv_fracHighPurity_p1 );
-                pv_trk_pvunbiased_fracHighPurity_p2.push_back( pv_fracHighPurity_p2 );
+            /*     pv_trk_pvunbiased_fracHighPurity_p1.push_back( pv_fracHighPurity_p1 ); */
+            /*     pv_trk_pvunbiased_fracHighPurity_p2.push_back( pv_fracHighPurity_p2 ); */
 
-                pv_trk_pvunbiased_chi2_p1.push_back( vtx1.chi2() );
-                pv_trk_pvunbiased_chi2_p2.push_back( vtx2.chi2() );
+            /*     pv_trk_pvunbiased_chi2_p1.push_back( vtx1.chi2() ); */
+            /*     pv_trk_pvunbiased_chi2_p2.push_back( vtx2.chi2() ); */
 
-                pv_trk_pvunbiased_ndof_p1.push_back( vtx1.ndof() );
-                pv_trk_pvunbiased_ndof_p2.push_back( vtx2.ndof() );
+            /*     pv_trk_pvunbiased_ndof_p1.push_back( vtx1.ndof() ); */
+            /*     pv_trk_pvunbiased_ndof_p2.push_back( vtx2.ndof() ); */
 
-                pv_trk_pvunbiased_x_p1.push_back( vtx1.x()*micron );
-                pv_trk_pvunbiased_y_p1.push_back( vtx1.y()*micron );
-                pv_trk_pvunbiased_z_p1.push_back( vtx1.z()*micron );
-                pv_trk_pvunbiased_xError_p1.push_back( vtx1.xError()*micron );
-                pv_trk_pvunbiased_yError_p1.push_back( vtx1.yError()*micron );
-                pv_trk_pvunbiased_zError_p1.push_back( vtx1.zError()*micron );
+            /*     pv_trk_pvunbiased_x_p1.push_back( vtx1.x()*micron ); */
+            /*     pv_trk_pvunbiased_y_p1.push_back( vtx1.y()*micron ); */
+            /*     pv_trk_pvunbiased_z_p1.push_back( vtx1.z()*micron ); */
+            /*     pv_trk_pvunbiased_xError_p1.push_back( vtx1.xError()*micron ); */
+            /*     pv_trk_pvunbiased_yError_p1.push_back( vtx1.yError()*micron ); */
+            /*     pv_trk_pvunbiased_zError_p1.push_back( vtx1.zError()*micron ); */
 
-                pv_trk_pvunbiased_x_p2.push_back( vtx2.x()*micron );
-                pv_trk_pvunbiased_y_p2.push_back( vtx2.y()*micron );
-                pv_trk_pvunbiased_z_p2.push_back( vtx2.z()*micron );
-                pv_trk_pvunbiased_xError_p2.push_back( vtx2.xError()*micron );
-                pv_trk_pvunbiased_yError_p2.push_back( vtx2.yError()*micron );
-                pv_trk_pvunbiased_zError_p2.push_back( vtx2.zError()*micron );
+            /*     pv_trk_pvunbiased_x_p2.push_back( vtx2.x()*micron ); */
+            /*     pv_trk_pvunbiased_y_p2.push_back( vtx2.y()*micron ); */
+            /*     pv_trk_pvunbiased_z_p2.push_back( vtx2.z()*micron ); */
+            /*     pv_trk_pvunbiased_xError_p2.push_back( vtx2.xError()*micron ); */
+            /*     pv_trk_pvunbiased_yError_p2.push_back( vtx2.yError()*micron ); */
+            /*     pv_trk_pvunbiased_zError_p2.push_back( vtx2.zError()*micron ); */
 
-                Track::Point vtxPositionUnbiased1 = Track::Point(vtx1.position().x(), vtx1.position().y(), vtx1.position().z());
-                Track::Point vtxPositionUnbiased2 = Track::Point(vtx2.position().x(), vtx2.position().y(), vtx2.position().z());
+            /*     Track::Point vtxPositionUnbiased1 = Track::Point(vtx1.position().x(), vtx1.position().y(), vtx1.position().z()); */
+            /*     Track::Point vtxPositionUnbiased2 = Track::Point(vtx2.position().x(), vtx2.position().y(), vtx2.position().z()); */
 
-                pv_trk_d0_pvunbiased_p1.push_back( trk.dxy(vtxPositionUnbiased1) * micron );
-                pv_trk_dz_pvunbiased_p1.push_back( trk.dz(vtxPositionUnbiased1) * micron );
-                pv_trk_d0_bs_zpvunbiased_p1.push_back( trk.dxy(pvbeamspot->position(vtxPositionUnbiased1.z())) * micron );
+            /*     pv_trk_d0_pvunbiased_p1.push_back( trk.dxy(vtxPositionUnbiased1) * micron ); */
+            /*     pv_trk_dz_pvunbiased_p1.push_back( trk.dz(vtxPositionUnbiased1) * micron ); */
+            /*     pv_trk_d0_bs_zpvunbiased_p1.push_back( trk.dxy(pvbeamspot->position(vtxPositionUnbiased1.z())) * micron ); */
 
-                pv_trk_d0_pvunbiased_p2.push_back( trk.dxy(vtxPositionUnbiased2) * micron );
-                pv_trk_dz_pvunbiased_p2.push_back( trk.dz(vtxPositionUnbiased2) * micron );
-                pv_trk_d0_bs_zpvunbiased_p2.push_back( trk.dxy(pvbeamspot->position(vtxPositionUnbiased2.z())) * micron );
-            }	     
-            else
-            {
-                pv_trk_pvunbiased_IsValid_p1.push_back( 0 );
-                pv_trk_pvunbiased_IsValid_p2.push_back( 0 );
+            /*     pv_trk_d0_pvunbiased_p2.push_back( trk.dxy(vtxPositionUnbiased2) * micron ); */
+            /*     pv_trk_dz_pvunbiased_p2.push_back( trk.dz(vtxPositionUnbiased2) * micron ); */
+            /*     pv_trk_d0_bs_zpvunbiased_p2.push_back( trk.dxy(pvbeamspot->position(vtxPositionUnbiased2.z())) * micron ); */
+            /* } */	     
+            /* else */
+            /* { */
+            /*     pv_trk_pvunbiased_IsValid_p1.push_back( 0 ); */
+            /*     pv_trk_pvunbiased_IsValid_p2.push_back( 0 ); */
 
-                pv_trk_pvunbiased_IsFake_p1.push_back( 0 );
-                pv_trk_pvunbiased_IsFake_p2.push_back( 0 );
+            /*     pv_trk_pvunbiased_IsFake_p1.push_back( 0 ); */
+            /*     pv_trk_pvunbiased_IsFake_p2.push_back( 0 ); */
 
-                pv_trk_pvunbiased_NTracks_p1.push_back( 0 );
-                pv_trk_pvunbiased_NTracks_p2.push_back( 0 );
+            /*     pv_trk_pvunbiased_NTracks_p1.push_back( 0 ); */
+            /*     pv_trk_pvunbiased_NTracks_p2.push_back( 0 ); */
 
-                pv_trk_pvunbiased_SumTrackPt_p1.push_back( null );
-                pv_trk_pvunbiased_SumTrackPt_p2.push_back( null );
+            /*     pv_trk_pvunbiased_SumTrackPt_p1.push_back( null ); */
+            /*     pv_trk_pvunbiased_SumTrackPt_p2.push_back( null ); */
 
-                pv_trk_pvunbiased_SumTrackPt2_p1.push_back( null );
-                pv_trk_pvunbiased_SumTrackPt2_p2.push_back( null );
+            /*     pv_trk_pvunbiased_SumTrackPt2_p1.push_back( null ); */
+            /*     pv_trk_pvunbiased_SumTrackPt2_p2.push_back( null ); */
 
-                pv_trk_pvunbiased_fracHighPurity_p1.push_back( null );
-                pv_trk_pvunbiased_fracHighPurity_p2.push_back( null );
+            /*     pv_trk_pvunbiased_fracHighPurity_p1.push_back( null ); */
+            /*     pv_trk_pvunbiased_fracHighPurity_p2.push_back( null ); */
 
-                pv_trk_pvunbiased_chi2_p1.push_back( null );
-                pv_trk_pvunbiased_chi2_p2.push_back( null );
+            /*     pv_trk_pvunbiased_chi2_p1.push_back( null ); */
+            /*     pv_trk_pvunbiased_chi2_p2.push_back( null ); */
 
-                pv_trk_pvunbiased_ndof_p1.push_back( null );
-                pv_trk_pvunbiased_ndof_p2.push_back( null );
+            /*     pv_trk_pvunbiased_ndof_p1.push_back( null ); */
+            /*     pv_trk_pvunbiased_ndof_p2.push_back( null ); */
 
-                pv_trk_pvunbiased_x_p1.push_back( null );
-                pv_trk_pvunbiased_y_p1.push_back( null );
-                pv_trk_pvunbiased_z_p1.push_back( null );
-                pv_trk_pvunbiased_xError_p1.push_back( null );
-                pv_trk_pvunbiased_yError_p1.push_back( null );
-                pv_trk_pvunbiased_zError_p1.push_back( null );
+            /*     pv_trk_pvunbiased_x_p1.push_back( null ); */
+            /*     pv_trk_pvunbiased_y_p1.push_back( null ); */
+            /*     pv_trk_pvunbiased_z_p1.push_back( null ); */
+            /*     pv_trk_pvunbiased_xError_p1.push_back( null ); */
+            /*     pv_trk_pvunbiased_yError_p1.push_back( null ); */
+            /*     pv_trk_pvunbiased_zError_p1.push_back( null ); */
 
-                pv_trk_pvunbiased_x_p2.push_back( null );
-                pv_trk_pvunbiased_y_p2.push_back( null );
-                pv_trk_pvunbiased_z_p2.push_back( null );
-                pv_trk_pvunbiased_xError_p2.push_back( null );
-                pv_trk_pvunbiased_yError_p2.push_back( null );
-                pv_trk_pvunbiased_zError_p2.push_back( null );
+            /*     pv_trk_pvunbiased_x_p2.push_back( null ); */
+            /*     pv_trk_pvunbiased_y_p2.push_back( null ); */
+            /*     pv_trk_pvunbiased_z_p2.push_back( null ); */
+            /*     pv_trk_pvunbiased_xError_p2.push_back( null ); */
+            /*     pv_trk_pvunbiased_yError_p2.push_back( null ); */
+            /*     pv_trk_pvunbiased_zError_p2.push_back( null ); */
 
-                pv_trk_d0_pvunbiased_p1.push_back( null );
-                pv_trk_dz_pvunbiased_p1.push_back( null );
-                pv_trk_d0_bs_zpvunbiased_p1.push_back( null );
+            /*     pv_trk_d0_pvunbiased_p1.push_back( null ); */
+            /*     pv_trk_dz_pvunbiased_p1.push_back( null ); */
+            /*     pv_trk_d0_bs_zpvunbiased_p1.push_back( null ); */
 
-                pv_trk_d0_pvunbiased_p2.push_back( null );
-                pv_trk_dz_pvunbiased_p2.push_back( null );
-                pv_trk_d0_bs_zpvunbiased_p2.push_back( null );
-            }
+            /*     pv_trk_d0_pvunbiased_p2.push_back( null ); */
+            /*     pv_trk_dz_pvunbiased_p2.push_back( null ); */
+            /*     pv_trk_d0_bs_zpvunbiased_p2.push_back( null ); */
+            /* } */
 
             if( !pvst.empty() )
             {
@@ -870,50 +870,50 @@ void Residuals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             pv_trk_eta.push_back( trk.eta() );
             pv_trk_phi.push_back( trk.phi() );
 
-            pv_trk_nTrackerLayers.push_back( trk.hitPattern().trackerLayersWithMeasurement() );
-            pv_trk_nPixelBarrelLayers.push_back( trk.hitPattern().pixelBarrelLayersWithMeasurement() );
-            pv_trk_nPixelEndcapLayers.push_back( trk.hitPattern().pixelEndcapLayersWithMeasurement() );
-            pv_trk_nStripLayers.push_back( trk.hitPattern().stripLayersWithMeasurement() );
+/*             pv_trk_nTrackerLayers.push_back( trk.hitPattern().trackerLayersWithMeasurement() ); */
+/*             pv_trk_nPixelBarrelLayers.push_back( trk.hitPattern().pixelBarrelLayersWithMeasurement() ); */
+/*             pv_trk_nPixelEndcapLayers.push_back( trk.hitPattern().pixelEndcapLayersWithMeasurement() ); */
+/*             pv_trk_nStripLayers.push_back( trk.hitPattern().stripLayersWithMeasurement() ); */
 
-            pv_trk_nValid.push_back( trk.numberOfValidHits() );
-            pv_trk_fValid.push_back( trk.validFraction() );
-            pv_trk_nValidTracker.push_back( trk.hitPattern().numberOfValidTrackerHits() );
-            pv_trk_nValidPixelBarrel.push_back( trk.hitPattern().numberOfValidPixelBarrelHits() );
-            pv_trk_nValidPixelEndcap.push_back( trk.hitPattern().numberOfValidPixelEndcapHits() );
-            pv_trk_nValidStrip.push_back( trk.hitPattern().numberOfValidStripHits() );
+/*             pv_trk_nValid.push_back( trk.numberOfValidHits() ); */
+/*             pv_trk_fValid.push_back( trk.validFraction() ); */
+/*             pv_trk_nValidTracker.push_back( trk.hitPattern().numberOfValidTrackerHits() ); */
+/*             pv_trk_nValidPixelBarrel.push_back( trk.hitPattern().numberOfValidPixelBarrelHits() ); */
+/*             pv_trk_nValidPixelEndcap.push_back( trk.hitPattern().numberOfValidPixelEndcapHits() ); */
+/*             pv_trk_nValidStrip.push_back( trk.hitPattern().numberOfValidStripHits() ); */
 
-            pv_trk_nMissed.push_back( trk.numberOfLostHits() );
-            pv_trk_nMissedOut.push_back( trk.hitPattern().numberOfLostHits(HitPattern::MISSING_OUTER_HITS) );
-            pv_trk_nMissedIn.push_back( trk.hitPattern().numberOfLostHits(HitPattern::MISSING_INNER_HITS) );
-            pv_trk_nMissedTrackerOut.push_back( trk.hitPattern().numberOfLostTrackerHits(HitPattern::MISSING_OUTER_HITS) );
-            pv_trk_nMissedTrackerIn.push_back( trk.hitPattern().numberOfLostTrackerHits(HitPattern::MISSING_INNER_HITS) );
-            pv_trk_nMissedPixelBarrelOut.push_back( trk.hitPattern().numberOfLostPixelBarrelHits(HitPattern::MISSING_OUTER_HITS) );
-            pv_trk_nMissedPixelBarrelIn.push_back( trk.hitPattern().numberOfLostPixelBarrelHits(HitPattern::MISSING_INNER_HITS) );
-            pv_trk_nMissedPixelEndcapOut.push_back( trk.hitPattern().numberOfLostPixelEndcapHits(HitPattern::MISSING_OUTER_HITS) );
-            pv_trk_nMissedPixelEndcapIn.push_back( trk.hitPattern().numberOfLostPixelEndcapHits(HitPattern::MISSING_INNER_HITS) );
+/*             pv_trk_nMissed.push_back( trk.numberOfLostHits() ); */
+/*             pv_trk_nMissedOut.push_back( trk.hitPattern().numberOfLostHits(HitPattern::MISSING_OUTER_HITS) ); */
+/*             pv_trk_nMissedIn.push_back( trk.hitPattern().numberOfLostHits(HitPattern::MISSING_INNER_HITS) ); */
+/*             pv_trk_nMissedTrackerOut.push_back( trk.hitPattern().numberOfLostTrackerHits(HitPattern::MISSING_OUTER_HITS) ); */
+/*             pv_trk_nMissedTrackerIn.push_back( trk.hitPattern().numberOfLostTrackerHits(HitPattern::MISSING_INNER_HITS) ); */
+/*             pv_trk_nMissedPixelBarrelOut.push_back( trk.hitPattern().numberOfLostPixelBarrelHits(HitPattern::MISSING_OUTER_HITS) ); */
+/*             pv_trk_nMissedPixelBarrelIn.push_back( trk.hitPattern().numberOfLostPixelBarrelHits(HitPattern::MISSING_INNER_HITS) ); */
+/*             pv_trk_nMissedPixelEndcapOut.push_back( trk.hitPattern().numberOfLostPixelEndcapHits(HitPattern::MISSING_OUTER_HITS) ); */
+/*             pv_trk_nMissedPixelEndcapIn.push_back( trk.hitPattern().numberOfLostPixelEndcapHits(HitPattern::MISSING_INNER_HITS) ); */
 
-            pv_trk_hasPixelBarrelLayer1.push_back( trk.hitPattern().hasValidHitInPixelLayer(PixelSubdetector::SubDetector::PixelBarrel, 1) );
-            pv_trk_hasPixelEndcapLayer1.push_back( trk.hitPattern().hasValidHitInPixelLayer(PixelSubdetector::SubDetector::PixelEndcap, 1) );
-            pv_trk_hasPixelBarrelLayer2.push_back( trk.hitPattern().hasValidHitInPixelLayer(PixelSubdetector::SubDetector::PixelBarrel, 2) );
-            pv_trk_hasPixelEndcapLayer2.push_back( trk.hitPattern().hasValidHitInPixelLayer(PixelSubdetector::SubDetector::PixelEndcap, 2) );
-            pv_trk_hasPixelBarrelLayer3.push_back( trk.hitPattern().hasValidHitInPixelLayer(PixelSubdetector::SubDetector::PixelBarrel, 3) );
-            pv_trk_hasPixelEndcapLayer3.push_back( trk.hitPattern().hasValidHitInPixelLayer(PixelSubdetector::SubDetector::PixelEndcap, 3) );
-            pv_trk_hasPixelBarrelLayer4.push_back( trk.hitPattern().hasValidHitInPixelLayer(PixelSubdetector::SubDetector::PixelBarrel, 4) );
-            pv_trk_hasPixelEndcapLayer4.push_back( trk.hitPattern().hasValidHitInPixelLayer(PixelSubdetector::SubDetector::PixelEndcap, 4) );
+/*             pv_trk_hasPixelBarrelLayer1.push_back( trk.hitPattern().hasValidHitInPixelLayer(PixelSubdetector::SubDetector::PixelBarrel, 1) ); */
+/*             pv_trk_hasPixelEndcapLayer1.push_back( trk.hitPattern().hasValidHitInPixelLayer(PixelSubdetector::SubDetector::PixelEndcap, 1) ); */
+/*             pv_trk_hasPixelBarrelLayer2.push_back( trk.hitPattern().hasValidHitInPixelLayer(PixelSubdetector::SubDetector::PixelBarrel, 2) ); */
+/*             pv_trk_hasPixelEndcapLayer2.push_back( trk.hitPattern().hasValidHitInPixelLayer(PixelSubdetector::SubDetector::PixelEndcap, 2) ); */
+/*             pv_trk_hasPixelBarrelLayer3.push_back( trk.hitPattern().hasValidHitInPixelLayer(PixelSubdetector::SubDetector::PixelBarrel, 3) ); */
+/*             pv_trk_hasPixelEndcapLayer3.push_back( trk.hitPattern().hasValidHitInPixelLayer(PixelSubdetector::SubDetector::PixelEndcap, 3) ); */
+/*             pv_trk_hasPixelBarrelLayer4.push_back( trk.hitPattern().hasValidHitInPixelLayer(PixelSubdetector::SubDetector::PixelBarrel, 4) ); */
+/*             pv_trk_hasPixelEndcapLayer4.push_back( trk.hitPattern().hasValidHitInPixelLayer(PixelSubdetector::SubDetector::PixelEndcap, 4) ); */
 
-            pv_trk_quality.push_back( trk.qualityMask() );
-            pv_trk_normalizedChi2.push_back( trk.normalizedChi2() );
-            pv_trk_ndof.push_back( trk.ndof() );
-            pv_trk_charge.push_back( trk.charge() );
-            pv_trk_qoverp.push_back( trk.qoverp() );
-            pv_trk_qoverpError.push_back( trk.qoverpError() );
-            pv_trk_theta.push_back( trk.theta() );
-            pv_trk_thetaError.push_back( trk.thetaError() );
-            pv_trk_lambda.push_back( trk.lambda() );
-            pv_trk_lambdaError.push_back( trk.lambdaError() );
-            pv_trk_ptError.push_back( trk.ptError() );
-            pv_trk_etaError.push_back( trk.etaError() );
-            pv_trk_phiError.push_back( trk.phiError() );
+            /* pv_trk_quality.push_back( trk.qualityMask() ); */
+            /* pv_trk_normalizedChi2.push_back( trk.normalizedChi2() ); */
+            /* pv_trk_ndof.push_back( trk.ndof() ); */
+            /* pv_trk_charge.push_back( trk.charge() ); */
+            /* pv_trk_qoverp.push_back( trk.qoverp() ); */
+            /* pv_trk_qoverpError.push_back( trk.qoverpError() ); */
+            /* pv_trk_theta.push_back( trk.theta() ); */
+            /* pv_trk_thetaError.push_back( trk.thetaError() ); */
+            /* pv_trk_lambda.push_back( trk.lambda() ); */
+            /* pv_trk_lambdaError.push_back( trk.lambdaError() ); */
+            /* pv_trk_ptError.push_back( trk.ptError() ); */
+            /* pv_trk_etaError.push_back( trk.etaError() ); */
+            /* pv_trk_phiError.push_back( trk.phiError() ); */
 
             pv_trk_d0.push_back( trk.dxy() * micron );
             pv_trk_dz.push_back( trk.dz() * micron );
@@ -953,8 +953,8 @@ void Residuals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         ftree->pv_trk_idx.push_back( pv_trk_idx );
 
         ftree->pv_trk_pvN.push_back( pv_trk_pvN );
-        ftree->pv_trk_pv1N.push_back( pv_trk_pv1N );
-        ftree->pv_trk_pv2N.push_back( pv_trk_pv2N );
+        /* ftree->pv_trk_pv1N.push_back( pv_trk_pv1N ); */
+        /* ftree->pv_trk_pv2N.push_back( pv_trk_pv2N ); */
 
         ftree->pv_trk_pvunbiased_IsValid.push_back( pv_trk_pvunbiased_IsValid );
         ftree->pv_trk_pvunbiased_IsFake.push_back( pv_trk_pvunbiased_IsFake );
@@ -975,43 +975,43 @@ void Residuals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         ftree->pv_trk_dz_pvunbiased.push_back( pv_trk_dz_pvunbiased );
         ftree->pv_trk_d0_bs_zpvunbiased.push_back( pv_trk_d0_bs_zpvunbiased );
 
-        ftree->pv_trk_pvunbiased_IsValid_p1.push_back( pv_trk_pvunbiased_IsValid_p1 );
-        ftree->pv_trk_pvunbiased_IsFake_p1.push_back( pv_trk_pvunbiased_IsFake_p1 );
-        ftree->pv_trk_pvunbiased_NTracks_p1.push_back( pv_trk_pvunbiased_NTracks_p1 );
-        ftree->pv_trk_pvunbiased_SumTrackPt_p1.push_back( pv_trk_pvunbiased_SumTrackPt_p1 );
-        ftree->pv_trk_pvunbiased_SumTrackPt2_p1.push_back( pv_trk_pvunbiased_SumTrackPt2_p1 );
-        ftree->pv_trk_pvunbiased_fracHighPurity_p1.push_back( pv_trk_pvunbiased_fracHighPurity_p1 );
-        ftree->pv_trk_pvunbiased_chi2_p1.push_back( pv_trk_pvunbiased_chi2_p1 );
-        ftree->pv_trk_pvunbiased_ndof_p1.push_back( pv_trk_pvunbiased_ndof_p1 );
-        ftree->pv_trk_pvunbiased_x_p1.push_back( pv_trk_pvunbiased_x_p1 );
-        ftree->pv_trk_pvunbiased_y_p1.push_back( pv_trk_pvunbiased_y_p1 );
-        ftree->pv_trk_pvunbiased_z_p1.push_back( pv_trk_pvunbiased_z_p1 );
-        ftree->pv_trk_pvunbiased_xError_p1.push_back( pv_trk_pvunbiased_xError_p1 );
-        ftree->pv_trk_pvunbiased_yError_p1.push_back( pv_trk_pvunbiased_yError_p1 );
-        ftree->pv_trk_pvunbiased_zError_p1.push_back( pv_trk_pvunbiased_zError_p1 );
+        /* ftree->pv_trk_pvunbiased_IsValid_p1.push_back( pv_trk_pvunbiased_IsValid_p1 ); */
+        /* ftree->pv_trk_pvunbiased_IsFake_p1.push_back( pv_trk_pvunbiased_IsFake_p1 ); */
+        /* ftree->pv_trk_pvunbiased_NTracks_p1.push_back( pv_trk_pvunbiased_NTracks_p1 ); */
+        /* ftree->pv_trk_pvunbiased_SumTrackPt_p1.push_back( pv_trk_pvunbiased_SumTrackPt_p1 ); */
+        /* ftree->pv_trk_pvunbiased_SumTrackPt2_p1.push_back( pv_trk_pvunbiased_SumTrackPt2_p1 ); */
+        /* ftree->pv_trk_pvunbiased_fracHighPurity_p1.push_back( pv_trk_pvunbiased_fracHighPurity_p1 ); */
+        /* ftree->pv_trk_pvunbiased_chi2_p1.push_back( pv_trk_pvunbiased_chi2_p1 ); */
+        /* ftree->pv_trk_pvunbiased_ndof_p1.push_back( pv_trk_pvunbiased_ndof_p1 ); */
+        /* ftree->pv_trk_pvunbiased_x_p1.push_back( pv_trk_pvunbiased_x_p1 ); */
+        /* ftree->pv_trk_pvunbiased_y_p1.push_back( pv_trk_pvunbiased_y_p1 ); */
+        /* ftree->pv_trk_pvunbiased_z_p1.push_back( pv_trk_pvunbiased_z_p1 ); */
+        /* ftree->pv_trk_pvunbiased_xError_p1.push_back( pv_trk_pvunbiased_xError_p1 ); */
+        /* ftree->pv_trk_pvunbiased_yError_p1.push_back( pv_trk_pvunbiased_yError_p1 ); */
+        /* ftree->pv_trk_pvunbiased_zError_p1.push_back( pv_trk_pvunbiased_zError_p1 ); */
 
-        ftree->pv_trk_d0_pvunbiased_p1.push_back( pv_trk_d0_pvunbiased_p1 );
-        ftree->pv_trk_dz_pvunbiased_p1.push_back( pv_trk_dz_pvunbiased_p1 );
-        ftree->pv_trk_d0_bs_zpvunbiased_p1.push_back( pv_trk_d0_bs_zpvunbiased_p1 );
+        /* ftree->pv_trk_d0_pvunbiased_p1.push_back( pv_trk_d0_pvunbiased_p1 ); */
+        /* ftree->pv_trk_dz_pvunbiased_p1.push_back( pv_trk_dz_pvunbiased_p1 ); */
+        /* ftree->pv_trk_d0_bs_zpvunbiased_p1.push_back( pv_trk_d0_bs_zpvunbiased_p1 ); */
 
-        ftree->pv_trk_pvunbiased_IsValid_p2.push_back( pv_trk_pvunbiased_IsValid_p2 );
-        ftree->pv_trk_pvunbiased_IsFake_p2.push_back( pv_trk_pvunbiased_IsFake_p2 );
-        ftree->pv_trk_pvunbiased_NTracks_p2.push_back( pv_trk_pvunbiased_NTracks_p2 );
-        ftree->pv_trk_pvunbiased_SumTrackPt_p2.push_back( pv_trk_pvunbiased_SumTrackPt_p2 );
-        ftree->pv_trk_pvunbiased_SumTrackPt2_p2.push_back( pv_trk_pvunbiased_SumTrackPt2_p2 );
-        ftree->pv_trk_pvunbiased_fracHighPurity_p2.push_back( pv_trk_pvunbiased_fracHighPurity_p2 );
-        ftree->pv_trk_pvunbiased_chi2_p2.push_back( pv_trk_pvunbiased_chi2_p2 );
-        ftree->pv_trk_pvunbiased_ndof_p2.push_back( pv_trk_pvunbiased_ndof_p2 );
-        ftree->pv_trk_pvunbiased_x_p2.push_back( pv_trk_pvunbiased_x_p2 );
-        ftree->pv_trk_pvunbiased_y_p2.push_back( pv_trk_pvunbiased_y_p2 );
-        ftree->pv_trk_pvunbiased_z_p2.push_back( pv_trk_pvunbiased_z_p2 );
-        ftree->pv_trk_pvunbiased_xError_p2.push_back( pv_trk_pvunbiased_xError_p2 );
-        ftree->pv_trk_pvunbiased_yError_p2.push_back( pv_trk_pvunbiased_yError_p2 );
-        ftree->pv_trk_pvunbiased_zError_p2.push_back( pv_trk_pvunbiased_zError_p2 );
+        /* ftree->pv_trk_pvunbiased_IsValid_p2.push_back( pv_trk_pvunbiased_IsValid_p2 ); */
+        /* ftree->pv_trk_pvunbiased_IsFake_p2.push_back( pv_trk_pvunbiased_IsFake_p2 ); */
+        /* ftree->pv_trk_pvunbiased_NTracks_p2.push_back( pv_trk_pvunbiased_NTracks_p2 ); */
+        /* ftree->pv_trk_pvunbiased_SumTrackPt_p2.push_back( pv_trk_pvunbiased_SumTrackPt_p2 ); */
+        /* ftree->pv_trk_pvunbiased_SumTrackPt2_p2.push_back( pv_trk_pvunbiased_SumTrackPt2_p2 ); */
+        /* ftree->pv_trk_pvunbiased_fracHighPurity_p2.push_back( pv_trk_pvunbiased_fracHighPurity_p2 ); */
+        /* ftree->pv_trk_pvunbiased_chi2_p2.push_back( pv_trk_pvunbiased_chi2_p2 ); */
+        /* ftree->pv_trk_pvunbiased_ndof_p2.push_back( pv_trk_pvunbiased_ndof_p2 ); */
+        /* ftree->pv_trk_pvunbiased_x_p2.push_back( pv_trk_pvunbiased_x_p2 ); */
+        /* ftree->pv_trk_pvunbiased_y_p2.push_back( pv_trk_pvunbiased_y_p2 ); */
+        /* ftree->pv_trk_pvunbiased_z_p2.push_back( pv_trk_pvunbiased_z_p2 ); */
+        /* ftree->pv_trk_pvunbiased_xError_p2.push_back( pv_trk_pvunbiased_xError_p2 ); */
+        /* ftree->pv_trk_pvunbiased_yError_p2.push_back( pv_trk_pvunbiased_yError_p2 ); */
+        /* ftree->pv_trk_pvunbiased_zError_p2.push_back( pv_trk_pvunbiased_zError_p2 ); */
 
-        ftree->pv_trk_d0_pvunbiased_p2.push_back( pv_trk_d0_pvunbiased_p2 );
-        ftree->pv_trk_dz_pvunbiased_p2.push_back( pv_trk_dz_pvunbiased_p2 );
-        ftree->pv_trk_d0_bs_zpvunbiased_p2.push_back( pv_trk_d0_bs_zpvunbiased_p2 );
+        /* ftree->pv_trk_d0_pvunbiased_p2.push_back( pv_trk_d0_pvunbiased_p2 ); */
+        /* ftree->pv_trk_dz_pvunbiased_p2.push_back( pv_trk_dz_pvunbiased_p2 ); */
+        /* ftree->pv_trk_d0_bs_zpvunbiased_p2.push_back( pv_trk_d0_bs_zpvunbiased_p2 ); */
 
         ftree->pv_trk_pt.push_back( pv_trk_pt );
         ftree->pv_trk_px.push_back( pv_trk_px );
@@ -1021,50 +1021,50 @@ void Residuals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         ftree->pv_trk_eta.push_back( pv_trk_eta );
         ftree->pv_trk_phi.push_back( pv_trk_phi );
 
-        ftree->pv_trk_nTrackerLayers.push_back( pv_trk_nTrackerLayers );
-        ftree->pv_trk_nPixelBarrelLayers.push_back( pv_trk_nPixelBarrelLayers );
-        ftree->pv_trk_nPixelEndcapLayers.push_back( pv_trk_nPixelEndcapLayers );
-        ftree->pv_trk_nStripLayers.push_back( pv_trk_nStripLayers );
+        /* ftree->pv_trk_nTrackerLayers.push_back( pv_trk_nTrackerLayers ); */
+        /* ftree->pv_trk_nPixelBarrelLayers.push_back( pv_trk_nPixelBarrelLayers ); */
+        /* ftree->pv_trk_nPixelEndcapLayers.push_back( pv_trk_nPixelEndcapLayers ); */
+        /* ftree->pv_trk_nStripLayers.push_back( pv_trk_nStripLayers ); */
 
-        ftree->pv_trk_nValid.push_back( pv_trk_nValid );
-        ftree->pv_trk_fValid.push_back( pv_trk_fValid );
-        ftree->pv_trk_nValidTracker.push_back( pv_trk_nValidTracker );
-        ftree->pv_trk_nValidPixelBarrel.push_back( pv_trk_nValidPixelBarrel );
-        ftree->pv_trk_nValidPixelEndcap.push_back( pv_trk_nValidPixelEndcap );
-        ftree->pv_trk_nValidStrip.push_back( pv_trk_nValidStrip );
+        /* ftree->pv_trk_nValid.push_back( pv_trk_nValid ); */
+        /* ftree->pv_trk_fValid.push_back( pv_trk_fValid ); */
+        /* ftree->pv_trk_nValidTracker.push_back( pv_trk_nValidTracker ); */
+        /* ftree->pv_trk_nValidPixelBarrel.push_back( pv_trk_nValidPixelBarrel ); */
+        /* ftree->pv_trk_nValidPixelEndcap.push_back( pv_trk_nValidPixelEndcap ); */
+        /* ftree->pv_trk_nValidStrip.push_back( pv_trk_nValidStrip ); */
 
-        ftree->pv_trk_nMissed.push_back( pv_trk_nMissed );
-        ftree->pv_trk_nMissedOut.push_back( pv_trk_nMissedOut );
-        ftree->pv_trk_nMissedIn.push_back( pv_trk_nMissedIn );
-        ftree->pv_trk_nMissedTrackerOut.push_back( pv_trk_nMissedTrackerOut );
-        ftree->pv_trk_nMissedTrackerIn.push_back( pv_trk_nMissedTrackerIn );
-        ftree->pv_trk_nMissedPixelBarrelOut.push_back( pv_trk_nMissedPixelBarrelOut );
-        ftree->pv_trk_nMissedPixelBarrelIn.push_back( pv_trk_nMissedPixelBarrelIn );
-        ftree->pv_trk_nMissedPixelEndcapOut.push_back( pv_trk_nMissedPixelEndcapOut );
-        ftree->pv_trk_nMissedPixelEndcapIn.push_back( pv_trk_nMissedPixelEndcapIn );
+        /* ftree->pv_trk_nMissed.push_back( pv_trk_nMissed ); */
+        /* ftree->pv_trk_nMissedOut.push_back( pv_trk_nMissedOut ); */
+        /* ftree->pv_trk_nMissedIn.push_back( pv_trk_nMissedIn ); */
+        /* ftree->pv_trk_nMissedTrackerOut.push_back( pv_trk_nMissedTrackerOut ); */
+        /* ftree->pv_trk_nMissedTrackerIn.push_back( pv_trk_nMissedTrackerIn ); */
+        /* ftree->pv_trk_nMissedPixelBarrelOut.push_back( pv_trk_nMissedPixelBarrelOut ); */
+        /* ftree->pv_trk_nMissedPixelBarrelIn.push_back( pv_trk_nMissedPixelBarrelIn ); */
+        /* ftree->pv_trk_nMissedPixelEndcapOut.push_back( pv_trk_nMissedPixelEndcapOut ); */
+        /* ftree->pv_trk_nMissedPixelEndcapIn.push_back( pv_trk_nMissedPixelEndcapIn ); */
 
-        ftree->pv_trk_hasPixelBarrelLayer1.push_back( pv_trk_hasPixelBarrelLayer1 );
-        ftree->pv_trk_hasPixelEndcapLayer1.push_back( pv_trk_hasPixelEndcapLayer1 );
-        ftree->pv_trk_hasPixelBarrelLayer2.push_back( pv_trk_hasPixelBarrelLayer2 );
-        ftree->pv_trk_hasPixelEndcapLayer2.push_back( pv_trk_hasPixelEndcapLayer2 );
-        ftree->pv_trk_hasPixelBarrelLayer3.push_back( pv_trk_hasPixelBarrelLayer3 );
-        ftree->pv_trk_hasPixelEndcapLayer3.push_back( pv_trk_hasPixelEndcapLayer3 );
-        ftree->pv_trk_hasPixelBarrelLayer4.push_back( pv_trk_hasPixelBarrelLayer4 );
-        ftree->pv_trk_hasPixelEndcapLayer4.push_back( pv_trk_hasPixelEndcapLayer4 );
+        /* ftree->pv_trk_hasPixelBarrelLayer1.push_back( pv_trk_hasPixelBarrelLayer1 ); */
+        /* ftree->pv_trk_hasPixelEndcapLayer1.push_back( pv_trk_hasPixelEndcapLayer1 ); */
+        /* ftree->pv_trk_hasPixelBarrelLayer2.push_back( pv_trk_hasPixelBarrelLayer2 ); */
+        /* ftree->pv_trk_hasPixelEndcapLayer2.push_back( pv_trk_hasPixelEndcapLayer2 ); */
+        /* ftree->pv_trk_hasPixelBarrelLayer3.push_back( pv_trk_hasPixelBarrelLayer3 ); */
+        /* ftree->pv_trk_hasPixelEndcapLayer3.push_back( pv_trk_hasPixelEndcapLayer3 ); */
+        /* ftree->pv_trk_hasPixelBarrelLayer4.push_back( pv_trk_hasPixelBarrelLayer4 ); */
+        /* ftree->pv_trk_hasPixelEndcapLayer4.push_back( pv_trk_hasPixelEndcapLayer4 ); */
 
-        ftree->pv_trk_quality.push_back( pv_trk_quality );
-        ftree->pv_trk_normalizedChi2.push_back( pv_trk_normalizedChi2 );
-        ftree->pv_trk_ndof.push_back( pv_trk_ndof );
-        ftree->pv_trk_charge.push_back( pv_trk_charge );
-        ftree->pv_trk_qoverp.push_back( pv_trk_qoverp );
-        ftree->pv_trk_qoverpError.push_back( pv_trk_qoverpError );
-        ftree->pv_trk_theta.push_back( pv_trk_theta );
-        ftree->pv_trk_thetaError.push_back( pv_trk_thetaError );
-        ftree->pv_trk_lambda.push_back( pv_trk_lambda );
-        ftree->pv_trk_lambdaError.push_back( pv_trk_lambdaError );
-        ftree->pv_trk_ptError.push_back( pv_trk_ptError );
-        ftree->pv_trk_etaError.push_back( pv_trk_etaError );
-        ftree->pv_trk_phiError.push_back( pv_trk_phiError );
+        /* ftree->pv_trk_quality.push_back( pv_trk_quality ); */
+        /* ftree->pv_trk_normalizedChi2.push_back( pv_trk_normalizedChi2 ); */
+        /* ftree->pv_trk_ndof.push_back( pv_trk_ndof ); */
+        /* ftree->pv_trk_charge.push_back( pv_trk_charge ); */
+        /* ftree->pv_trk_qoverp.push_back( pv_trk_qoverp ); */
+        /* ftree->pv_trk_qoverpError.push_back( pv_trk_qoverpError ); */
+        /* ftree->pv_trk_theta.push_back( pv_trk_theta ); */
+        /* ftree->pv_trk_thetaError.push_back( pv_trk_thetaError ); */
+        /* ftree->pv_trk_lambda.push_back( pv_trk_lambda ); */
+        /* ftree->pv_trk_lambdaError.push_back( pv_trk_lambdaError ); */
+        /* ftree->pv_trk_ptError.push_back( pv_trk_ptError ); */
+        /* ftree->pv_trk_etaError.push_back( pv_trk_etaError ); */
+        /* ftree->pv_trk_phiError.push_back( pv_trk_phiError ); */
 
         ftree->pv_trk_d0.push_back( pv_trk_d0 );
         ftree->pv_trk_dz.push_back( pv_trk_dz );
@@ -1089,8 +1089,8 @@ void Residuals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         reco::TrackCollection vtxTkCollection1;
         reco::TrackCollection vtxTkCollection2;
 
-        std::vector<int> vtxTkIdx1;
-        std::vector<int> vtxTkIdx2;
+        /* std::vector<int> vtxTkIdx1; */
+        /* std::vector<int> vtxTkIdx2; */
 
         float SumTrackPt_p1 = 0;
         float SumTrackPt2_p1 = 0;
@@ -1113,7 +1113,7 @@ void Residuals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 SumTrackPt_p1 += trk.pt();
                 SumTrackPt2_p1 += trk.pt()*trk.pt();
                 pv_fracHighPurity_p1 += trk.quality(reco::TrackBase::highPurity);
-                vtxTkIdx1.push_back(iTrk);
+                /* vtxTkIdx1.push_back(iTrk); */
             }	
             else
             {	     
@@ -1121,7 +1121,7 @@ void Residuals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 SumTrackPt_p2 += trk.pt();
                 SumTrackPt2_p2 += trk.pt()*trk.pt();
                 pv_fracHighPurity_p2 += trk.quality(reco::TrackBase::highPurity);
-                vtxTkIdx2.push_back(iTrk);
+                /* vtxTkIdx2.push_back(iTrk); */
             }
 
             iTrk++;
@@ -1158,8 +1158,8 @@ void Residuals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             ftree->pv_fracHighPurity_p1.push_back( pv_fracHighPurity_p1 );
             ftree->pv_fracHighPurity_p2.push_back( pv_fracHighPurity_p2 );
 
-            ftree->pv_vtxTkIdx_p1.push_back( vtxTkIdx1 );
-            ftree->pv_vtxTkIdx_p2.push_back( vtxTkIdx2 );
+            /* ftree->pv_vtxTkIdx_p1.push_back( vtxTkIdx1 ); */
+            /* ftree->pv_vtxTkIdx_p2.push_back( vtxTkIdx2 ); */
 
             ftree->pv_chi2_p1.push_back( vtx1.chi2() );
             ftree->pv_chi2_p2.push_back( vtx2.chi2() );
@@ -1201,8 +1201,8 @@ void Residuals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             ftree->pv_fracHighPurity_p1.push_back( null );
             ftree->pv_fracHighPurity_p2.push_back( null );
 
-            ftree->pv_vtxTkIdx_p1.push_back( vtxTkIdx1 );
-            ftree->pv_vtxTkIdx_p2.push_back( vtxTkIdx2 );
+            /* ftree->pv_vtxTkIdx_p1.push_back( vtxTkIdx1 ); */
+            /* ftree->pv_vtxTkIdx_p2.push_back( vtxTkIdx2 ); */
 
             ftree->pv_chi2_p1.push_back( null );
             ftree->pv_chi2_p2.push_back( null );
@@ -1227,18 +1227,18 @@ void Residuals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     }   
 
     // PFJets
-    unsigned int nFPJets = pfJets->size();
-    ftree->pfjet_n = nFPJets;
+    /* unsigned int nFPJets = pfJets->size(); */
+    /* ftree->pfjet_n = nFPJets; */
 
-    for( unsigned int ij=0;ij<nFPJets;ij++ )
-    {
-        pat::Jet jet = pfJets->at(ij);
+    /* for( unsigned int ij=0;ij<nFPJets;ij++ ) */
+    /* { */
+    /*     pat::Jet jet = pfJets->at(ij); */
 
-        ftree->pfjet_pt.push_back( jet.pt() );
-        ftree->pfjet_eta.push_back( jet.eta() );
-        ftree->pfjet_phi.push_back( jet.phi() );
-        ftree->pfjet_E.push_back( jet.energy() );
-    }   
+    /*     ftree->pfjet_pt.push_back( jet.pt() ); */
+    /*     ftree->pfjet_eta.push_back( jet.eta() ); */
+    /*     ftree->pfjet_phi.push_back( jet.phi() ); */
+    /*     ftree->pfjet_E.push_back( jet.energy() ); */
+    /* } */   
 
     /*	reco::TransientTrack tranitk = (*theB).build(*itk);
 

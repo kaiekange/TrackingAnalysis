@@ -42,20 +42,20 @@ class ResTree
         bool trig_PFHT890_pass;
         bool trig_PFHT1050_pass;
         bool trig_PFHT350_pass;
-        
-        int mc_pu_intime_NumInt;
-        int mc_pu_trueNumInt;
-        int mc_pu_before_npu;
-        int mc_pu_after_npu;
 
-        int mc_pu_Npvi;
-        std::vector<int> mc_pu_Nzpositions;
-        std::vector<int> mc_pu_BunchCrossing;
-        std::vector<std::vector<float> > mc_pu_zpositions;
-        std::vector<std::vector<float> > mc_pu_sumpT_lowpT;
-        std::vector<std::vector<float> > mc_pu_sumpT_highpT;
-        std::vector<std::vector<int> > mc_pu_ntrks_lowpT;
-        std::vector<std::vector<int> > mc_pu_ntrks_highpT;
+        /* int mc_pu_intime_NumInt; */
+        /* int mc_pu_trueNumInt; */
+        /* int mc_pu_before_npu; */
+        /* int mc_pu_after_npu; */
+
+        /* int mc_pu_Npvi; */
+        /* std::vector<int> mc_pu_Nzpositions; */
+        /* std::vector<int> mc_pu_BunchCrossing; */
+        /* std::vector<std::vector<float> > mc_pu_zpositions; */
+        /* std::vector<std::vector<float> > mc_pu_sumpT_lowpT; */
+        /* std::vector<std::vector<float> > mc_pu_sumpT_highpT; */
+        /* std::vector<std::vector<int> > mc_pu_ntrks_lowpT; */
+        /* std::vector<std::vector<int> > mc_pu_ntrks_highpT; */
 
         int bs_type;
         float bs_x0;
@@ -103,8 +103,8 @@ class ResTree
         std::vector<std::vector<int> > pv_trk_idx;
 
         std::vector<std::vector<int> > pv_trk_pvN;
-        std::vector<std::vector<int> > pv_trk_pv1N;
-        std::vector<std::vector<int> > pv_trk_pv2N;
+        /* std::vector<std::vector<int> > pv_trk_pv1N; */
+        /* std::vector<std::vector<int> > pv_trk_pv2N; */
 
         std::vector<std::vector<bool> > pv_trk_pvunbiased_IsValid;
         std::vector<std::vector<bool> > pv_trk_pvunbiased_IsFake;
@@ -125,43 +125,43 @@ class ResTree
         std::vector<std::vector<float> > pv_trk_dz_pvunbiased;
         std::vector<std::vector<float> > pv_trk_d0_bs_zpvunbiased;
 
-        std::vector<std::vector<bool> > pv_trk_pvunbiased_IsValid_p1;
-        std::vector<std::vector<bool> > pv_trk_pvunbiased_IsFake_p1;
-        std::vector<std::vector<int> > pv_trk_pvunbiased_NTracks_p1;
-        std::vector<std::vector<float> > pv_trk_pvunbiased_SumTrackPt_p1;
-        std::vector<std::vector<float> > pv_trk_pvunbiased_SumTrackPt2_p1;
-        std::vector<std::vector<float> > pv_trk_pvunbiased_fracHighPurity_p1;
-        std::vector<std::vector<float> > pv_trk_pvunbiased_chi2_p1;
-        std::vector<std::vector<int> > pv_trk_pvunbiased_ndof_p1;
-        std::vector<std::vector<float> > pv_trk_pvunbiased_x_p1;
-        std::vector<std::vector<float> > pv_trk_pvunbiased_y_p1;
-        std::vector<std::vector<float> > pv_trk_pvunbiased_z_p1;
-        std::vector<std::vector<float> > pv_trk_pvunbiased_xError_p1;
-        std::vector<std::vector<float> > pv_trk_pvunbiased_yError_p1;
-        std::vector<std::vector<float> > pv_trk_pvunbiased_zError_p1;
+        /* std::vector<std::vector<bool> > pv_trk_pvunbiased_IsValid_p1; */
+        /* std::vector<std::vector<bool> > pv_trk_pvunbiased_IsFake_p1; */
+        /* std::vector<std::vector<int> > pv_trk_pvunbiased_NTracks_p1; */
+        /* std::vector<std::vector<float> > pv_trk_pvunbiased_SumTrackPt_p1; */
+        /* std::vector<std::vector<float> > pv_trk_pvunbiased_SumTrackPt2_p1; */
+        /* std::vector<std::vector<float> > pv_trk_pvunbiased_fracHighPurity_p1; */
+        /* std::vector<std::vector<float> > pv_trk_pvunbiased_chi2_p1; */
+        /* std::vector<std::vector<int> > pv_trk_pvunbiased_ndof_p1; */
+        /* std::vector<std::vector<float> > pv_trk_pvunbiased_x_p1; */
+        /* std::vector<std::vector<float> > pv_trk_pvunbiased_y_p1; */
+        /* std::vector<std::vector<float> > pv_trk_pvunbiased_z_p1; */
+        /* std::vector<std::vector<float> > pv_trk_pvunbiased_xError_p1; */
+        /* std::vector<std::vector<float> > pv_trk_pvunbiased_yError_p1; */
+        /* std::vector<std::vector<float> > pv_trk_pvunbiased_zError_p1; */
 
-        std::vector<std::vector<float> > pv_trk_d0_pvunbiased_p1;
-        std::vector<std::vector<float> > pv_trk_dz_pvunbiased_p1;
-        std::vector<std::vector<float> > pv_trk_d0_bs_zpvunbiased_p1;
+        /* std::vector<std::vector<float> > pv_trk_d0_pvunbiased_p1; */
+        /* std::vector<std::vector<float> > pv_trk_dz_pvunbiased_p1; */
+        /* std::vector<std::vector<float> > pv_trk_d0_bs_zpvunbiased_p1; */
 
-        std::vector<std::vector<bool> > pv_trk_pvunbiased_IsValid_p2;
-        std::vector<std::vector<bool> > pv_trk_pvunbiased_IsFake_p2;
-        std::vector<std::vector<int> > pv_trk_pvunbiased_NTracks_p2;
-        std::vector<std::vector<float> > pv_trk_pvunbiased_SumTrackPt_p2;
-        std::vector<std::vector<float> > pv_trk_pvunbiased_SumTrackPt2_p2;
-        std::vector<std::vector<float> > pv_trk_pvunbiased_fracHighPurity_p2;
-        std::vector<std::vector<float> > pv_trk_pvunbiased_chi2_p2;
-        std::vector<std::vector<int> > pv_trk_pvunbiased_ndof_p2;
-        std::vector<std::vector<float> > pv_trk_pvunbiased_x_p2;
-        std::vector<std::vector<float> > pv_trk_pvunbiased_y_p2;
-        std::vector<std::vector<float> > pv_trk_pvunbiased_z_p2;
-        std::vector<std::vector<float> > pv_trk_pvunbiased_xError_p2;
-        std::vector<std::vector<float> > pv_trk_pvunbiased_yError_p2;
-        std::vector<std::vector<float> > pv_trk_pvunbiased_zError_p2;
+        /* std::vector<std::vector<bool> > pv_trk_pvunbiased_IsValid_p2; */
+        /* std::vector<std::vector<bool> > pv_trk_pvunbiased_IsFake_p2; */
+        /* std::vector<std::vector<int> > pv_trk_pvunbiased_NTracks_p2; */
+        /* std::vector<std::vector<float> > pv_trk_pvunbiased_SumTrackPt_p2; */
+        /* std::vector<std::vector<float> > pv_trk_pvunbiased_SumTrackPt2_p2; */
+        /* std::vector<std::vector<float> > pv_trk_pvunbiased_fracHighPurity_p2; */
+        /* std::vector<std::vector<float> > pv_trk_pvunbiased_chi2_p2; */
+        /* std::vector<std::vector<int> > pv_trk_pvunbiased_ndof_p2; */
+        /* std::vector<std::vector<float> > pv_trk_pvunbiased_x_p2; */
+        /* std::vector<std::vector<float> > pv_trk_pvunbiased_y_p2; */
+        /* std::vector<std::vector<float> > pv_trk_pvunbiased_z_p2; */
+        /* std::vector<std::vector<float> > pv_trk_pvunbiased_xError_p2; */
+        /* std::vector<std::vector<float> > pv_trk_pvunbiased_yError_p2; */
+        /* std::vector<std::vector<float> > pv_trk_pvunbiased_zError_p2; */
 
-        std::vector<std::vector<float> > pv_trk_d0_pvunbiased_p2;
-        std::vector<std::vector<float> > pv_trk_dz_pvunbiased_p2;
-        std::vector<std::vector<float> > pv_trk_d0_bs_zpvunbiased_p2;
+        /* std::vector<std::vector<float> > pv_trk_d0_pvunbiased_p2; */
+        /* std::vector<std::vector<float> > pv_trk_dz_pvunbiased_p2; */
+        /* std::vector<std::vector<float> > pv_trk_d0_bs_zpvunbiased_p2; */
 
         std::vector<std::vector<float> > pv_trk_pt;
         std::vector<std::vector<float> > pv_trk_px;
@@ -171,50 +171,50 @@ class ResTree
         std::vector<std::vector<float> > pv_trk_eta;
         std::vector<std::vector<float> > pv_trk_phi;
 
-        std::vector<std::vector<int> > pv_trk_nTrackerLayers;
-        std::vector<std::vector<int> > pv_trk_nPixelBarrelLayers;
-        std::vector<std::vector<int> > pv_trk_nPixelEndcapLayers;
-        std::vector<std::vector<int> > pv_trk_nStripLayers;
+        /* std::vector<std::vector<int> > pv_trk_nTrackerLayers; */
+        /* std::vector<std::vector<int> > pv_trk_nPixelBarrelLayers; */
+        /* std::vector<std::vector<int> > pv_trk_nPixelEndcapLayers; */
+        /* std::vector<std::vector<int> > pv_trk_nStripLayers; */
 
-        std::vector<std::vector<int> > pv_trk_nValid;
-        std::vector<std::vector<float> > pv_trk_fValid;
-        std::vector<std::vector<int> > pv_trk_nValidTracker;
-        std::vector<std::vector<int> > pv_trk_nValidPixelBarrel;
-        std::vector<std::vector<int> > pv_trk_nValidPixelEndcap;
-        std::vector<std::vector<int> > pv_trk_nValidStrip;
+        /* std::vector<std::vector<int> > pv_trk_nValid; */
+        /* std::vector<std::vector<float> > pv_trk_fValid; */
+        /* std::vector<std::vector<int> > pv_trk_nValidTracker; */
+        /* std::vector<std::vector<int> > pv_trk_nValidPixelBarrel; */
+        /* std::vector<std::vector<int> > pv_trk_nValidPixelEndcap; */
+        /* std::vector<std::vector<int> > pv_trk_nValidStrip; */
 
-        std::vector<std::vector<int> > pv_trk_nMissed;
-        std::vector<std::vector<int> > pv_trk_nMissedOut;
-        std::vector<std::vector<int> > pv_trk_nMissedIn;
-        std::vector<std::vector<int> > pv_trk_nMissedTrackerOut;
-        std::vector<std::vector<int> > pv_trk_nMissedTrackerIn;
-        std::vector<std::vector<int> > pv_trk_nMissedPixelBarrelOut;
-        std::vector<std::vector<int> > pv_trk_nMissedPixelBarrelIn;
-        std::vector<std::vector<int> > pv_trk_nMissedPixelEndcapOut;
-        std::vector<std::vector<int> > pv_trk_nMissedPixelEndcapIn;
+        /* std::vector<std::vector<int> > pv_trk_nMissed; */
+        /* std::vector<std::vector<int> > pv_trk_nMissedOut; */
+        /* std::vector<std::vector<int> > pv_trk_nMissedIn; */
+        /* std::vector<std::vector<int> > pv_trk_nMissedTrackerOut; */
+        /* std::vector<std::vector<int> > pv_trk_nMissedTrackerIn; */
+        /* std::vector<std::vector<int> > pv_trk_nMissedPixelBarrelOut; */
+        /* std::vector<std::vector<int> > pv_trk_nMissedPixelBarrelIn; */
+        /* std::vector<std::vector<int> > pv_trk_nMissedPixelEndcapOut; */
+        /* std::vector<std::vector<int> > pv_trk_nMissedPixelEndcapIn; */
 
-        std::vector<std::vector<bool> > pv_trk_hasPixelBarrelLayer1;
-        std::vector<std::vector<bool> > pv_trk_hasPixelEndcapLayer1;
-        std::vector<std::vector<bool> > pv_trk_hasPixelBarrelLayer2;
-        std::vector<std::vector<bool> > pv_trk_hasPixelEndcapLayer2;
-        std::vector<std::vector<bool> > pv_trk_hasPixelBarrelLayer3;
-        std::vector<std::vector<bool> > pv_trk_hasPixelEndcapLayer3;
-        std::vector<std::vector<bool> > pv_trk_hasPixelBarrelLayer4;
-        std::vector<std::vector<bool> > pv_trk_hasPixelEndcapLayer4;
+        /* std::vector<std::vector<bool> > pv_trk_hasPixelBarrelLayer1; */
+        /* std::vector<std::vector<bool> > pv_trk_hasPixelEndcapLayer1; */
+        /* std::vector<std::vector<bool> > pv_trk_hasPixelBarrelLayer2; */
+        /* std::vector<std::vector<bool> > pv_trk_hasPixelEndcapLayer2; */
+        /* std::vector<std::vector<bool> > pv_trk_hasPixelBarrelLayer3; */
+        /* std::vector<std::vector<bool> > pv_trk_hasPixelEndcapLayer3; */
+        /* std::vector<std::vector<bool> > pv_trk_hasPixelBarrelLayer4; */
+        /* std::vector<std::vector<bool> > pv_trk_hasPixelEndcapLayer4; */
 
-        std::vector<std::vector<int> > pv_trk_quality;
-        std::vector<std::vector<float> > pv_trk_normalizedChi2;
-        std::vector<std::vector<int> > pv_trk_ndof;
-        std::vector<std::vector<int> > pv_trk_charge;
-        std::vector<std::vector<float> > pv_trk_qoverp;
-        std::vector<std::vector<float> > pv_trk_qoverpError;
-        std::vector<std::vector<float> > pv_trk_theta;
-        std::vector<std::vector<float> > pv_trk_thetaError;
-        std::vector<std::vector<float> > pv_trk_lambda;
-        std::vector<std::vector<float> > pv_trk_lambdaError;
-        std::vector<std::vector<float> > pv_trk_ptError;
-        std::vector<std::vector<float> > pv_trk_etaError;
-        std::vector<std::vector<float> > pv_trk_phiError;
+        /* std::vector<std::vector<int> > pv_trk_quality; */
+        /* std::vector<std::vector<float> > pv_trk_normalizedChi2; */
+        /* std::vector<std::vector<int> > pv_trk_ndof; */
+        /* std::vector<std::vector<int> > pv_trk_charge; */
+        /* std::vector<std::vector<float> > pv_trk_qoverp; */
+        /* std::vector<std::vector<float> > pv_trk_qoverpError; */
+        /* std::vector<std::vector<float> > pv_trk_theta; */
+        /* std::vector<std::vector<float> > pv_trk_thetaError; */
+        /* std::vector<std::vector<float> > pv_trk_lambda; */
+        /* std::vector<std::vector<float> > pv_trk_lambdaError; */
+        /* std::vector<std::vector<float> > pv_trk_ptError; */
+        /* std::vector<std::vector<float> > pv_trk_etaError; */
+        /* std::vector<std::vector<float> > pv_trk_phiError; */
 
         std::vector<std::vector<float> > pv_trk_d0;
         std::vector<std::vector<float> > pv_trk_dz;
@@ -233,7 +233,7 @@ class ResTree
         std::vector<float> pv_SumTrackPt_p1;
         std::vector<float> pv_SumTrackPt2_p1;
         std::vector<float> pv_fracHighPurity_p1;
-        std::vector<std::vector<int> > pv_vtxTkIdx_p1;
+        /* std::vector<std::vector<int> > pv_vtxTkIdx_p1; */
         std::vector<float> pv_chi2_p1;
         std::vector<int> pv_ndof_p1;
         std::vector<float> pv_x_p1;
@@ -249,7 +249,7 @@ class ResTree
         std::vector<float> pv_SumTrackPt_p2;
         std::vector<float> pv_SumTrackPt2_p2;
         std::vector<float> pv_fracHighPurity_p2;
-        std::vector<std::vector<int> > pv_vtxTkIdx_p2;
+        /* std::vector<std::vector<int> > pv_vtxTkIdx_p2; */
         std::vector<float> pv_chi2_p2;
         std::vector<int> pv_ndof_p2;
         std::vector<float> pv_x_p2;
@@ -259,11 +259,11 @@ class ResTree
         std::vector<float> pv_yError_p2;
         std::vector<float> pv_zError_p2;
 
-        int pfjet_n;
-        std::vector<float> pfjet_pt;
-        std::vector<float> pfjet_eta;
-        std::vector<float> pfjet_phi;
-        std::vector<float> pfjet_E;
+        /* int pfjet_n; */
+        /* std::vector<float> pfjet_pt; */
+        /* std::vector<float> pfjet_eta; */
+        /* std::vector<float> pfjet_phi; */
+        /* std::vector<float> pfjet_E; */
 
         // Tracks from PFJets
 
