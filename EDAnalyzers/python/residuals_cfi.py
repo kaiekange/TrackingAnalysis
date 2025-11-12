@@ -2,23 +2,15 @@ import FWCore.ParameterSet.Config as cms
 
 residuals = cms.EDAnalyzer("Residuals",
 
-        # Run on data
-        RunOnData = cms.bool(False),
-
         # Beam spot
         BeamSpotLabel = cms.InputTag("offlineBeamSpot"),
         BeamSpotConfig = cms.string(""),
-
-        # Whether to add lost tracks
-        AddLostTracks = cms.bool(False),
 
         # Rho
         RhoLabel = cms.InputTag("fixedGridRhoFastjetAll"),
 
         # Trigger results
         TriggerResultsLabel = cms.InputTag("TriggerResults", "", "HLT"),
-
-        trackProducer = cms.untracked.InputTag('lostTracks'),
 
         # https://github.com/cms-sw/cmssw/blob/master/RecoVertex/PrimaryVertexProducer/python/OfflinePrimaryVertices_cfi.py#L12
         TkFilterParameters = cms.PSet(algorithm=cms.string('filter'),
@@ -88,9 +80,6 @@ residuals = cms.EDAnalyzer("Residuals",
                 maxDistanceToBeam = cms.double(1.0)
                 ),
 
-        # Pileup
-        puInfoLabel = cms.InputTag("slimmedAddPileupInfo"),
-
         # Selection of Tracks
         TrackLabel = cms.InputTag("packedPFCandidates"),
         LostTrackLabel = cms.InputTag("lostTracks"),
@@ -105,9 +94,6 @@ residuals = cms.EDAnalyzer("Residuals",
         # VertexPrimaryLabel = cms.InputTag("offlinePrimaryVertices","WithBS"),
         VtxTracksSizeMin = cms.int32(2),
         VtxTracksSizeMax = cms.int32(1000),
-
-        # PF jets
-        PFJetsLabel = cms.InputTag("slimmedJets"),
 
         # Vertex selection for Jet6U trigger
         # VtxErrorXMin = cms.double(0.0015),

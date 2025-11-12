@@ -5,14 +5,14 @@ options = VarParsing('analysis')
 options.register('isData', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Run on data')
 options.register('GlobalTag', '124X_dataRun3_v15', VarParsing.multiplicity.singleton, VarParsing.varType.string, 'Global tag')
 options.register('EventScale', 100, VarParsing.multiplicity.singleton, VarParsing.varType.int, 'Event scale')
-options.register('EventModulo', 100, VarParsing.multiplicity.singleton, VarParsing.varType.int, 'Event modulo')
+options.register('EventModulo', 10, VarParsing.multiplicity.singleton, VarParsing.varType.int, 'Event modulo')
 options.parseArguments()
 
 readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring()
 
 source = cms.Source("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
-readFiles.extend( ['file:/store/data/Run2022A/JetHT/MINIAOD/10Dec2022-v2/40000/f6aefde1-32d8-4f3c-b13c-863c9d8583ab.root'] );
+readFiles.extend( ['file:/store/data/Run2022A/JetHT/MINIAOD/10Dec2022-v2/40000/f6aefde1-32d8-4f3c-b13c-863c9d8583ab.root'] )
 
 process = cms.Process("IpResiduals")
 

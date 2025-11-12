@@ -30,5 +30,5 @@ config.Data.outLFNDirBase = 'OUTLFN'
 config.section_('User')
 config.User.voGroup = 'becms'
 config.section_('Site')
-config.Site.storageSite = 'T2_BE_IIHE'
-#config.Site.whitelist = ['T2_BE_IIHE']
+# config.Site.storageSite = 'T2_BE_IIHE'
+config.Site.storageSite = 'T3_CH_CERNBOX'

@@ -1,4 +1,4 @@
-<library   file="*.cc" name="TrackingAnalysis_Plugins">
+<use   name="TrackingAnalysis/EDAnalyzers"/>
 <use   name="FWCore/Framework"/>
 <use   name="FWCore/Utilities"/>
 <use   name="FWCore/PluginManager"/>
@@ -22,4 +22,3 @@
 <use   name="root"/>
 
 <flags   EDM_PLUGIN="1"/>
-</library>
