@@ -1,31 +1,46 @@
+import sys
 import subprocess
 import json
 
-# periods = ["2022_preEE", "2022_postEE", "2023_preBPix", "2023_postBPix", "2024"]
-periods = ["2023_preBPix", "2023_postBPix"]
-
 # samples = ["data", "mc"]
-# samples = ["mc"]
-samples = ["data"]
+samples = ["mc"]
+# samples = ["data"]
 
-with open("mkfile.json") as f:
+# eras = ["eraC_v1", "eraC_v2", "eraC_v3", "eraC_v4", "eraD_v1", "eraD_v2"]
+
+with open("tuplelist.json") as f:
     cfg = json.load(f)
 
-for period in periods:
+def submit_jobs(period):
     for sample in samples:
-        for entry in cfg[period][sample]:
+        if sample == "data":
+            isData = 1
+        else:
+            isData = 0
+            
+        # for era in eras:
+        for era in cfg[period][sample]:
+            
+
             submit_description = f"""
 executable = mkfile.sh
-arguments = {period} {entry['dataset']} {entry['path']} $(Process)
-log = ./condor_logs/mkfile_{period}_{entry['dataset']}.log
-JobBatchName = IPres_ZeroBias_mkfile_{period}_{entry['dataset']}
-request_cpus = 4
-request_memory = 8G
+arguments = {period} {era['dataset']} {era['path']} {isData} $(Process)
+log = ./condor_logs/mkfile_{period}_{era['dataset']}.log
+JobBatchName = IPres_ZeroBias_mkfile_{period}_{era['dataset']}
+request_cpus = 1
+request_memory = 1G
 request_disk = 10M
++JobFlavour = "workday"
 notify_user = kai.kang@cern.ch
-notification = error 
+notification = error
 max_retries = 1
 should_transfer_files = NO
-queue {entry['njobs']}
+queue {era['njobs']}
 """
             subprocess.run(["condor_submit"], input=submit_description.encode())
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python PU_factor.py <period>  # e.g. 2022preEE or 2022postEE")
+        sys.exit(1)
+    sys.exit(submit_jobs(sys.argv[1]))

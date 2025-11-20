@@ -1,29 +1,41 @@
+import sys
 import subprocess
-import json
+import os;
 
-# periods = ["2022_preEE", "2022_postEE", "2023_preBPix", "2023_postBPix", "2024"]
-periods = ["2023_preBPix"]
-# samples = ["data", "mc"]
-samples = ["mc"]
+def submit_jobs(period):
 
-with open("mkmerge.json") as f:
-    cfg = json.load(f)
+    os.makedirs(f"/eos/home-k/kakang/IPres/analysis/ZeroBias/logs/{period}/pv_res/", exist_ok=True)
+    os.makedirs(f"/eos/home-k/kakang/IPres/analysis/ZeroBias/json/{period}/pv_res/", exist_ok=True)
+    os.makedirs(f"/eos/home-k/kakang/IPres/analysis/ZeroBias/figures/{period}/pv_res/pvx_fit", exist_ok=True)
+    os.makedirs(f"/eos/home-k/kakang/IPres/analysis/ZeroBias/figures/{period}/pv_res/pvy_fit", exist_ok=True)
+    os.makedirs(f"/eos/home-k/kakang/IPres/analysis/ZeroBias/figures/{period}/pv_res/pvz_fit", exist_ok=True)
+    os.makedirs(f"/eos/home-k/kakang/IPres/analysis/ZeroBias/figures/{period}/pv_res/pullx_fit", exist_ok=True)
+    os.makedirs(f"/eos/home-k/kakang/IPres/analysis/ZeroBias/figures/{period}/pv_res/pully_fit", exist_ok=True)
+    os.makedirs(f"/eos/home-k/kakang/IPres/analysis/ZeroBias/figures/{period}/pv_res/pullz_fit", exist_ok=True)
 
-for period in periods:
-    for sample in samples:
-        for entry in cfg[period][sample]:
-            submit_description = f"""
-executable = mkmerge.sh
-arguments = {period} {entry['dataset']} {entry['path']}
-log = ./condor_logs/mkfile_{period}_{entry['dataset']}.log
-JobBatchName = IPres_ZeroBias_mkfile_{period}_{entry['dataset']}
-request_cpus = 4
+    scheduler_log = f"./condor_logs/pvres_{period}.log"
+    if os.path.exists(scheduler_log):
+        os.remove(scheduler_log)
+
+    submit_description = f"""
+executable = pv_res.sh
+arguments = {period} $(Process)
+log = ./condor_logs/pvres_{period}.log
+JobBatchName = IPres_ZeroBias_pvres_{period}
+request_cpus = 1
 request_memory = 8G
 request_disk = 10M
++JobFlavour = "workday"
 notify_user = kai.kang@cern.ch
-notification = always
+notification = error
 max_retries = 1
 should_transfer_files = NO
-queue
+queue 100
 """
-            subprocess.run(["condor_submit"], input=submit_description.encode())
+    subprocess.run(["condor_submit"], input=submit_description.encode())
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python pv_res.py <period>  # e.g. 2022preEE or 2022postEE")
+        sys.exit(1)
+    sys.exit(submit_jobs(sys.argv[1]))

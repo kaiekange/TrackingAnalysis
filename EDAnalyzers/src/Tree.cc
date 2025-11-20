@@ -29,6 +29,9 @@ void ResTree::Init()
     trig_PFHT1050_pass = false;
     trig_PFHT350_pass = false;
 
+    NumTrueInts = null;
+    NumPUInts = null;
+
     bs_type = null;
     bs_x0 = null;
     bs_y0 = null;
@@ -143,7 +146,7 @@ void ResTree::Init()
     pv_zError_p2.clear();
 }
 
-void ResTree::CreateBranches()
+void ResTree::CreateBranches(Bool_t runOnData)
 {
     tree->Branch("ev_run", &ev_run, "ev_run/I");
     tree->Branch("ev_id", &ev_id, "ev_id/I");
@@ -166,6 +169,12 @@ void ResTree::CreateBranches()
     tree->Branch("trig_PFHT890_pass", &trig_PFHT890_pass, "trig_PFHT890_pass/O");
     tree->Branch("trig_PFHT1050_pass", &trig_PFHT1050_pass, "trig_PFHT1050_pass/O");
     tree->Branch("trig_PFHT350_pass", &trig_PFHT350_pass, "trig_PFHT350_pass/O");
+
+    if (!runOnData)
+    {
+        tree->Branch("NumTrueInts", &NumTrueInts, "NumTrueInts/I");
+        tree->Branch("NumPUInts", &NumTrueInts, "NumPUInts/I");
+    }
 
     tree->Branch("bs_type", &bs_type, "bs_type/I");
     tree->Branch("bs_x0", &bs_x0, "bs_x0/F");

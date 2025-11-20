@@ -18,7 +18,7 @@ public:
     TTree *tree;
 
     void Init();
-    void CreateBranches();
+    void CreateBranches(Bool_t runOnData);
 
     Int_t ev_run;
     Int_t ev_id;
@@ -41,6 +41,9 @@ public:
     Bool_t trig_PFHT890_pass;
     Bool_t trig_PFHT1050_pass;
     Bool_t trig_PFHT350_pass;
+
+    Int_t NumTrueInts;
+    Int_t NumPUInts;
 
     Int_t bs_type;
     Float_t bs_x0;

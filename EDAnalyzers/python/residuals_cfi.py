@@ -22,12 +22,13 @@ residuals = cms.EDAnalyzer("Residuals",
             maxDzError = cms.double(1.0),
             minPt = cms.double(0.0),
             maxEta = cms.double(5.0), # 2.4
+            minValidStripHits = cms.int32(0),
             trackQuality = cms.string("any")
             ),                                
 
         # https://github.com/cms-sw/cmssw/blob/master/RecoVertex/PrimaryVertexProducer/python/TkClusParameters_cff.py#L3
         # TkClusParameters = cms.PSet(algorithm = cms.string("DA_vect"),
-        #     TkDAClusParameters = cms.PSet(coolingFactor = cms.double(0.6),  #  moderate annealing speed
+        #         TkDAClusParameters = cms.PSet(coolingFactor = cms.double(0.6),  #  moderate annealing speed
         #         Tmin = cms.double(2.0),            #  end of annealing
         #         Tpurge = cms.double(2.0),         # cleaning
         #         Tstop = cms.double(0.5),          # end of annealing
@@ -43,7 +44,7 @@ residuals = cms.EDAnalyzer("Residuals",
         #         delta_lowT = cms.double(1.e-3),   # convergence requirement at low T,
         #         runInBlocks = cms.bool(False),    # activate the DA running in blocks of z sorted tracks
         #         )
-#     ),
+        # ),
 
         TkClusParameters = cms.PSet(
                 algorithm   = cms.string("DA_vect"),
@@ -67,8 +68,6 @@ residuals = cms.EDAnalyzer("Residuals",
                     overlap_frac = cms.double(0.0)    # overlap between consecutive blocks (blocks_size*overlap_frac)
                     )
                 ),
-
-
 
         VxFitterParameters = cms.PSet(algorithm=cms.string('AVF'),
                 minNdof = cms.double(0.0),

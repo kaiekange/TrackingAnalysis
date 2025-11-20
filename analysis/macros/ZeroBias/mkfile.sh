@@ -3,20 +3,20 @@
 period=$1
 dataset=$2
 infilepath=$3
-process=$(( $4 + 1 ))
+isData=$4
+process=$(( $5 + 1 ))
+
+mkdir -p "/eos/home-k/kakang/IPres/analysis/ZeroBias/tuples/${period}/${dataset}"
+mkdir -p "/eos/home-k/kakang/IPres/analysis/ZeroBias/logs/${period}/mkfile/"
 
 infile="${infilepath}/output_${process}.root"
-mkdir -p "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/ZeroBias/tuples/${period}/${dataset}"
-outfile="/pnfs/iihe/cms/store/user/kakang/IPres/analysis/ZeroBias/tuples/${period}/${dataset}/skimmed_${process}.root"
-mkdir -p "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/ZeroBias/logs/${period}/mkfile/${dataset}"
-logfile="/pnfs/iihe/cms/store/user/kakang/IPres/analysis/ZeroBias/logs/${period}/mkfile/${dataset}/skimmed_${process}.log"
+outfile="/eos/home-k/kakang/IPres/analysis/ZeroBias/tuples/${period}/${dataset}/skimmed_${process}.root"
+logfile="/eos/home-k/kakang/IPres/analysis/ZeroBias/logs/${period}/mkfile/${dataset}.log"
 
 if [[ ! -f "${infile}" ]]; then
-    rm -f "${logfile}" "${outfile}"
-    echo "${period}, ${dataset}, file ${process} doesn't exist" &>> mkfile.log
+    echo "${period}, ${dataset}, file ${process} doesn't exist" &>> ${logfile}
 else
-    if [[ ! -f "${logfile}"  ||  ! -f "${outfile}" ]]; then
-        rm -f "${logfile}" "${outfile}"
-        root -l -b -q "mkfile.cc(\"${infile}\", \"${outfile}\")" &> ${logfile}
+    if [[ ! -f "${outfile}" ]]; then
+        root -l -b -q "/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/analysis/macros/ZeroBias/mkfile.cc(\"${infile}\", \"${outfile}\", ${isData})"
     fi
 fi

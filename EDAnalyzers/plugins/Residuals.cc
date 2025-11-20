@@ -41,6 +41,8 @@
 
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
+
 #include <TrackingTools/TrajectoryState/interface/PerigeeConversions.h>
 #include <TrackingTools/TrajectoryState/interface/TrajectoryStateClosestToPoint.h>
 #include <TrackingTools/PatternTools/interface/TSCPBuilderNoMaterial.h>
@@ -59,7 +61,7 @@
 namespace
 {
     Bool_t sortPt(const reco::TransientTrack &t1,
-                const reco::TransientTrack &t2)
+                  const reco::TransientTrack &t2)
     {
         return t1.track().pt() > t2.track().pt();
     }
@@ -145,6 +147,7 @@ private:
     edm::EDGetTokenT<reco::BeamSpot> beamspotToken_;
     edm::EDGetTokenT<Double_t> rhoToken_;
     edm::EDGetTokenT<edm::TriggerResults> triggerToken_;
+    edm::EDGetTokenT<std::vector<PileupSummaryInfo>> PileupToken;
 
     // --- track selection variables
     Double_t tkMinPt;
@@ -161,6 +164,7 @@ private:
 
     VertexReProducer *revertex;
 
+    Bool_t runOnData;
     Int_t eventScale;
     Int_t eventModulo;
     Int_t trackScale;
@@ -191,6 +195,9 @@ Residuals::Residuals(const edm::ParameterSet &pset) : magFieldToken_(esConsumes<
     edm::InputTag TriggerBitsTag_ = pset.getParameter<edm::InputTag>("TriggerResultsLabel");
     triggerToken_ = consumes<edm::TriggerResults>(TriggerBitsTag_);
 
+    edm::InputTag PileupTag("slimmedAddPileupInfo");
+    PileupToken = consumes<std::vector<PileupSummaryInfo>>(PileupTag);
+
     beamSpotConfig = pset.getParameter<std::string>("BeamSpotConfig");
 
     tkMinPt = pset.getParameter<Double_t>("TkMinPt");
@@ -210,6 +217,7 @@ Residuals::Residuals(const edm::ParameterSet &pset) : magFieldToken_(esConsumes<
     edm::ConsumesCollector c{consumesCollector()};
     revertex = new VertexReProducer(pset, c);
 
+    runOnData = pset.getParameter<Bool_t>("RunOnData");
     eventScale = pset.getParameter<Int_t>("EventScale");
     eventModulo = pset.getParameter<Int_t>("EventModulo");
     trackScale = pset.getParameter<Int_t>("TrackScale");
@@ -231,7 +239,7 @@ void Residuals::beginJob()
     f.SetCompressionAlgorithm(ROOT::kZSTD);
     f.SetCompressionLevel(5);
     ftree = new ResTree(fs->make<TTree>("tree", "tree"));
-    ftree->CreateBranches();
+    ftree->CreateBranches(runOnData);
 
     nEventsProcessed_ = 0;
     nEventsScaled_ = 0;
@@ -243,7 +251,7 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
 
     if ((nEventsProcessed_ - 1) % eventScale != static_cast<ULong_t>(eventModulo) && eventScale > 0)
         return;
-    
+
     nEventsScaled_++;
 
     using namespace edm;
@@ -336,6 +344,21 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
             ftree->trig_PFHT890_pass = pass;
         else if (trigName.Contains("HLT_PFHT1050_v"))
             ftree->trig_PFHT1050_pass = pass;
+    }
+
+    // Pileup info
+    if (!runOnData)
+    {
+        edm::Handle<std::vector<PileupSummaryInfo>> PileupInfo;
+        iEvent.getByToken(PileupToken, PileupInfo);
+
+        for(std::vector<PileupSummaryInfo>::const_iterator iPU = PileupInfo->begin(); iPU != PileupInfo->end(); iPU++){
+            Int_t BX = iPU->getBunchCrossing();
+            if(BX == 0){
+                ftree->NumTrueInts = iPU->getTrueNumInteractions();
+                ftree->NumPUInts = iPU->getPU_NumInteractions();
+            }
+        }
     }
 
     Double_t micron = 10000;

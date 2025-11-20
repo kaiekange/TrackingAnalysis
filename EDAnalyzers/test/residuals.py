@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 
 options = VarParsing('analysis')
-options.register('isData', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Run on data')
+options.register('RunOnData', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Run on data')
 options.register('GlobalTag', '124X_dataRun3_v15', VarParsing.multiplicity.singleton, VarParsing.varType.string, 'Global tag')
 options.register('EventScale', 100, VarParsing.multiplicity.singleton, VarParsing.varType.int, 'Event scale')
 options.register('EventModulo', 10, VarParsing.multiplicity.singleton, VarParsing.varType.int, 'Event modulo')
@@ -36,14 +36,10 @@ process.load('RecoVertex.PrimaryVertexProducer.OfflinePrimaryVertices_cfi')
 
 process.load('TrackingAnalysis.EDAnalyzers.residuals_cfi')
 process.residuals.BeamSpotConfig = ''
-process.residuals.AddLostTracks = False
-
-process.residuals.RunOnData = False
-if options.isData:
-    process.residuals.RunOnData = True
 
 process.residuals.stageL1Trigger = cms.uint32(2)
 
+process.residuals.RunOnData = cms.bool(options.RunOnData)
 process.residuals.EventScale = cms.int32(options.EventScale)
 process.residuals.EventModulo = cms.int32(options.EventModulo)
 
