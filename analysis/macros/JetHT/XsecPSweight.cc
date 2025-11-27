@@ -90,12 +90,12 @@ bool selectcellmask(const bool trig_pass[10], const bool* cell_mask) {
     return false;
 }
 
-int XsecPSweight(TString era, int iPT, TString PTrange){
+int XsecPSweight(TString era, int iPT, TString period){
 
     ROOT::EnableImplicitMT();
 
-    // ROOT::RDataFrame myDF("mytree", "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/2022_mc_"+PTrange+"_"+era+"/S5M*/skimmed_*.root");
-    ROOT::RDataFrame myDF("mytree", "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/2022_mc_"+PTrange+"_"+era+"/skimmed_*.root");
+    // ROOT::RDataFrame myDF("mytree", "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/2022_mc_"+period+"_"+era+"/S5M*/skimmed_*.root");
+    ROOT::RDataFrame myDF("mytree", "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/2022_mc_"+period+"_"+era+"/skimmed_*.root");
 
     std::vector<int> nevents;
 
@@ -146,7 +146,7 @@ int XsecPSweight(TString era, int iPT, TString PTrange){
                 {"trig_PFHT1050_pass", "trig_PFHT890_pass", "trig_PFHT780_pass", "trig_PFHT680_pass", "trig_PFHT590_pass", "trig_PFHT510_pass", "trig_PFHT430_pass", "trig_PFHT370_pass", "trig_PFHT250_pass", "trig_PFHT180_pass"}
                 );
 
-    XsecPSDF.Snapshot("mytree", "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/2022_mc_XsecPSmask/all_skimmed_2022_mc_"+PTrange+"_"+era+".root");
+    XsecPSDF.Snapshot("mytree", "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/2022_mc_XsecPSmask/all_skimmed_2022_mc_"+period+"_"+era+".root");
 
     return 0;
 }

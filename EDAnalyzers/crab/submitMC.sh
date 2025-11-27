@@ -3,37 +3,37 @@
 source /cvmfs/cms.cern.ch/crab3/crab.sh
 
 ##2022 preEE
-# datasetlist="mc_2022_ZeroBias_preEE.txt"
+# datasetlist="DatasetList/mc_2022_ZeroBias_preEE.txt"
 # GLOBALTAG="132X_mcRun3_2022_realistic_v3"
-#datasetlist="mc_2022_JetHT_preEE.txt"
-#GLOBALTAG="130X_mcRun3_2022_realistic_v5"
+# datasetlist="DatasetList/mc_2022_JetHT_preEE.txt"
+# GLOBALTAG="130X_mcRun3_2022_realistic_v5"
 
 ##2022 postEE
-datasetlist="mc_2022_ZeroBias_postEE.txt"
-GLOBALTAG="132X_mcRun3_2022_realistic_postEE_v4"
-#datasetlist="mc_2022_JetHT_postEE.txt"
-#GLOBALTAG="130X_mcRun3_2022_realistic_postEE_v6"
+# datasetlist="DatasetList/mc_2022_ZeroBias_postEE.txt"
+# GLOBALTAG="132X_mcRun3_2022_realistic_postEE_v4"
+# datasetlist="DatasetList/mc_2022_JetHT_postEE.txt"
+# GLOBALTAG="130X_mcRun3_2022_realistic_postEE_v6"
 
 ##2023 preBPix
-# datasetlist="mc_2023_ZeroBias_preBPix.txt"
-# datasetlist="mc_2023_JetHT_preBPix.txt"
+# datasetlist="DatasetList/mc_2023_ZeroBias_preBPix.txt"
+# datasetlist="DatasetList/mc_2023_JetHT_preBPix.txt"
 # GLOBALTAG="130X_mcRun3_2023_realistic_v14"
 
 ##2023 postBPix
-# datasetlist="mc_2023_ZeroBias_postBPix.txt"
-# datasetlist="mc_2023_JetHT_postBPix.txt"
-# GLOBALTAG="130X_mcRun3_2023_realistic_postBPix_v2"
+# datasetlist="DatasetList/mc_2023_ZeroBias_postBPix.txt"
+datasetlist="DatasetList/mc_2023_JetHT_postBPix.txt"
+GLOBALTAG="130X_mcRun3_2023_realistic_postBPix_v2"
 
 ##2024
-# datasetlist="mc_2024_ZeroBias.txt"
-# datasetlist="mc_2024_JetHT.txt"
+# datasetlist="DatasetList/mc_2024_ZeroBias.txt"
+# datasetlist="DatasetList/mc_2024_JetHT.txt"
 # GLOBALTAG="150X_mcRun3_2024_realistic_v2"
 
 configtemplate="crabConfigTemplate.py"
 ver="Track-v20251119"
 prodv="/store/user/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
 pver="0"
-EVENTSCALE=2
+EVENTSCALE=10
 
 datasets=()
 while read -r name; do

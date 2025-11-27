@@ -24,7 +24,14 @@
 *.out
 *.app
 *.dwo
+*.root
+EDAnalyzers/condor/condor_logs
+EDAnalyzers/condor/InputList
+EDAnalyzers/crab/LUMI
+EDAnalyzers/crab/Status
+EDAnalyzers/crab/DatasetList
 EDAnalyzers/crab/crab_*
+EDAnalyzers/crab/*.txt
 EDAnalyzers/crab/oldjobs
 EDAnalyzers/crab/crabConfig.py
 EDAnalyzers/crab/__pycache__
@@ -32,7 +39,5 @@ EDAnalyzers/python/__pycache__
 EDAnalyzers/python/__init__.py
 EDAnalyzers/test/__init__.py
 EDAnalyzers/test/__pycache__
-analysis/figures
-analysis/logs
-analysis/tuples
-analysis/json
+analysis/macros/ZeroBias/condor_logs
+analysis/macros/JetHT/condor_logs

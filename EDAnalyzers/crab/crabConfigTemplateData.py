@@ -18,8 +18,8 @@ config.Data.totalUnits = -1
 config.Data.unitsPerJob = 150
 
 #config.Data.allowNonValidInputDataset = True
-config.Data.lumiMask = 'JSON/Cert_Collisions2022_355100_362760_Golden.json'
-# config.Data.lumiMask = 'JSON/Cert_Collisions2023_366442_370790_Golden.json'
+# config.Data.lumiMask = 'JSON/Cert_Collisions2022_355100_362760_Golden.json'
+config.Data.lumiMask = 'JSON/Cert_Collisions2023_366442_370790_Golden.json'
 # config.Data.lumiMask = 'JSON/Cert_Collisions2024_378981_386951_Golden.json'
 config.Data.publication = False
 config.Data.inputDataset = 'INPUTDATASET'
@@ -32,4 +32,4 @@ config.User.voGroup = 'becms'
 config.section_('Site')
 # config.Site.storageSite = 'T2_BE_IIHE'
 config.Site.storageSite = 'T3_CH_CERNBOX'
-config.Site.blacklist = ['T2_BE_IIHE']
+# config.Site.blacklist = ['T2_BE_IIHE']

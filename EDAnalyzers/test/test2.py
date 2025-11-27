@@ -4,8 +4,9 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 options.register('RunOnData', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Run on data')
 # options.register('GlobalTag', '124X_dataRun3_v15', VarParsing.multiplicity.singleton, VarParsing.varType.string, 'Global tag')
+options.register('GlobalTag', '130X_mcRun3_2023_realistic_v14', VarParsing.multiplicity.singleton, VarParsing.varType.string, 'Global tag')
 # options.register('GlobalTag', '130X_dataRun3_PromptAnalysis_v1', VarParsing.multiplicity.singleton, VarParsing.varType.string, 'Global tag')
-options.register('GlobalTag', '150X_mcRun3_2024_realistic_v2', VarParsing.multiplicity.singleton, VarParsing.varType.string, 'Global tag')
+# options.register('GlobalTag', '150X_mcRun3_2024_realistic_v2', VarParsing.multiplicity.singleton, VarParsing.varType.string, 'Global tag')
 options.register('EventScale', 100, VarParsing.multiplicity.singleton, VarParsing.varType.int, 'Event scale')
 options.register('EventModulo', 10, VarParsing.multiplicity.singleton, VarParsing.varType.int, 'Event modulo')
 options.parseArguments()
@@ -17,7 +18,8 @@ source = cms.Source("PoolSource",fileNames = readFiles, secondaryFileNames = sec
 # readFiles.extend( ['/store/data/Run2024C/ZeroBias/MINIAOD/MINIv6NANOv15-v1/2530000/8aaad4e6-eb36-4314-b223-4c9916141f59.root'] )
 # readFiles.extend( ['/store/data/Run2023C/ZeroBias1/MINIAOD/22Sep2023_v4-v1/60000/b37d1dea-45c1-4814-818c-4226a4264cde.root'] )
 # readFiles.extend( ['/store/mc/RunIII2024Summer24MiniAODv6/SingleNeutrino_Par-E-10_gun/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/096f7efe-6846-4acc-b5d5-f5aa7db44286.root'] )
-readFiles.extend( ['/store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-170to300_Fil-MuEnriched_TuneCP5_13p6TeV_pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/faa37b4f-5227-4b03-b613-5fd30c8f6350.root'] )
+readFiles.extend( ['/store/mc/Run3Summer23MiniAODv4/QCD_PT-50to80_TuneCP5_13p6TeV_pythia8/MINIAODSIM/130X_mcRun3_2023_realistic_v14-v2/2530000/009f53b5-0dc0-4ce1-a3c0-3fc65136ab98.root'] )
+# readFiles.extend( ['/store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-170to300_Fil-MuEnriched_TuneCP5_13p6TeV_pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/faa37b4f-5227-4b03-b613-5fd30c8f6350.root'] )
 
 process = cms.Process("IpResiduals")
 
