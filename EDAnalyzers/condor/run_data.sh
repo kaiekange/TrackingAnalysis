@@ -6,12 +6,17 @@ EventScale=$3
 EventModulo=$4
 InputList=$5
 OutputDir=$6
-Process=$(($7 + 1))
-GoldenJSON=$8
+GroupSize=$7
+Process=$(($8 + 1))
+GoldenJSON=$9
 
-CfgFile="/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/EDAnalyzers/test/residuals_condor.py"
+StartLine=$(( Process * GroupSize + 1 ))
+EndLine=$(( StartLine + GroupSize - 1 ))
+
+InputFile="$(sed -n "${StartLine},${EndLine}p" "${InputList}")"
+
+CfgFile="/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/EDAnalyzers/test/residuals_condor_data.py"
 LogFile="${OutputDir}/log/output_${Process}.log"
-InputFile="$(sed -n "${Process}p" "${InputList}")"
 OutputFile="${OutputDir}/output_${Process}.root"
 
 if [ -e "${OutputFile}" ]; then

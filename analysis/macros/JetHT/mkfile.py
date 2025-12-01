@@ -1,10 +1,10 @@
 import sys
 import subprocess
 import json
-import os;
+import os
 
-samples = ["data", "mc"]
-# samples = ["mc"]
+# samples = ["data", "mc"]
+samples = ["mc"]
 # samples = ["data"]
 
 with open("tuplelist.json") as f:
@@ -21,9 +21,27 @@ def submit_jobs(period):
         # for era in eras:
         for era in cfg[period][sample]:
 
-            os.makedirs(f"/eos/home-k/kakang/IPres/analysis/JetHT/tuples/{period}/{era['dataset']}", exist_ok=True)
-            os.makedirs(f"/eos/home-k/kakang/IPres/analysis/JetHT/logs/{period}/mkfile", exist_ok=True)
-            os.makedirs(f"/eos/home-k/kakang/IPres/analysis/JetHT/json/{period}", exist_ok=True)
+
+            if(era['dataset'] != "MC_600to800"): continue
+
+            os.makedirs(
+                f"/eos/home-k/kakang/IPres/analysis/JetHT/tuples/{period}/{era['dataset']}",
+                exist_ok=True,
+            )
+            os.makedirs(
+                f"/eos/home-k/kakang/IPres/analysis/JetHT/logs/{period}/mkfile",
+                exist_ok=True,
+            )
+            os.makedirs(
+                f"/eos/home-k/kakang/IPres/analysis/JetHT/json/{period}", exist_ok=True
+            )
+
+            if os.path.exists(
+                f"/eos/home-k/kakang/IPres/analysis/JetHT/logs/{period}/mkfile/{era['dataset']}.log"
+            ):
+                os.remove(
+                    f"/eos/home-k/kakang/IPres/analysis/JetHT/logs/{period}/mkfile/{era['dataset']}.log"
+                )
 
             scheduler_log = f"./condor_logs/mkfile_{period}_{era['dataset']}.log"
             if os.path.exists(scheduler_log):

@@ -1,13 +1,9 @@
 #!/bin/bash
 
-iera=$1
+period=$1
 process=$2
 
-eras=("preEE" "postEE")
-era=${eras[$iera]}
-
+logfile="/eos/home-k/kakang/IPres/analysis/JetHT/logs/${period}/ip_res/run_${process}.log"
 {
-    source /cvmfs/cms.cern.ch/cmsset_default.sh
-    cd /user/kakang/IPres/CMSSW_14_0_10/src
-    cmssw-el8 -- "cmsenv; cd TrackingAnalysis/analysis/macros/JetHT; root -l -b -q \"ip_res.cc(${iera},${process})\""
-} &> "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/logs/JetHT/ip_res_${era}/run_${process}.log"
+    root -b -q "/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/analysis/macros/JetHT/ip_res2.cc(\"${period}\", ${process})"
+} &> "${logfile}"

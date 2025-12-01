@@ -15,7 +15,13 @@ options.parseArguments()
 readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring()
 
-source = cms.Source( "PoolSource", fileNames = cms.untracked.vstring(options.InputFile) )
+input_files = [f.strip() for f in options.InputFile.split() if f.strip()]
+
+print(input_files)
+
+source = cms.Source("PoolSource",
+    fileNames = cms.untracked.vstring(*input_files)
+)
 
 process = cms.Process("IpResiduals")
 

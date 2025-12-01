@@ -24,8 +24,6 @@ Int_t mkfile(TString infilename, TString outfilename, Bool_t isData)
         return 1;
     }
 
-    
-
     Bool_t trig_PFHT1050_pass;
     Bool_t trig_PFHT890_pass;
     Bool_t trig_PFHT780_pass;
@@ -153,7 +151,7 @@ Int_t mkfile(TString infilename, TString outfilename, Bool_t isData)
         outtree->Branch("NumPUInts", &NumPUInts);
     }
 
-    Int_t nentries = intree->GetEntries();
+    Long64_t nentries = intree->GetEntries();
     infotree->Branch("total_entries", &nentries);
     infotree->Fill();
 
@@ -167,72 +165,7 @@ Int_t mkfile(TString infilename, TString outfilename, Bool_t isData)
         pv_trk_eta_flatten.clear();
         pv_trk_phi_flatten.clear();
 
-        if(trig_PFHT1050_pass == true){
-            trig_PFHT890_pass  = false;
-            trig_PFHT780_pass  = false;
-            trig_PFHT680_pass  = false;
-            trig_PFHT590_pass  = false;
-            trig_PFHT510_pass  = false;
-            trig_PFHT430_pass  = false;
-            trig_PFHT370_pass  = false;
-            trig_PFHT250_pass  = false;
-            trig_PFHT180_pass  = false;
-        }
-        else if(trig_PFHT890_pass == true){
-            trig_PFHT780_pass  = false;
-            trig_PFHT680_pass  = false;
-            trig_PFHT590_pass  = false;
-            trig_PFHT510_pass  = false;
-            trig_PFHT430_pass  = false;
-            trig_PFHT370_pass  = false;
-            trig_PFHT250_pass  = false;
-            trig_PFHT180_pass  = false;
-        }
-        else if(trig_PFHT780_pass == true){
-            trig_PFHT680_pass  = false;
-            trig_PFHT590_pass  = false;
-            trig_PFHT510_pass  = false;
-            trig_PFHT430_pass  = false;
-            trig_PFHT370_pass  = false;
-            trig_PFHT250_pass  = false;
-            trig_PFHT180_pass  = false;
-        }
-        else if(trig_PFHT680_pass == true){
-            trig_PFHT590_pass  = false;
-            trig_PFHT510_pass  = false;
-            trig_PFHT430_pass  = false;
-            trig_PFHT370_pass  = false;
-            trig_PFHT250_pass  = false;
-            trig_PFHT180_pass  = false;
-        }
-        else if(trig_PFHT590_pass == true){
-            trig_PFHT510_pass  = false;
-            trig_PFHT430_pass  = false;
-            trig_PFHT370_pass  = false;
-            trig_PFHT250_pass  = false;
-            trig_PFHT180_pass  = false;
-        }
-        else if(trig_PFHT510_pass == true){
-            trig_PFHT430_pass  = false;
-            trig_PFHT370_pass  = false;
-            trig_PFHT250_pass  = false;
-            trig_PFHT180_pass  = false;
-        }
-        else if(trig_PFHT430_pass == true){
-            trig_PFHT370_pass  = false;
-            trig_PFHT250_pass  = false;
-            trig_PFHT180_pass  = false;
-        }
-        else if(trig_PFHT370_pass == true){
-            trig_PFHT250_pass  = false;
-            trig_PFHT180_pass  = false;
-        }
-        else if(trig_PFHT250_pass == true){
-            trig_PFHT180_pass  = false;
-        }
-        else if(trig_PFHT180_pass == false){
-            continue;
-        }
+        if( !(trig_PFHT1050_pass || trig_PFHT890_pass || trig_PFHT780_pass || trig_PFHT680_pass || trig_PFHT590_pass || trig_PFHT510_pass || trig_PFHT430_pass || trig_PFHT370_pass || trig_PFHT250_pass || trig_PFHT180_pass ) ) continue;
 
         if (pv_NTracks->size() == 0)
             continue;
