@@ -12,59 +12,55 @@ CONFIG = {
     "2022_preEE": {
         "ZeroBias": {
             "Datasets": "DatasetsList/mc_2022_ZeroBias_preEE.txt",
-            "GlobalTag": "132X_mcRun3_2022_realistic_v3"
+            "GlobalTag": "132X_mcRun3_2022_realistic_v3",
         },
         "JetHT": {
             "Datasets": "DatasetsList/mc_2022_JetHT_preEE.txt",
-            "GlobalTag": "130X_mcRun3_2022_realistic_v5"
-        }
+            "GlobalTag": "130X_mcRun3_2022_realistic_v5",
+        },
     },
-
     "2022_postEE": {
         "ZeroBias": {
             "Datasets": "DatasetsList/mc_2022_ZeroBias_postEE.txt",
-            "GlobalTag": "132X_mcRun3_2022_realistic_postEE_v4"
+            "GlobalTag": "132X_mcRun3_2022_realistic_postEE_v4",
         },
         "JetHT": {
             "Datasets": "DatasetsList/mc_2022_JetHT_postEE.txt",
-            "GlobalTag": "130X_mcRun3_2022_realistic_postEE_v6"
-        }
+            "GlobalTag": "130X_mcRun3_2022_realistic_postEE_v6",
+        },
     },
-
     "2023_preBPix": {
         "ZeroBias": {
             "Datasets": "DatasetsList/mc_2023_ZeroBias_preBPix.txt",
-            "GlobalTag": "130X_mcRun3_2023_realistic_v14"
+            "GlobalTag": "130X_mcRun3_2023_realistic_v14",
         },
         "JetHT": {
             "Datasets": "DatasetsList/mc_2023_JetHT_preBPix.txt",
-            "GlobalTag": "130X_mcRun3_2023_realistic_v14"
-        }
+            "GlobalTag": "130X_mcRun3_2023_realistic_v14",
+        },
     },
-
-
     "2023_postBPix": {
         "ZeroBias": {
             "Datasets": "DatasetsList/mc_2023_ZeroBias_postBPix.txt",
-            "GlobalTag": "130X_mcRun3_2023_realistic_postBPix_v2"
+            "GlobalTag": "130X_mcRun3_2023_realistic_postBPix_v2",
         },
         "JetHT": {
             "Datasets": "DatasetsList/mc_2023_JetHT_postBPix.txt",
-            "GlobalTag": "130X_mcRun3_2023_realistic_postBPix_v2"
-        }
+            "GlobalTag": "130X_mcRun3_2023_realistic_postBPix_v2",
+        },
     },
-
     "2024": {
         "ZeroBias": {
             "Datasets": "DatasetsList/mc_2024_ZeroBias.txt",
-            "GlobalTag": "150X_mcRun3_2024_realistic_v2"
+            "GlobalTag": "150X_mcRun3_2024_realistic_v2",
         },
         "JetHT": {
             "Datasets": "DatasetsList/mc_2024_JetHT.txt",
-            "GlobalTag": "150X_mcRun3_2024_realistic_v2"
-        }
-    }
+            "GlobalTag": "150X_mcRun3_2024_realistic_v2",
+        },
+    },
 }
+
 
 def save_das_files(dataset, outfile):
     cmd = f'dasgoclient --query="file dataset={dataset}"'
@@ -75,6 +71,7 @@ def save_das_files(dataset, outfile):
     Path(outfile).write_text("\n".join(lines))
 
     return len(lines)
+
 
 def load_datasets(txtfile):
     datasets = []
@@ -109,23 +106,21 @@ def submitMC(period, datatype):
     GlobalTag = CONFIG[period][datatype]["GlobalTag"]
     Datasets = load_datasets(DatasetList)
 
-    ver="Track-v20251127"
-    prodv=f"/eos/home-k/kakang/Run3TrackingAnalysis/Ntuple/{ver}"
+    ver = "Track-v20251204"
+    prodv = f"/eos/home-k/kakang/Run3TrackingAnalysis/Ntuple/{ver}"
 
     for dataset in Datasets:
-        
+
         title = dataset.split("/")[1].replace("-", "_").split("_Tune")[0]
-        
+
         InputList = f"/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/EDAnalyzers/condor/InputList/{period}_{datatype}_{title}.txt"
 
         njobs = save_das_files(dataset, InputList)
+        njobs = min(njobs, 500)
 
         outdir = convert(dataset, prodv, EVENTSCALE, EVENTMODULO)
 
         os.makedirs(f"{outdir}/log", exist_ok=True)
-
-        # test_cmd = f'./run.sh 0 {GlobalTag} {EVENTSCALE} {EVENTMODULO} {InputList} {outdir} 0'
-        # subprocess.run(test_cmd, shell=True)
 
         scheduler_log = f"condor_logs/IPres_tuple_{period}_{title}.log"
         if os.path.exists(scheduler_log):
@@ -155,4 +150,3 @@ if __name__ == "__main__":
         sys.exit(1)
     submitMC(sys.argv[1], sys.argv[2])
     sys.exit(0)
-

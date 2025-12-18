@@ -4,7 +4,8 @@ from ROOT import RDataFrame, RDF, gInterpreter
 import json
 import numpy as np
 
-nbins = 99
+# nbins = 99
+nbins = 100
 
 def make_hist(df):
     model = ROOT.RDF.TH1DModel("h", "", nbins, 0, nbins)

@@ -5,32 +5,31 @@ import os
 import datetime
 from pathlib import Path
 
-EVENTSCALE = 20
+EVENTSCALE = 10
 EVENTMODULO = 0
+GroupSize = 3
 
 CONFIG = {
-
     "2022": {
         "GlobalTag": "124X_dataRun3_v15",
         "GoldenJSON": "/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/EDAnalyzers/crab/JSON/Cert_Collisions2022_355100_362760_Golden.json",
         "ZeroBias": "DatasetsList/data_2022_ZeroBias.txt",
-        "JetHT": "DatasetsList/data_2022_JetHT.txt"
+        "JetHT": "DatasetsList/data_2022_JetHT.txt",
     },
-
     "2023": {
         "GlobalTag": "130X_dataRun3_PromptAnalysis_v1",
         "GoldenJSON": "/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/EDAnalyzers/crab/JSON/Cert_Collisions2023_366442_370790_Golden.json",
         "ZeroBias": "DatasetsList/data_2023_ZeroBias.txt",
-        "JetHT": "DatasetsList/data_2023_JetHT.txt"
+        "JetHT": "DatasetsList/data_2023_JetHT.txt",
     },
-
     "2024": {
         "GlobalTag": "150X_dataRun3_v2",
         "GoldenJSON": "/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/EDAnalyzers/crab/JSON/Cert_Collisions2024_378981_386951_Golden.json",
         "ZeroBias": "DatasetsList/data_2024_ZeroBias.txt",
-        "JetHT": "DatasetsList/data_2024_JetHT.txt"
-    }
+        "JetHT": "DatasetsList/data_2024_JetHT.txt",
+    },
 }
+
 
 def save_das_files(dataset, outfile):
     cmd = f'dasgoclient --query="file dataset={dataset}"'
@@ -41,6 +40,7 @@ def save_das_files(dataset, outfile):
     Path(outfile).write_text("\n".join(lines))
 
     return len(lines)
+
 
 def load_datasets(txtfile):
     datasets = []
@@ -56,50 +56,40 @@ def load_datasets(txtfile):
 
     return datasets
 
-
-def convert(dataset, prodv, EVENTSCALE, EVENTMODULO):
-    tmpdataset = dataset.lstrip("/")
-    split = tmpdataset.split("/")
-    content = split[0]
-    era_pro = split[1]
-    era_pro = era_pro.replace("-", "_")
-    format_ = split[2]
-    timestamp = datetime.datetime.now().strftime("%y%m%d_%H%M%S")
-    outdir = f"{prodv}/{content}/{era_pro}_{format_}_S{EVENTSCALE}M{EVENTMODULO}/{timestamp}/0000"
-
-    return outdir
-
-
 def submitData(period, datatype):
     DatasetList = CONFIG[period][datatype]
     GlobalTag = CONFIG[period]["GlobalTag"]
     GoldenJSON = CONFIG[period]["GoldenJSON"]
     Datasets = load_datasets(DatasetList)
 
-    ver="Track-v20251201"
-    prodv=f"/eos/home-k/kakang/Run3TrackingAnalysis/Ntuple/{ver}"
-
-    GroupSize = 20
+    ver = "Track-v20251205"
+    prodv = f"/eos/home-k/kakang/Run3TrackingAnalysis/Ntuple/{ver}"
 
     for dataset in Datasets:
 
-        title = f"{dataset.split('/')[1]}_{dataset.split('/')[2].split('-')[0]}_{dataset.split('/')[2].split('-')[-1]}"
+        split = dataset.split("/")
+        content = split[1]
+        era_pro = split[2]
+        format_ = split[3]
+        era_pro = era_pro.replace("-", "_")
+        title = f"{content}_{era_pro}"
+        timestamp = datetime.datetime.now().strftime("%y%m%d_%H%M%S")
+        outdir = f"{prodv}/{content}/{era_pro}_{format_}_S{EVENTSCALE}M{EVENTMODULO}/{timestamp}/0000"
 
         InputList = f"/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/EDAnalyzers/condor/InputList/{period}_{datatype}_{title}.txt"
 
         njobs = save_das_files(dataset, InputList)
-        outdir = convert(dataset, prodv, EVENTSCALE, EVENTMODULO)
+
+        ngroup = (njobs + GroupSize - 1) // GroupSize
 
         os.makedirs(f"{outdir}/log", exist_ok=True)
-
-        n_groups = (njobs + GroupSize - 1) // GroupSize
 
         scheduler_log = f"condor_logs/IPres_tuple_{period}_{title}.log"
         if os.path.exists(scheduler_log):
             os.remove(scheduler_log)
 
         submit_description = f"""
-executable = run_data.sh
+executable = run_group.sh
 arguments = 1 {GlobalTag} {EVENTSCALE} {EVENTMODULO} {InputList} {outdir} {GroupSize} $(Process) {GoldenJSON}
 log = {scheduler_log}
 JobBatchName = IPres_tuple_{period}_{title}
@@ -111,9 +101,10 @@ notify_user = kai.kang@cern.ch
 notification = error
 max_retries = 1
 should_transfer_files = NO
-queue {n_groups}
+queue {ngroup}
 """
         subprocess.run(["condor_submit"], input=submit_description.encode())
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:

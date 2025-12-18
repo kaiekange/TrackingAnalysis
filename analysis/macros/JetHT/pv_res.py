@@ -30,7 +30,7 @@ notify_user = kai.kang@cern.ch
 notification = error
 max_retries = 1
 should_transfer_files = NO
-queue 100
+queue 50
 """
     subprocess.run(["condor_submit"], input=submit_description.encode())
 

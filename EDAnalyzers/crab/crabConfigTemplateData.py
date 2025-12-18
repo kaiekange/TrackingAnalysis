@@ -19,8 +19,8 @@ config.Data.unitsPerJob = 150
 
 #config.Data.allowNonValidInputDataset = True
 # config.Data.lumiMask = 'JSON/Cert_Collisions2022_355100_362760_Golden.json'
-config.Data.lumiMask = 'JSON/Cert_Collisions2023_366442_370790_Golden.json'
-# config.Data.lumiMask = 'JSON/Cert_Collisions2024_378981_386951_Golden.json'
+# config.Data.lumiMask = 'JSON/Cert_Collisions2023_366442_370790_Golden.json'
+config.Data.lumiMask = 'JSON/Cert_Collisions2024_378981_386951_Golden.json'
 config.Data.publication = False
 config.Data.inputDataset = 'INPUTDATASET'
 config.Data.outputDatasetTag = 'OUTPUTDATASETTAG'

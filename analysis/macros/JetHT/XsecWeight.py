@@ -8,6 +8,8 @@ with open("/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/a
 with open("/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/analysis/macros/JetHT/triggerPS.json") as f:
     cfg_trigger = json.load(f)
 
+mask_fraction = 0.01
+
 def XsecWeight(period: str, dataset: str) -> int:
 
     # data_files = [
@@ -30,16 +32,10 @@ def XsecWeight(period: str, dataset: str) -> int:
     ndata["250"]  = df_data.Filter("(!trig_PFHT1050_pass)&&(!trig_PFHT890_pass)&&(!trig_PFHT780_pass)&&(!trig_PFHT680_pass)&&(!trig_PFHT590_pass)&&(!trig_PFHT510_pass)&&(!trig_PFHT430_pass)&&(!trig_PFHT370_pass)&&trig_PFHT250_pass").Count().GetValue()
     ndata["180"]  = df_data.Filter("(!trig_PFHT1050_pass)&&(!trig_PFHT890_pass)&&(!trig_PFHT780_pass)&&(!trig_PFHT680_pass)&&(!trig_PFHT590_pass)&&(!trig_PFHT510_pass)&&(!trig_PFHT430_pass)&&(!trig_PFHT370_pass)&&(!trig_PFHT250_pass)&&trig_PFHT180_pass").Count().GetValue()
 
-    # print(ndata)
-
     # df_data.Snapshot("mytree", f"/eos/home-k/kakang/IPres/analysis/JetHT/tuples/{period}/data.root")
 
     for entry in cfg_tuple[period]["mc"]:
 
-        # if (entry['dataset'] == "MC_50to80"): continue
-        # if (entry['dataset'] == "MC_80to120"): continue
-        # if (entry['dataset'] == "MC_120to170"): continue
-        # if (entry['dataset'] == "MC_170to300"): continue
         if (entry['dataset'] != dataset): continue
 
         mc_files = f"/eos/home-k/kakang/IPres/analysis/JetHT/tuples/{period}/{entry['dataset']}/skimmed_*.root"
@@ -50,7 +46,6 @@ def XsecWeight(period: str, dataset: str) -> int:
 
         Xsec = entry["xsec"]
         Xsec_weight = Xsec / total_entries
-        # print(f"Xsec: {Xsec}, total entries: {total_entries}, weight: {Xsec_weight}")
 
         df_mc = ROOT.RDataFrame("mytree", mc_files)
 
@@ -74,22 +69,14 @@ def XsecWeight(period: str, dataset: str) -> int:
 
         trigs = ["1050", "890", "780", "680", "590", "510", "430", "370", "250", "180"]
         for trig in trigs:
-            Leff[trig] = cfg_trigger[period][f"HLT_PFHT{trig}"]["Leff"]
+            Leff[trig] = cfg_trigger[period][f"HLT_PFHT{trig}"]
             PS_weight[trig] = Leff[trig] / ndata[trig]
             # print(f"HLT_PFHT{trig}: {PS_weight[trig]}")
             frac = nmc[trig] / total_entries if total_entries > 0 else 0.0
-            if frac < 0.001:
+            if frac < mask_fraction:
                 TRG_mask[trig] = 0
             else:
                 TRG_mask[trig] = 1
-
-        # expr = ""
-        # for i, trig in enumerate(trigs):
-        #     expr += f"(trig_PFHT{trig}_pass ? {PS_weight[trig]} : "
-        # expr += "0.0" + ")" * len(trigs)
-
-        # df_mc = df_mc.Define("Xsec_weight", f"{Xsec_weight}") \
-        #             .Define("PS_weight", expr).Snapshot("mytree", out_mc)
 
         # PS_weight: 按优先级选对应 trigger 的 PS_weight[trig]
         expr = ""

@@ -4,7 +4,7 @@ from ROOT import RDataFrame, RDF, gInterpreter
 import json
 import numpy as np
 
-nbins = 99
+nbins = 100
 
 with open("tuplelist.json") as f:
     cfg = json.load(f)
@@ -65,7 +65,6 @@ def official_PU_weight(period: str) -> int:
 
     data_in, mc_in, pileup_in = build_globs_by_period(cfg, period)
 
-    # df_data = ROOT.RDataFrame("mytree", data_in)
     df_mc = ROOT.RDataFrame("mytree", mc_in)
     pileup_file = ROOT.TFile.Open(pileup_in)
 
@@ -78,17 +77,10 @@ def official_PU_weight(period: str) -> int:
 
     dataPU_fac, mcPU_fac = build_factors(h_ratio)
 
-    # declare_lookup_func("compute_factor_data", dataPU_fac)
     declare_lookup_func("compute_factor_mc", mcPU_fac)
 
-    # out_data = (
-    #     f"/eos/home-k/kakang/IPres/analysis/ZeroBias/tuples/{period}/data_corr.root"
-    # )
-    out_mc = f"/eos/home-k/kakang/IPres/analysis/ZeroBias/tuples/{period}/mc_corr.root"
+    out_mc = f"/eos/home-k/kakang/IPres/analysis/ZeroBias/tuples/{period}/mc_corr_mask.root"
 
-    # df_data.Define("PU_factor", "compute_factor_data(ev_nPV)").Snapshot(
-    #     "mytree", out_data
-    # )
     df_mc.Define("PU_factor", "compute_factor_mc(NumTrueInts)").Snapshot("mytree", out_mc)
 
     return 0

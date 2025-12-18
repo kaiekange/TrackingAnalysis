@@ -33,4 +33,4 @@ config.User.voGroup = 'becms'
 config.section_('Site')
 # config.Site.storageSite = 'T2_BE_IIHE'
 config.Site.storageSite = 'T3_CH_CERNBOX'
-config.Site.blacklist = ['T2_BE_IIHE']
+# config.Site.blacklist = ['T2_BE_IIHE']

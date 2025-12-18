@@ -225,13 +225,7 @@ Residuals::Residuals(const edm::ParameterSet &pset) : magFieldToken_(esConsumes<
     rnd = new TRandom3();
 }
 
-Residuals::~Residuals()
-{
-    if (revertex)
-        delete revertex;
-    delete rnd;
-    delete ftree;
-}
+Residuals::~Residuals() {}
 
 void Residuals::beginJob()
 {
@@ -288,7 +282,8 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
 
     // refit primary vertices and put it in a new handle (note: TrackBaseRefs are different)
     vector<TransientVertex> pvs = revertex->makeVertices(tracks, *beamspotHandle, iSetup);
-    std::cout << "Primary vertices = " << primvtxHandle->size() << ", refitted vertices = " << pvs.size() << ", tracks = " << tracks.size() << std::endl;
+    edm::LogPrint("Residuals") << "Primary vertices = " << primvtxHandle->size() << ", refitted vertices = " << pvs.size() << ", tracks = " << tracks.size();
+    // std::cout << "Primary vertices = " << primvtxHandle->size() << ", refitted vertices = " << pvs.size() << ", tracks = " << tracks.size() << std::endl;
     if (pvs.empty())
         return;
 

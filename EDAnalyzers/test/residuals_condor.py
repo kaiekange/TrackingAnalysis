@@ -12,10 +12,7 @@ options.register('OutputFile', 'file:output.root', VarParsing.multiplicity.singl
 options.register('GoldenJSON', 'GOLDENJSON.json', VarParsing.multiplicity.singleton, VarParsing.varType.string, 'Golden JSON')
 options.parseArguments()
 
-readFiles = cms.untracked.vstring()
-secFiles = cms.untracked.vstring()
-
-source = cms.Source( "PoolSource", fileNames = cms.untracked.vstring(options.InputFile) )
+source = cms.Source( "PoolSource", fileNames = cms.untracked.vstring(options.InputFile), skipBadFiles = cms.untracked.bool(True) )
 
 process = cms.Process("IpResiduals")
 
@@ -24,7 +21,7 @@ process.MessageLogger.cerr.FwkReport = cms.untracked.PSet( reportEvery = cms.unt
 
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
-process.GlobalTag.globaltag = options.GlobalTag 
+process.GlobalTag.globaltag = options.GlobalTag
 
 process.load("CondCore.CondDB.CondDB_cfi")
 process.load('Configuration.Geometry.GeometryRecoDB_cff')
@@ -53,6 +50,6 @@ process.residuals.EventModulo = cms.int32(options.EventModulo)
 
 process.TFileService = cms.Service( "TFileService", fileName = cms.string(options.OutputFile), closeFileFast = cms.untracked.bool(True) )
 
-process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(False) )
+process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(False), TryToContinue = cms.untracked.vstring('ProductNotFound') )
 
 process.p = cms.Path( process.residuals )

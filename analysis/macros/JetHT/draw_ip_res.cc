@@ -12,14 +12,16 @@
 
 const TString datatype_text = "High-q^{2} multi-jet events";
 const TString storage_dir = "/eos/home-k/kakang/IPres/analysis/JetHT";
-const Int_t nbins = 500;
+const Int_t nbins = 250;
 
 Int_t draw_ip_res(TString period){
 
     TString figdir = storage_dir + "/figures/" + period + "/ip_res/";
 
     setTDRStyle();
-    lumi_sqrtS = "13.6 TeV, " + period;
+    TString period_title = period;
+    period_title.ReplaceAll("_", " ");
+    lumi_sqrtS = "13.6 TeV, " + period_title;
 
     Float_t reso_data_d0_pt_loeta[nbins];
     Float_t reso_data_dz_pt_loeta[nbins];
@@ -505,32 +507,32 @@ Int_t draw_ip_res(TString period){
     compare_gr(gr_data_d0_pt_loeta, gr_mc_d0_pt_loeta, gr_div_d0_pt_loeta, height_d0_pt_loeta, floor_d0_pt_loeta, pt[0], pt[nbins-1], height_div_d0_pt_loeta, floor_div_d0_pt_loeta, period, "#splitline{"+datatype_text+"}{|#it{#eta}|<1.3}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_pt_loeta");
     compare_gr(gr_data_d0_pt_hieta, gr_mc_d0_pt_hieta, gr_div_d0_pt_hieta, height_d0_pt_hieta, floor_d0_pt_hieta, pt[0], pt[nbins-1], height_div_d0_pt_hieta, floor_div_d0_pt_hieta, period, "#splitline{"+datatype_text+"}{1.3<|#it{#eta}|<2.5}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_pt_hieta");
     compare_gr(gr_data_d0_pt_uleta, gr_mc_d0_pt_uleta, gr_div_d0_pt_uleta, height_d0_pt_uleta, floor_d0_pt_uleta, pt[0], pt[nbins-1], height_div_d0_pt_uleta, floor_div_d0_pt_uleta, period, "#splitline{"+datatype_text+"}{2.5<|#it{#eta}|<3.0}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_pt_uleta");
-    compare_gr(gr_data_d0_pt_alleta, gr_mc_d0_pt_alleta, gr_div_d0_pt_alleta, height_d0_pt_alleta, floor_d0_pt_alleta, pt[0], pt[nbins-1], height_div_d0_pt_alleta, floor_div_d0_pt_alleta, period, "#splitline{"+datatype_text+"}{|#it{#eta}|<3.0}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_pt_alleta");
+    compare_gr(gr_data_d0_pt_alleta, gr_mc_d0_pt_alleta, gr_div_d0_pt_alleta, height_d0_pt_alleta, floor_d0_pt_alleta, pt[0], pt[nbins-1], height_div_d0_pt_alleta, floor_div_d0_pt_alleta, period, datatype_text, "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_pt_alleta");
 
     compare_gr(gr_data_d0_eta_lopt, gr_mc_d0_eta_lopt, gr_div_d0_eta_lopt, height_d0_eta_lopt, floor_d0_eta_lopt, eta[0], eta[nbins-1], height_div_d0_eta_lopt, floor_div_d0_eta_lopt, period, "#splitline{"+datatype_text+"}{0.1<#it{p_{T}}<1 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_eta_lopt");
     compare_gr(gr_data_d0_eta_hipt, gr_mc_d0_eta_hipt, gr_div_d0_eta_hipt, height_d0_eta_hipt, floor_d0_eta_hipt, eta[0], eta[nbins-1], height_div_d0_eta_hipt, floor_div_d0_eta_hipt, period, "#splitline{"+datatype_text+"}{1<#it{p_{T}}<3 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_eta_hipt");
     compare_gr(gr_data_d0_eta_ulpt, gr_mc_d0_eta_ulpt, gr_div_d0_eta_ulpt, height_d0_eta_ulpt, floor_d0_eta_ulpt, eta[0], eta[nbins-1], height_div_d0_eta_ulpt, floor_div_d0_eta_ulpt, period, "#splitline{"+datatype_text+"}{3<#it{p_{T}}<10 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_eta_ulpt");
-    compare_gr(gr_data_d0_eta_allpt, gr_mc_d0_eta_allpt, gr_div_d0_eta_allpt, height_d0_eta_allpt, floor_d0_eta_allpt, eta[0], eta[nbins-1], height_div_d0_eta_allpt, floor_div_d0_eta_allpt, period, "#splitline{"+datatype_text+"}{0.1<#it{p_{T}}<10 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_eta_allpt");
+    compare_gr(gr_data_d0_eta_allpt, gr_mc_d0_eta_allpt, gr_div_d0_eta_allpt, height_d0_eta_allpt, floor_d0_eta_allpt, eta[0], eta[nbins-1], height_div_d0_eta_allpt, floor_div_d0_eta_allpt, period, datatype_text, "Track #it{#eta}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_eta_allpt");
 
     compare_gr(gr_data_d0_phi_lopt, gr_mc_d0_phi_lopt, gr_div_d0_phi_lopt, height_d0_phi_lopt, floor_d0_phi_lopt, phi[0], phi[nbins-1], height_div_d0_phi_lopt, floor_div_d0_phi_lopt, period, "#splitline{"+datatype_text+"}{0.1<#it{p_{T}}<1 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_lopt");
     compare_gr(gr_data_d0_phi_hipt, gr_mc_d0_phi_hipt, gr_div_d0_phi_hipt, height_d0_phi_hipt, floor_d0_phi_hipt, phi[0], phi[nbins-1], height_div_d0_phi_hipt, floor_div_d0_phi_hipt, period, "#splitline{"+datatype_text+"}{1<#it{p_{T}}<3 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_hipt");
     compare_gr(gr_data_d0_phi_ulpt, gr_mc_d0_phi_ulpt, gr_div_d0_phi_ulpt, height_d0_phi_ulpt, floor_d0_phi_ulpt, phi[0], phi[nbins-1], height_div_d0_phi_ulpt, floor_div_d0_phi_ulpt, period, "#splitline{"+datatype_text+"}{3<#it{p_{T}}<10 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_ulpt");
-    compare_gr(gr_data_d0_phi_allpt, gr_mc_d0_phi_allpt, gr_div_d0_phi_allpt, height_d0_phi_allpt, floor_d0_phi_allpt, phi[0], phi[nbins-1], height_div_d0_phi_allpt, floor_div_d0_phi_allpt, period, "#splitline{"+datatype_text+"}{0.1<#it{p_{T}}<10 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_allpt");
+    compare_gr(gr_data_d0_phi_allpt, gr_mc_d0_phi_allpt, gr_div_d0_phi_allpt, height_d0_phi_allpt, floor_d0_phi_allpt, phi[0], phi[nbins-1], height_div_d0_phi_allpt, floor_div_d0_phi_allpt, period, datatype_text, "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_allpt");
 
     compare_gr(gr_data_dz_pt_loeta, gr_mc_dz_pt_loeta, gr_div_dz_pt_loeta, height_dz_pt_loeta, floor_dz_pt_loeta, pt[0], pt[nbins-1], height_div_dz_pt_loeta, floor_div_dz_pt_loeta, period, "#splitline{"+datatype_text+"}{|#it{#eta}|<1.3}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_pt_loeta");
     compare_gr(gr_data_dz_pt_hieta, gr_mc_dz_pt_hieta, gr_div_dz_pt_hieta, height_dz_pt_hieta, floor_dz_pt_hieta, pt[0], pt[nbins-1], height_div_dz_pt_hieta, floor_div_dz_pt_hieta, period, "#splitline{"+datatype_text+"}{1.3<|#it{#eta}|<2.5}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_pt_hieta");
     compare_gr(gr_data_dz_pt_uleta, gr_mc_dz_pt_uleta, gr_div_dz_pt_uleta, height_dz_pt_uleta, floor_dz_pt_uleta, pt[0], pt[nbins-1], height_div_dz_pt_uleta, floor_div_dz_pt_uleta, period, "#splitline{"+datatype_text+"}{2.5<|#it{#eta}|<3.0}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_pt_uleta");
-    compare_gr(gr_data_dz_pt_alleta, gr_mc_dz_pt_alleta, gr_div_dz_pt_alleta, height_dz_pt_alleta, floor_dz_pt_alleta, pt[0], pt[nbins-1], height_div_dz_pt_alleta, floor_div_dz_pt_alleta, period, "#splitline{"+datatype_text+"}{|#it{#eta}|<3.0}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_pt_alleta");
+    compare_gr(gr_data_dz_pt_alleta, gr_mc_dz_pt_alleta, gr_div_dz_pt_alleta, height_dz_pt_alleta, floor_dz_pt_alleta, pt[0], pt[nbins-1], height_div_dz_pt_alleta, floor_div_dz_pt_alleta, period, datatype_text, "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_pt_alleta");
 
     compare_gr(gr_data_dz_eta_lopt, gr_mc_dz_eta_lopt, gr_div_dz_eta_lopt, height_dz_eta_lopt, floor_dz_eta_lopt, eta[0], eta[nbins-1], height_div_dz_eta_lopt, floor_div_dz_eta_lopt, period, "#splitline{"+datatype_text+"}{0.1<#it{p_{T}}<1 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_eta_lopt");
     compare_gr(gr_data_dz_eta_hipt, gr_mc_dz_eta_hipt, gr_div_dz_eta_hipt, height_dz_eta_hipt, floor_dz_eta_hipt, eta[0], eta[nbins-1], height_div_dz_eta_hipt, floor_div_dz_eta_hipt, period, "#splitline{"+datatype_text+"}{1<#it{p_{T}}<3 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_eta_hipt");
     compare_gr(gr_data_dz_eta_ulpt, gr_mc_dz_eta_ulpt, gr_div_dz_eta_ulpt, height_dz_eta_ulpt, floor_dz_eta_ulpt, eta[0], eta[nbins-1], height_div_dz_eta_ulpt, floor_div_dz_eta_ulpt, period, "#splitline{"+datatype_text+"}{3<#it{p_{T}}<10 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_eta_ulpt");
-    compare_gr(gr_data_dz_eta_allpt, gr_mc_dz_eta_allpt, gr_div_dz_eta_allpt, height_dz_eta_allpt, floor_dz_eta_allpt, eta[0], eta[nbins-1], height_div_dz_eta_allpt, floor_div_dz_eta_allpt, period, "#splitline{"+datatype_text+"}{0.1<#it{p_{T}}<10 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_eta_allpt");
+    compare_gr(gr_data_dz_eta_allpt, gr_mc_dz_eta_allpt, gr_div_dz_eta_allpt, height_dz_eta_allpt, floor_dz_eta_allpt, eta[0], eta[nbins-1], height_div_dz_eta_allpt, floor_div_dz_eta_allpt, period, datatype_text, "Track #it{#eta}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_eta_allpt");
 
     compare_gr(gr_data_dz_phi_lopt, gr_mc_dz_phi_lopt, gr_div_dz_phi_lopt, height_dz_phi_lopt, floor_dz_phi_lopt, phi[0], phi[nbins-1], height_div_dz_phi_lopt, floor_div_dz_phi_lopt, period, "#splitline{"+datatype_text+"}{0.1<#it{p_{T}}<1 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_lopt");
     compare_gr(gr_data_dz_phi_hipt, gr_mc_dz_phi_hipt, gr_div_dz_phi_hipt, height_dz_phi_hipt, floor_dz_phi_hipt, phi[0], phi[nbins-1], height_div_dz_phi_hipt, floor_div_dz_phi_hipt, period, "#splitline{"+datatype_text+"}{1<#it{p_{T}}<3 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_hipt");
     compare_gr(gr_data_dz_phi_ulpt, gr_mc_dz_phi_ulpt, gr_div_dz_phi_ulpt, height_dz_phi_ulpt, floor_dz_phi_ulpt, phi[0], phi[nbins-1], height_div_dz_phi_ulpt, floor_div_dz_phi_ulpt, period, "#splitline{"+datatype_text+"}{3<#it{p_{T}}<10 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_ulpt");
-    compare_gr(gr_data_dz_phi_allpt, gr_mc_dz_phi_allpt, gr_div_dz_phi_allpt, height_dz_phi_allpt, floor_dz_phi_allpt, phi[0], phi[nbins-1], height_div_dz_phi_allpt, floor_div_dz_phi_allpt, period, "#splitline{"+datatype_text+"}{0.1<#it{p_{T}}<10 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_allpt");
+    compare_gr(gr_data_dz_phi_allpt, gr_mc_dz_phi_allpt, gr_div_dz_phi_allpt, height_dz_phi_allpt, floor_dz_phi_allpt, phi[0], phi[nbins-1], height_div_dz_phi_allpt, floor_div_dz_phi_allpt, period, datatype_text, "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_allpt");
 
     return 0;
 }

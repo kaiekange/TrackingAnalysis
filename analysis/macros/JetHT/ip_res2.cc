@@ -102,38 +102,32 @@ struct HistInfo {
 Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath, Float_t tolerance = 1e-4)
 {
     setTDRStyle();
-    lumi_sqrtS = "13.6 TeV, " + period;
+    TString period_title = period;
+    period_title.ReplaceAll("_", " ");
+    lumi_sqrtS = "13.6 TeV, " + period_title;
 
-    RooRealVar ip_var("ip_var", "ip_var",
-                      hist->GetXaxis()->GetXmin(),
-                      hist->GetXaxis()->GetXmax());
+    RooRealVar ip_var("ip_var", "ip_var", hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax());
     ip_var.setBins(hist->GetNbinsX());
 
-    RooRealVar mu("mu", "mu",
-                  hist->GetMean(),
-                  hist->GetXaxis()->GetXmin(),
-                  hist->GetXaxis()->GetXmax());
-    RooRealVar sigma1("sigma1", "sigma1",
-                      0.5 * hist->GetRMS(), 0., hist->GetRMS());
-    RooRealVar sigma2("sigma2", "sigma2",
-                      hist->GetRMS(), hist->GetRMS() * 0.5, hist->GetRMS() * 2);
-    RooRealVar sigma3("sigma3", "sigma3",
-                      1.5 * hist->GetRMS(), hist->GetRMS(), hist->GetRMS() * 3);
+    double hist_mean = hist->GetMean();
+    double hist_rms = hist->GetRMS();
 
-    RooGaussian gauss1("gauss1", "gauss1", ip_var, mu, sigma1);
-    RooGaussian gauss2("gauss2", "gauss2", ip_var, mu, sigma2);
-    RooGaussian gauss3("gauss3", "gauss3", ip_var, mu, sigma3);
+    // 均值
+    RooRealVar mu("mu", "mu", hist_mean, hist_mean - hist_rms, hist_mean + hist_rms);
 
-    RooRealVar f1("f1", "f1", 0.3, 0.0, 1.0);
-    RooRealVar f2("f2", "f2", 0.3, 0.0, 1.0);
-    RooFormulaVar f3("f3", "1 - f1 - f2", RooArgList(f1, f2));
+    // 核心宽度
+    RooRealVar sigma("sigma", "sigma", 0.5*hist_rms, 0.1*hist_rms, hist_rms);
 
-    RooAddPdf triGauss("triGauss", "triGauss",
-                       RooArgList(gauss1, gauss2, gauss3),
-                       RooArgList(f1, f2, f3));
+    // 对称的尾部参数
+    RooRealVar alpha("alpha", "alpha", 2.0, 0.5, 5.0);  // 尾部切换点
+    RooRealVar n("n", "n", 2.0, 0.5, 10.0);              // 尾部幂律指数
+
+    // 创建对称的Double Crystal Ball
+    RooCrystalBall model("model", "Double Crystal Ball", ip_var, mu, sigma, 
+                    alpha, n, alpha, n);  // 左右使用相同的alpha和n保证对称
 
     RooDataHist hdatahist("hdatahist", "", ip_var, hist);
-    RooFitResult *fitResult = triGauss.fitTo(hdatahist, RooFit::Save(true));
+    RooFitResult *fitResult = model.fitTo(hdatahist, RooFit::Save(true));
     fitResult->Print();
     delete fitResult;
 
@@ -146,7 +140,7 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
     {
         Float_t mid = 0.5 * (low + high);
         ip_var.setRange("intRange", mean - mid, mean + mid);
-        RooAbsReal *integral = triGauss.createIntegral(
+        RooAbsReal *integral = model.createIntegral(
             ip_var, RooFit::NormSet(ip_var), RooFit::Range("intRange"));
         Float_t prob = integral->getVal();
         if (prob < 0.68)
@@ -173,9 +167,9 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
                      RooFit::MarkerSize(1.1),
                      RooFit::Binning(hist->GetNbinsX()),
                      RooFit::DrawOption("ep"));
-    triGauss.plotOn(frame,
-                    RooFit::Name("triGauss"),
-                    RooFit::Components("triGauss"),
+    model.plotOn(frame,
+                    RooFit::Name("model"),
+                    RooFit::Components("model"),
                     RooFit::LineStyle(9),
                     RooFit::LineColor(kRed),
                     RooFit::LineWidth(2.0),
@@ -214,15 +208,17 @@ void process_tree_tracks(TTree *tree,
                          const std::vector<Float_t> &pv_trk_phi_edges,
                          F &&action)
 {
+    Int_t idx_lo = 2*idx;
+    Int_t idx_hi = 2*(idx+1);
     // 共享的分支指针（外面会 SetBranchAddress 一次即可）
     static std::vector<Float_t> *pv_trk_pt  = nullptr;
     static std::vector<Float_t> *pv_trk_eta = nullptr;
     static std::vector<Float_t> *pv_trk_phi = nullptr;
     static std::vector<Float_t> *pv_trk_d0  = nullptr;
     static std::vector<Float_t> *pv_trk_dz  = nullptr;
-    static Float_t Xsec_weight = 1.0;
-    static Float_t PS_weight = 1.0;
-    static Float_t TRG_mask = 1.0;
+    static Double_t Xsec_weight = 1.0;
+    static Double_t PS_weight = 1.0;
+    static Int_t TRG_mask = 1;
     static Float_t PU_factor = 1.0;
 
     tree->SetBranchAddress("pv_trk_pt",  &pv_trk_pt);
@@ -239,12 +235,12 @@ void process_tree_tracks(TTree *tree,
 
 
     // 预先算好与 idx 相关的一些区间
-    const float pt_lo  = pv_trk_pt_edges[idx];
-    const float pt_hi  = pv_trk_pt_edges[idx + 1];
-    const float eta_lo = pv_trk_eta_edges[idx];
-    const float eta_hi = pv_trk_eta_edges[idx + 1];
-    const float phi_lo = pv_trk_phi_edges[idx];
-    const float phi_hi = pv_trk_phi_edges[idx + 1];
+    const float pt_lo  = pv_trk_pt_edges[idx_lo];
+    const float pt_hi  = pv_trk_pt_edges[idx_hi];
+    const float eta_lo = pv_trk_eta_edges[idx_lo];
+    const float eta_hi = pv_trk_eta_edges[idx_hi];
+    const float phi_lo = pv_trk_phi_edges[idx_lo];
+    const float phi_hi = pv_trk_phi_edges[idx_hi];
 
     for (Long64_t ie = 0; ie < nEntries; ++ie)
     {
@@ -261,7 +257,10 @@ void process_tree_tracks(TTree *tree,
             float d0  = pv_trk_d0->at(it);
             float dz  = pv_trk_dz->at(it);
             float w = 1.0;
-            if(!isData) w = Xsec_weight * PS_weight * TRG_mask * PU_factor;
+            if(!isData) {
+                if(TRG_mask == 0) w = 0;
+                else w = Xsec_weight * PS_weight * PU_factor;
+            }
 
             const float aeta = std::fabs(eta);
 
@@ -273,12 +272,12 @@ void process_tree_tracks(TTree *tree,
             bool loeta = (aeta < 1.3);
             bool hieta = (aeta > 1.3 && aeta < 2.5);
             bool uleta = (aeta > 2.5 && aeta < 3.0);
-            bool alleta = (aeta < 3.0);
+            bool alleta = (aeta < 10.0);
 
             bool lopt  = (pt > 0.1 && pt < 1.0);
             bool hipt  = (pt > 1.0 && pt < 3.0);
             bool ulpt  = (pt > 3.0 && pt < 10.0);
-            bool allpt = (pt > 0.1 && pt < 10.0);
+            bool allpt = (pt > 0);
 
             // pt × eta
             if (in_ptbin && loeta)  action(PT_LOETA,  d0, dz, w);
@@ -303,6 +302,8 @@ void process_tree_tracks(TTree *tree,
 
 Int_t ip_res2(TString period, Int_t idx)
 {
+    Int_t idx_lo = 2*idx;
+    Int_t idx_hi = 2*(idx+1);
     // 输出目录
     TString figdir = storage_dir + "/figures/" + period + "/ip_res/";
 
@@ -314,7 +315,8 @@ Int_t ip_res2(TString period, Int_t idx)
     TTree *mctree   = (TTree *)mcfile->Get("mytree");
 
     // 读 binning.json
-    std::ifstream infile(storage_dir + "/json/" + period + "/binning.json");
+    // std::ifstream infile(storage_dir + "/json/" + period + "/binning.json");
+    std::ifstream infile(storage_dir + "/json/binning.json");
     nlohmann::json binning;
     infile >> binning;
     infile.close();
@@ -325,21 +327,19 @@ Int_t ip_res2(TString period, Int_t idx)
 
     // 文本（沿用你原来的）
     TString ptcut_title  = Form("%.3f<#it{p_{T}}<%.3f GeV",
-                                pv_trk_pt_edges[idx], pv_trk_pt_edges[idx + 1]);
+                                pv_trk_pt_edges[idx_lo], pv_trk_pt_edges[idx_hi]);
     TString etacut_title = Form("%.2f<#it{#eta}<%.2f",
-                                pv_trk_eta_edges[idx], pv_trk_eta_edges[idx + 1]);
+                                pv_trk_eta_edges[idx_lo], pv_trk_eta_edges[idx_hi]);
     TString phicut_title = Form("%.2f<#it{#phi}<%.2f",
-                                pv_trk_phi_edges[idx], pv_trk_phi_edges[idx + 1]);
+                                pv_trk_phi_edges[idx_lo], pv_trk_phi_edges[idx_hi]);
 
     TString lopt_title  = "0.1<#it{p_{T}}<1 GeV";
     TString hipt_title  = "1<#it{p_{T}}<3 GeV";
     TString ulpt_title  = "3<#it{p_{T}}<10 GeV";
-    TString allpt_title = "0.1<#it{p_{T}}<10 GeV";
 
     TString loeta_title  = "|#it{#eta}|<1.3";
     TString hieta_title  = "1.3<|#it{#eta}|<2.5";
     TString uleta_title  = "2.5<|#it{#eta}|<3.0";
-    TString alleta_title = "|#it{#eta}|<3.0";
 
     // 准备 HistInfo（标题 & 图像路径）—— d0
     HistInfo info_d0[NCOMB];
@@ -370,11 +370,11 @@ Int_t ip_res2(TString period, Int_t idx)
     info_dz[PT_ULETA].dataFigPath= figdir + Form("ippv_z_fit/data_pt_uleta_%d", idx);
     info_dz[PT_ULETA].mcFigPath  = figdir + Form("ippv_z_fit/mc_pt_uleta_%d",   idx);
 
-    info_d0[PT_ALLETA].title      = "#splitline{" + ptcut_title + "}{" + alleta_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[PT_ALLETA].title      = ptcut_title + ";Track IP #it{d_{xy}} [#mum];# tracks";
     info_d0[PT_ALLETA].dataFigPath= figdir + Form("ippv_xy_fit/data_pt_alleta_%d", idx);
     info_d0[PT_ALLETA].mcFigPath  = figdir + Form("ippv_xy_fit/mc_pt_alleta_%d",   idx);
 
-    info_dz[PT_ALLETA].title      = "#splitline{" + ptcut_title + "}{" + alleta_title + "};Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[PT_ALLETA].title      = ptcut_title + ";Track IP #it{d_{z}} [#mum];# tracks";
     info_dz[PT_ALLETA].dataFigPath= figdir + Form("ippv_z_fit/data_pt_alleta_%d", idx);
     info_dz[PT_ALLETA].mcFigPath  = figdir + Form("ippv_z_fit/mc_pt_alleta_%d",   idx);
 
@@ -403,11 +403,11 @@ Int_t ip_res2(TString period, Int_t idx)
     info_dz[ETA_ULPT].dataFigPath= figdir + Form("ippv_z_fit/data_eta_ulpt_%d", idx);
     info_dz[ETA_ULPT].mcFigPath  = figdir + Form("ippv_z_fit/mc_eta_ulpt_%d",   idx);
 
-    info_d0[ETA_ALLPT].title      = "#splitline{" + etacut_title + "}{" + allpt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[ETA_ALLPT].title      = etacut_title + ";Track IP #it{d_{xy}} [#mum];# tracks";
     info_d0[ETA_ALLPT].dataFigPath= figdir + Form("ippv_xy_fit/data_eta_allpt_%d", idx);
     info_d0[ETA_ALLPT].mcFigPath  = figdir + Form("ippv_xy_fit/mc_eta_allpt_%d",   idx);
 
-    info_dz[ETA_ALLPT].title      = "#splitline{" + etacut_title + "}{" + allpt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[ETA_ALLPT].title      = etacut_title + ";Track IP #it{d_{z}} [#mum];# tracks";
     info_dz[ETA_ALLPT].dataFigPath= figdir + Form("ippv_z_fit/data_eta_allpt_%d", idx);
     info_dz[ETA_ALLPT].mcFigPath  = figdir + Form("ippv_z_fit/mc_eta_allpt_%d",   idx);
 
@@ -436,11 +436,11 @@ Int_t ip_res2(TString period, Int_t idx)
     info_dz[PHI_ULPT].dataFigPath= figdir + Form("ippv_z_fit/data_phi_ulpt_%d", idx);
     info_dz[PHI_ULPT].mcFigPath  = figdir + Form("ippv_z_fit/mc_phi_ulpt_%d",   idx);
 
-    info_d0[PHI_ALLPT].title      = "#splitline{" + phicut_title + "}{" + allpt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[PHI_ALLPT].title      = phicut_title + ";Track IP #it{d_{xy}} [#mum];# tracks";
     info_d0[PHI_ALLPT].dataFigPath= figdir + Form("ippv_xy_fit/data_phi_allpt_%d", idx);
     info_d0[PHI_ALLPT].mcFigPath  = figdir + Form("ippv_xy_fit/mc_phi_allpt_%d",   idx);
 
-    info_dz[PHI_ALLPT].title      = "#splitline{" + phicut_title + "}{" + allpt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[PHI_ALLPT].title      = phicut_title + ";Track IP #it{d_{z}} [#mum];# tracks";
     info_dz[PHI_ALLPT].dataFigPath= figdir + Form("ippv_z_fit/data_phi_allpt_%d", idx);
     info_dz[PHI_ALLPT].mcFigPath  = figdir + Form("ippv_z_fit/mc_phi_allpt_%d",   idx);
 
@@ -574,9 +574,9 @@ Int_t ip_res2(TString period, Int_t idx)
     // RooFit 拟合并写 JSON
     nlohmann::json resojson;
 
-    resojson["pt"]  = (pv_trk_pt_edges[idx]  + pv_trk_pt_edges[idx + 1])  / 2.0;
-    resojson["eta"] = (pv_trk_eta_edges[idx] + pv_trk_eta_edges[idx + 1]) / 2.0;
-    resojson["phi"] = (pv_trk_phi_edges[idx] + pv_trk_phi_edges[idx + 1]) / 2.0;
+    resojson["pt"]  = (pv_trk_pt_edges[idx_lo]  + pv_trk_pt_edges[idx_hi])  / 2.0;
+    resojson["eta"] = (pv_trk_eta_edges[idx_lo] + pv_trk_eta_edges[idx_hi]) / 2.0;
+    resojson["phi"] = (pv_trk_phi_edges[idx_lo] + pv_trk_phi_edges[idx_hi]) / 2.0;
 
     // 存结果数组
     double reso_data_d0[NCOMB] = {0.0};

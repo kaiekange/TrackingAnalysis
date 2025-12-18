@@ -1,19 +1,28 @@
 import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
+import FWCore.PythonUtilities.LumiList as LumiList
 
 options = VarParsing('analysis')
+options.register('RunOnData', True, VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Run on data')
+options.register('GlobalTag', '130X_dataRun3_PromptAnalysis_v1', VarParsing.multiplicity.singleton, VarParsing.varType.string, 'Global tag')
+options.register('EventScale', 10, VarParsing.multiplicity.singleton, VarParsing.varType.int, 'Event scale')
+options.register('EventModulo', 0, VarParsing.multiplicity.singleton, VarParsing.varType.int, 'Event modulo')
+options.register('InputFile', 'file:input.root', VarParsing.multiplicity.singleton, VarParsing.varType.string, 'Input file')
+options.register('OutputFile', 'file:output.root', VarParsing.multiplicity.singleton, VarParsing.varType.string, 'Output file')
+options.register('GoldenJSON', '/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/EDAnalyzers/crab/JSON/Cert_Collisions2023_366442_370790_Golden.json', VarParsing.multiplicity.singleton, VarParsing.varType.string, 'Golden JSON')
 options.parseArguments()
 
-readFiles = cms.untracked.vstring()
-secFiles = cms.untracked.vstring()
+# input_files = ['/store/data/Run2023C/JetMET0/MINIAOD/22Sep2023_v2-v1/30000/5b42bc84-8eb1-4bee-b18b-773fa40aaeba.root']
+# input_files = ['/store/data/Run2023C/JetMET0/MINIAOD/22Sep2023_v2-v1/2540000/6acc76d4-7cff-4bc4-9fa4-7f2ff8208b28.root']
+input_files = ["root://cms-xrd-global.cern.ch//store/data/Run2023D/JetMET1/MINIAOD/22Sep2023_v1-v1/2540000/16812c27-c7da-4a28-a98b-b9e2c12f05f5.root"]
 
-source = cms.Source("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles)
+print(input_files)
 
-readFiles.extend( [
-    "/store/mc/Run3Summer22EEMiniAODv4/QCD_PT-50to80_TuneCP5_13p6TeV_pythia8/MINIAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/2550000/56599597-2e05-403e-b75d-471f600d2d9b.root"
-    #"/store/data/Run2022A/JetHT/MINIAOD/22Sep2023-v1/50000/e8a996e4-f1df-4da4-9dd3-6c23bbdcc78e.root"
-    #'/store/data/Run2016B/JetHT/MINIAOD/ver2_HIPM_UL2016_MiniAODv2-v2/230000/45CF386B-286D-7545-B097-238839251127.root'
-]);
+source = cms.Source("PoolSource",
+    fileNames = cms.untracked.vstring(*input_files),
+    skipBadFiles    = cms.untracked.bool(True),
+    skipEvents = cms.untracked.uint32(16000)
+)
 
 process = cms.Process("IpResiduals")
 
@@ -21,70 +30,38 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport = cms.untracked.PSet( reportEvery = cms.untracked.int32(1) )
 
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '130X_mcRun3_2022_realistic_postEE_v6', '')
+
+process.GlobalTag.globaltag = options.GlobalTag 
 
 process.load("CondCore.CondDB.CondDB_cfi")
 process.load('Configuration.Geometry.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_cff')
 
-# process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
 process.source = source
 
-#process.HLT = cms.EDFilter("HLTHighLevel",
-#                           TriggerResultsTag = cms.InputTag("TriggerResults","","HLT"),
-#                           HLTPaths = cms.vstring('HLT_ZeroBiasPixel_DoubleTrack_v*','HLT_ZeroBias_v*'),
-#                           eventSetupPathsKey = cms.string(''), # not empty => use read paths from AlCaRecoTriggerBitsRcd via this key
-#                           andOr = cms.bool(True),              # how to deal with multiple triggers: True (OR) accept if ANY is true, False (AND) accept if ALL are true
-#                           throw = cms.bool(True)               # throw exception on unknown path names
-#)
+if(options.RunOnData) :
+    print("is data")
+    process.source.lumisToProcess = LumiList.LumiList(
+        filename = options.GoldenJSON
+    ).getVLuminosityBlockRange()
 
 process.load("TrackingTools.TransientTrack.TransientTrackBuilder_cfi")
 process.load('RecoVertex.PrimaryVertexProducer.OfflinePrimaryVertices_cfi')
 
-#primVtx = process.offlinePrimaryVertices
-#process.offlinePrimaryVerticesRerun = primVtx.clone( TrackLabel = cms.InputTag("lostTracks"),
-#                                                     maxDistanceToBeam = primVtx.vertexCollections[0].maxDistanceToBeam,
-#                                                     useBeamConstraint = primVtx.vertexCollections[0].useBeamConstraint,
-#                                                     chi2cutoff = primVtx.vertexCollections[0].chi2cutoff,
-#                                                     verbose = False,
-#                                                     algorithm = primVtx.vertexCollections[0].algorithm,
-#                                                     minNdof = primVtx.vertexCollections[0].minNdof,
-#                                                     label = primVtx.vertexCollections[0].label
-#)
-
-#if options.withBS:
-#    process.offlinePrimaryVerticesRerun = primVtx.clone( TrackLabel = cms.InputTag("lostTracks"),
-#                                                         maxDistanceToBeam = primVtx.vertexCollections[1].maxDistanceToBeam,
-#                                                         useBeamConstraint = primVtx.vertexCollections[1].useBeamConstraint,
-#                                                         chi2cutoff = primVtx.vertexCollections[1].chi2cutoff,
-#                                                         verbose = False,
-#                                                         algorithm = primVtx.vertexCollections[1].algorithm,
-#                                                         minNdof = primVtx.vertexCollections[1].minNdof,
-#                                                         label = primVtx.vertexCollections[1].label
-#    )
-
-#print process.offlinePrimaryVerticesRerun.dumpPython()
-
 process.load('TrackingAnalysis.EDAnalyzers.residuals_cfi')
 process.residuals.BeamSpotConfig = ''
 
-process.residuals.AddLostTracks = False 
-    
-process.residuals.RunOnData = True
-
 process.residuals.stageL1Trigger = cms.uint32(2)
 
-process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string("QCD_test.root"),
-                                   closeFileFast = cms.untracked.bool(True)
-                                   )
+process.residuals.RunOnData = cms.bool(options.RunOnData)
+process.residuals.EventScale = cms.int32(options.EventScale)
+process.residuals.EventModulo = cms.int32(options.EventModulo)
 
-process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(False) )
+process.TFileService = cms.Service( "TFileService", fileName = cms.string(options.OutputFile), closeFileFast = cms.untracked.bool(True) )
 
-process.p = cms.Path(
-#    process.offlinePrimaryVerticesRerun*
-    process.residuals
-)
+# process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(False) )
+process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(False), TryToContinue = cms.untracked.vstring('ProductNotFound') )
+
+process.p = cms.Path( process.residuals )

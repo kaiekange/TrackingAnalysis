@@ -15,29 +15,37 @@
 const TString datatype_text = "High-q^{2} multi-jet events";
 const TString storage_dir = "/eos/home-k/kakang/IPres/analysis/JetHT";
 
+const Int_t nbins = 100;
+
 Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath, Float_t tolerance = 1e-4)
 {
     setTDRStyle();
-
-    period.ReplaceAll("_", " ");
-    lumi_sqrtS = "13.6 TeV, " + period;
+    TString period_title = period;
+    period_title.ReplaceAll("_", " ");
+    lumi_sqrtS = "13.6 TeV, " + period_title;
 
     RooRealVar pv_var("pv_var", "pv_var", hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax());
     pv_var.setBins(hist->GetNbinsX());
-    RooRealVar mu("mu", "mu", hist->GetMean(), hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax());
-    RooRealVar sigma1("sigma1", "sigma1", 0.5 * hist->GetRMS(), 0., hist->GetRMS());
-    RooRealVar sigma2("sigma2", "sigma2", hist->GetRMS(), hist->GetRMS() * 0.5, hist->GetRMS() * 2);
-    RooRealVar sigma3("sigma3", "sigma3", 1.5 * hist->GetRMS(), hist->GetRMS(), hist->GetRMS() * 3);
-    RooGaussian gauss1("gauss1", "gauss1", pv_var, mu, sigma1);
-    RooGaussian gauss2("gauss2", "gauss2", pv_var, mu, sigma2);
-    RooGaussian gauss3("gauss3", "gauss3", pv_var, mu, sigma3);
-    RooRealVar f1("f1", "f1", 0.3, 0.0, 1.0);
-    RooRealVar f2("f2", "f2", 0.3, 0.0, 1.0);
-    RooFormulaVar f3("f3", "1 - f1 - f2", RooArgList(f1, f2));
-    RooAddPdf triGauss("triGauss", "triGauss", RooArgList(gauss1, gauss2, gauss3), RooArgList(f1, f2, f3));
+
+    double hist_mean = hist->GetMean();
+    double hist_rms = hist->GetRMS();
+
+    // 均值
+    RooRealVar mu("mu", "mu", hist_mean, hist_mean - hist_rms, hist_mean + hist_rms);
+
+    // 核心宽度
+    RooRealVar sigma("sigma", "sigma", 0.5*hist_rms, 0.1*hist_rms, hist_rms);
+
+    // 对称的尾部参数
+    RooRealVar alpha("alpha", "alpha", 2.0, 0.5, 5.0);  // 尾部切换点
+    RooRealVar n("n", "n", 2.0, 0.5, 10.0);              // 尾部幂律指数
+
+    // 创建对称的Double Crystal Ball
+    RooCrystalBall model("model", "Double Crystal Ball", pv_var, mu, sigma, 
+                    alpha, n, alpha, n);  // 左右使用相同的alpha和n保证对称
 
     RooDataHist hdatahist("hdatahist", "", pv_var, hist);
-    RooFitResult *fitResult = triGauss.fitTo(hdatahist, RooFit::Save(true));
+    RooFitResult *fitResult = model.fitTo(hdatahist, RooFit::Save(true));
     fitResult->Print();
     delete fitResult;
 
@@ -49,7 +57,7 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
     {
         Float_t mid = 0.5 * (low + high);
         pv_var.setRange("intRange", mean - mid, mean + mid);
-        RooAbsReal *integral = triGauss.createIntegral(pv_var, RooFit::NormSet(pv_var), RooFit::Range("intRange"));
+        RooAbsReal *integral = model.createIntegral(pv_var, RooFit::NormSet(pv_var), RooFit::Range("intRange"));
         Float_t prob = integral->getVal();
         if (prob < 0.68)
             low = mid;
@@ -68,7 +76,7 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
     RooPlot *frame = pv_var.frame();
 
     hdatahist.plotOn(frame, RooFit::Name(sampletype), RooFit::MarkerColor(kBlack), RooFit::MarkerSize(1.1), RooFit::Binning(hist->GetNbinsX()), RooFit::DrawOption("ep"));
-    triGauss.plotOn(frame, RooFit::Name("triGauss"), RooFit::Components("triGauss"), RooFit::LineStyle(9), RooFit::LineColor(kRed), RooFit::LineWidth(2.0), RooFit::DrawOption("L"));
+    model.plotOn(frame, RooFit::Name("model"), RooFit::Components("model"), RooFit::LineStyle(9), RooFit::LineColor(kRed), RooFit::LineWidth(2.0), RooFit::DrawOption("L"));
     frame->Draw("");
     frame->GetYaxis()->SetTitle(hist->GetYaxis()->GetTitle());
     frame->GetXaxis()->SetTitle(hist->GetXaxis()->GetTitle());
@@ -104,10 +112,10 @@ std::pair<Float_t, Float_t> fill_to_fit(TTree *datatree, TTree *mctree, TString 
 
     std::cout << hist_mean << " " << hist_stddev << std::endl;
 
-    TH1F *datahist = new TH1F(hdata_name, title_, 100, hist_mean - 8 * hist_stddev, hist_mean + 8 * hist_stddev);
+    TH1F *datahist = new TH1F(hdata_name, title_, nbins, hist_mean - 8 * hist_stddev, hist_mean + 8 * hist_stddev);
     datatree->Project(hdata_name, var_, cut_);
 
-    TH1F *mchist = new TH1F(hmc_name, title_, 100, hist_mean - 8 * hist_stddev, hist_mean + 8 * hist_stddev);
+    TH1F *mchist = new TH1F(hmc_name, title_, nbins, hist_mean - 8 * hist_stddev, hist_mean + 8 * hist_stddev);
     mctree->Project(hmc_name, var_, Form("Xsec_weight * PS_weight * TRG_mask * PU_factor *(%s)", cut_.GetTitle()));
 
     Float_t datareso = fit_res(datahist, period, "Data", datafigpath);
@@ -129,15 +137,21 @@ Int_t pv_res(TString period, Int_t idx)
     TFile *mcfile = TFile::Open(storage_dir + "/tuples/" + period + "/mc_corr_mask.root");
     TTree *mctree = (TTree *)mcfile->Get("mytree");
 
-    std::ifstream infile(storage_dir + "/json/" + period + "/binning.json");
+    // std::ifstream infile(storage_dir + "/json/" + period + "/binning.json");
+    std::ifstream infile(storage_dir + "/json/binning.json");
     nlohmann::json binning;
     infile >> binning;
     infile.close();
 
+    // Int_t idx_lo = idx;
+    // Int_t idx_hi = idx+1;
+    Int_t idx_lo = 2 * idx;
+    Int_t idx_hi = 2 * (idx + 1);
+
     std::vector<Float_t> pv_SumTrackPt2_sqrt_edges = binning["pv_SumTrackPt2_sqrt"].get<std::vector<Float_t>>();
 
-    TString ptcut_title = Form("%.2f<#sqrt{#sum#it{p_{T}}^{2}}<%.2f GeV", pv_SumTrackPt2_sqrt_edges[idx], pv_SumTrackPt2_sqrt_edges[idx + 1]);
-    TCut ptcut = Form("sqrt(pv_SumTrackPt2) > %f && sqrt(pv_SumTrackPt2) < %f", pv_SumTrackPt2_sqrt_edges[idx], pv_SumTrackPt2_sqrt_edges[idx + 1]);
+    TString ptcut_title = Form("%.2f<#sqrt{#sum#it{p_{T}}^{2}}<%.2f GeV", pv_SumTrackPt2_sqrt_edges[idx_lo], pv_SumTrackPt2_sqrt_edges[idx_hi]);
+    TCut ptcut = Form("sqrt(pv_SumTrackPt2) > %f && sqrt(pv_SumTrackPt2) < %f", pv_SumTrackPt2_sqrt_edges[idx_lo], pv_SumTrackPt2_sqrt_edges[idx_hi]);
     TCut xnull_cut = "pv_x_p1 != -777 && pv_x_p2 != -777";
     TCut ynull_cut = "pv_y_p1 != -777 && pv_y_p2 != -777";
     TCut znull_cut = "pv_z_p1 != -777 && pv_z_p2 != -777";
@@ -221,7 +235,7 @@ Int_t pv_res(TString period, Int_t idx)
         idx);
 
     nlohmann::json resojson;
-    resojson["sumpt2_sqrt"] = (pv_SumTrackPt2_sqrt_edges[idx] + pv_SumTrackPt2_sqrt_edges[idx + 1]) / 2;
+    resojson["sumpt2_sqrt"] = (pv_SumTrackPt2_sqrt_edges[idx_lo] + pv_SumTrackPt2_sqrt_edges[idx_hi]) / 2;
     resojson["reso_data_pvx"] = result_reso_pvx.first;
     resojson["reso_data_pvy"] = result_reso_pvy.first;
     resojson["reso_data_pvz"] = result_reso_pvz.first;

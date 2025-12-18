@@ -19,7 +19,9 @@ Int_t draw_pv_res(TString period){
     TString figdir = storage_dir + "/figures/" + period + "/pv_res/";
 
     setTDRStyle();
-    lumi_sqrtS = "13.6 TeV, " + period;
+    TString period_title = period;
+    period_title.ReplaceAll("_", " ");
+    lumi_sqrtS = "13.6 TeV, " + period_title;
 
     Float_t reso_data_pullx[nbins];
     Float_t reso_data_pully[nbins];

@@ -70,7 +70,7 @@ void compare_gr(
     div_gr->GetXaxis()->SetNdivisions(810);
     div_gr->GetXaxis()->SetTitle(xlabel);
     div_gr->GetYaxis()->SetTitle("Data / MC ratio");
-    div_gr->GetYaxis()->SetRangeUser(std::min(0.9,0.8*ymin), std::max(1.5,1.5*ymax));
+    div_gr->GetYaxis()->SetRangeUser(std::min(0.9,0.8*ymin-0.1), std::max(1.5,1.2*ymax+0.1));
     div_gr->GetXaxis()->SetTitleSize(0.1);
     div_gr->GetXaxis()->SetLabelSize(0.1);
     div_gr->GetYaxis()->SetTitleSize(0.1);

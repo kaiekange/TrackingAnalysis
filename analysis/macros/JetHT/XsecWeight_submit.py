@@ -15,8 +15,10 @@ def submit_jobs(period):
     for era in cfg[period][sample]:
         dataset = era["dataset"]
 
+        if(dataset == "MC_15to20"): continue
+        if(dataset == "MC_20to30"): continue
+        if(dataset == "MC_30to50"): continue
         if(dataset == "MC_50to80"): continue
-        if(dataset == "MC_3200"): continue
 
         os.makedirs(
             f"/eos/home-k/kakang/IPres/analysis/JetHT/tuples/{period}/{dataset}",

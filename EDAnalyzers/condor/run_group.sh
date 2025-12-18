@@ -7,17 +7,16 @@ EventModulo=$4
 InputList=$5
 OutputDir=$6
 GroupSize=$7
-Process=$(($8 + 1))
+Process=$8
 GoldenJSON=$9
 
 StartLine=$(( Process * GroupSize + 1 ))
 EndLine=$(( StartLine + GroupSize - 1 ))
 
-InputFile="$(sed -n "${StartLine},${EndLine}p" "${InputList}")"
-
-CfgFile="/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/EDAnalyzers/test/residuals_condor_data.py"
-LogFile="${OutputDir}/log/output_${Process}.log"
-OutputFile="${OutputDir}/output_${Process}.root"
+CfgFile="/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/EDAnalyzers/test/residuals_condor_group.py"
+LogFile="${OutputDir}/log/output_$(( Process + 1 )).log"
+InputFile="$(sed -n "${StartLine}, ${EndLine}p" "${InputList}")"
+OutputFile="${OutputDir}/output_$(( Process + 1 )).root"
 
 if [ -e "${OutputFile}" ]; then
     echo "Removing existing ${OutputFile}"

@@ -25,4 +25,4 @@ source /cvmfs/cms.cern.ch/cmsset_default.sh
 cd /afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/
 cmsenv
 voms-proxy-info -all -file $X509_USER_PROXY
-cmsRun ${CfgFile} RunOnData=${RunOnData} GlobalTag=${GlobalTag} EventScale=${EventScale} EventModulo=${EventModulo} InputFile="${InputFile}" OutputFile="${OutputFile}" GoldenJSON="${GoldenJSON}" &> ${LogFile}
+cmsRun ${CfgFile} RunOnData=${RunOnData} GlobalTag=${GlobalTag} EventScale=${EventScale} EventModulo=${EventModulo} InputFile="root://cms-xrd-global.cern.ch/${InputFile}" OutputFile="${OutputFile}" GoldenJSON="${GoldenJSON}" &> ${LogFile}

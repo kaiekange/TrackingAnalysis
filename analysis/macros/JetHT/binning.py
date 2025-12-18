@@ -13,29 +13,75 @@ def get_quantile_edges_from_hist(hist, nbins, low, high):
     qs[-1] = high
     return qs.tolist()
 
+# def binning(period: str) -> int:
+
+#     os.makedirs(f"/eos/home-k/kakang/IPres/analysis/JetHT/json/{period}/", exist_ok=True)
+
+#     data_in = (f"/eos/home-k/kakang/IPres/analysis/JetHT/tuples/{period}/data.root")
+
+#     df_data = ROOT.RDataFrame("mytree", data_in)
+
+#     nbins_sumpt = 50
+#     nbins_trk = 500
+
+#     sumpt_model = ROOT.RDF.TH1DModel("sumpt_hist", "", nbins_sumpt*1000, 30.0, 400.0)
+#     sumpt_hist = df_data.Define("pv_SumTrackPt2_sqrt", "sqrt(pv_SumTrackPt2)").Histo1D(sumpt_model, "pv_SumTrackPt2_sqrt").GetValue()
+#     pv_SumTrackPt_binedges = get_quantile_edges_from_hist(sumpt_hist, nbins_sumpt, 30.0, 400.0)
+
+#     trk_pt_model = ROOT.RDF.TH1DModel("trk_pt_hist", "", nbins_trk*1000, 0.1, 15.0)
+#     trk_pt_hist = df_data.Histo1D(trk_pt_model, "pv_trk_pt").GetValue()
+#     pv_trk_pt_binedges = get_quantile_edges_from_hist(trk_pt_hist, nbins_trk, 0.1, 15.0)
+
+#     trk_eta_model = ROOT.RDF.TH1DModel("trk_eta_hist", "", nbins_trk*1000, -3.0, 3.0)
+#     trk_eta_hist = df_data.Histo1D(trk_eta_model, "pv_trk_eta").GetValue()
+#     pv_trk_eta_binedges = get_quantile_edges_from_hist(trk_eta_hist, nbins_trk, -3.0, 3.0)
+
+#     trk_phi_model = ROOT.RDF.TH1DModel("trk_phi_hist", "", nbins_trk*1000, -np.pi, np.pi)
+#     trk_phi_hist = df_data.Histo1D(trk_phi_model, "pv_trk_phi").GetValue()
+#     pv_trk_phi_binedges = get_quantile_edges_from_hist(trk_phi_hist, nbins_trk, -np.pi, np.pi)
+
+#     splitparams = {
+#         "pv_SumTrackPt2_sqrt": pv_SumTrackPt_binedges,
+#         "pv_trk_pt":           pv_trk_pt_binedges,
+#         "pv_trk_eta":          pv_trk_eta_binedges,
+#         "pv_trk_phi":          pv_trk_phi_binedges,
+#     }
+
+#     out_json = f"/eos/home-k/kakang/IPres/analysis/JetHT/json/{period}/binning.json"
+#     with open(out_json, "w") as outfile:
+#         json.dump(splitparams, outfile, indent=4)
+
+#     print(f"Binning saved to {out_json}")
+
+#     return 0
+
+
 def binning(period: str) -> int:
 
     os.makedirs(f"/eos/home-k/kakang/IPres/analysis/JetHT/json/{period}/", exist_ok=True)
 
-    data_in = (f"/eos/home-k/kakang/IPres/analysis/JetHT/tuples/{period}/data.root")
+    mc_in = (f"/eos/home-k/kakang/IPres/analysis/JetHT/tuples/{period}/mc_corr_mask.root")
 
-    df_data = ROOT.RDataFrame("mytree", data_in)
+    df_mc = ROOT.RDataFrame("mytree", mc_in).Define("tot_weight", "Xsec_weight * PS_weight * TRG_mask * PU_factor")
 
-    sumpt_model = ROOT.RDF.TH1DModel("sumpt_hist", "", 100000, 30.0, 400.0)
-    sumpt_hist = df_data.Define("pv_SumTrackPt2_sqrt", "sqrt(pv_SumTrackPt2)").Histo1D(sumpt_model, "pv_SumTrackPt2_sqrt").GetValue()
-    pv_SumTrackPt_binedges = get_quantile_edges_from_hist(sumpt_hist, 100, 30.0, 400.0)
+    nbins_sumpt = 100
+    nbins_trk = 500
 
-    trk_pt_model = ROOT.RDF.TH1DModel("trk_pt_hist", "", 500000, 0.1, 15.0)
-    trk_pt_hist = df_data.Histo1D(trk_pt_model, "pv_trk_pt").GetValue()
-    pv_trk_pt_binedges = get_quantile_edges_from_hist(trk_pt_hist, 500, 0.1, 15.0)
+    sumpt_model = ROOT.RDF.TH1DModel("sumpt_hist", "", nbins_sumpt*1000, 30.0, 400.0)
+    sumpt_hist = df_mc.Define("pv_SumTrackPt2_sqrt", "sqrt(pv_SumTrackPt2)").Histo1D(sumpt_model, "pv_SumTrackPt2_sqrt", "tot_weight").GetValue()
+    pv_SumTrackPt_binedges = get_quantile_edges_from_hist(sumpt_hist, nbins_sumpt, 30.0, 400.0)
 
-    trk_eta_model = ROOT.RDF.TH1DModel("trk_eta_hist", "", 500000, -3.0, 3.0)
-    trk_eta_hist = df_data.Histo1D(trk_eta_model, "pv_trk_eta").GetValue()
-    pv_trk_eta_binedges = get_quantile_edges_from_hist(trk_eta_hist, 500, -3.0, 3.0)
+    trk_pt_model = ROOT.RDF.TH1DModel("trk_pt_hist", "", nbins_trk*1000, 0.1, 15.0)
+    trk_pt_hist = df_mc.Histo1D(trk_pt_model, "pv_trk_pt", "tot_weight").GetValue()
+    pv_trk_pt_binedges = get_quantile_edges_from_hist(trk_pt_hist, nbins_trk, 0.1, 15.0)
 
-    trk_phi_model = ROOT.RDF.TH1DModel("trk_phi_hist", "", 500000, -np.pi, np.pi)
-    trk_phi_hist = df_data.Histo1D(trk_phi_model, "pv_trk_phi").GetValue()
-    pv_trk_phi_binedges = get_quantile_edges_from_hist(trk_phi_hist, 500, -np.pi, np.pi)
+    trk_eta_model = ROOT.RDF.TH1DModel("trk_eta_hist", "", nbins_trk*1000, -3.0, 3.0)
+    trk_eta_hist = df_mc.Histo1D(trk_eta_model, "pv_trk_eta", "tot_weight").GetValue()
+    pv_trk_eta_binedges = get_quantile_edges_from_hist(trk_eta_hist, nbins_trk, -3.0, 3.0)
+
+    trk_phi_model = ROOT.RDF.TH1DModel("trk_phi_hist", "", nbins_trk*1000, -np.pi, np.pi)
+    trk_phi_hist = df_mc.Histo1D(trk_phi_model, "pv_trk_phi", "tot_weight").GetValue()
+    pv_trk_phi_binedges = get_quantile_edges_from_hist(trk_phi_hist, nbins_trk, -np.pi, np.pi)
 
     splitparams = {
         "pv_SumTrackPt2_sqrt": pv_SumTrackPt_binedges,
@@ -51,7 +97,6 @@ def binning(period: str) -> int:
     print(f"Binning saved to {out_json}")
 
     return 0
-
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

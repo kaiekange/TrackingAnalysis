@@ -8,20 +8,20 @@ source /cvmfs/cms.cern.ch/crab3/crab.sh
 # datasetlist="DatasetList/data_2022_JetHT.txt"
 
 #2023
-GLOBALTAG="130X_dataRun3_PromptAnalysis_v1"
+# GLOBALTAG="130X_dataRun3_PromptAnalysis_v1"
 # datasetlist="DatasetList/data_2023_ZeroBias.txt"
-datasetlist="DatasetList/data_2023_JetHT.txt"
+# datasetlist="DatasetList/data_2023_JetHT.txt"
 
 ##2024
-# GLOBALTAG="150X_dataRun3_v2"
+GLOBALTAG="150X_dataRun3_v2"
 # datasetlist="DatasetList/data_2024_ZeroBias.txt"
-#datasetlist="DatasetList/data_2024_JetHT.txt"
+datasetlist="DatasetList/data_2024_JetHT.txt"
 
 configtemplate="crabConfigTemplateData.py"
-ver="Track-v20251121"
+ver="Track-v20251202"
 prodv="/store/user/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
 pver="0"
-EVENTSCALE=20
+EVENTSCALE=200
 
 datasets=()
 while read -r name; do

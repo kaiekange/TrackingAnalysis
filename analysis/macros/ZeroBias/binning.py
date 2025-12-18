@@ -17,7 +17,7 @@ def binning(period: str) -> int:
 
     os.makedirs(f"/eos/home-k/kakang/IPres/analysis/ZeroBias/json/{period}/", exist_ok=True)
 
-    data_in = (f"/eos/home-k/kakang/IPres/analysis/ZeroBias/tuples/{period}/data_corr.root")
+    data_in = (f"/eos/home-k/kakang/IPres/analysis/ZeroBias/tuples/{period}/data.root")
 
     df_data = ROOT.RDataFrame("mytree", data_in)
 
@@ -25,9 +25,9 @@ def binning(period: str) -> int:
     sumpt_hist = df_data.Define("pv_SumTrackPt2_sqrt", "sqrt(pv_SumTrackPt2)").Histo1D(sumpt_model, "pv_SumTrackPt2_sqrt").GetValue()
     pv_SumTrackPt_binedges = get_quantile_edges_from_hist(sumpt_hist, 100, 3.0, 25.0)
 
-    trk_pt_model = ROOT.RDF.TH1DModel("trk_pt_hist", "", 500000, 0.1, 5.0)
+    trk_pt_model = ROOT.RDF.TH1DModel("trk_pt_hist", "", 500000, 0.1, 10.0)
     trk_pt_hist = df_data.Histo1D(trk_pt_model, "pv_trk_pt").GetValue()
-    pv_trk_pt_binedges = get_quantile_edges_from_hist(trk_pt_hist, 500, 0.1, 5.0)
+    pv_trk_pt_binedges = get_quantile_edges_from_hist(trk_pt_hist, 500, 0.1, 10.0)
 
     trk_eta_model = ROOT.RDF.TH1DModel("trk_eta_hist", "", 500000, -3.0, 3.0)
     trk_eta_hist = df_data.Histo1D(trk_eta_model, "pv_trk_eta").GetValue()
