@@ -7,13 +7,6 @@ ResTree::ResTree(TTree *_tree)
 
 void ResTree::Init()
 {
-    ev_run = null;
-    ev_id = null;
-    ev_lumi = null;
-    ev_bunchCrossing = null;
-    ev_orbitNumber = null;
-    ev_time = null;
-    ev_rho = null;
     ev_nPV = null;
 
     trig_ZeroBias_pass = false;
@@ -32,49 +25,25 @@ void ResTree::Init()
     NumTrueInts = null;
     NumPUInts = null;
 
-    bs_type = null;
-    bs_x0 = null;
-    bs_y0 = null;
-    bs_z0 = null;
-    bs_x_zpv = null;
-    bs_y_zpv = null;
-    bs_sigmaZ = null;
-    bs_dxdz = null;
-    bs_dydz = null;
-    bs_BeamWidthX = null;
-    bs_BeamWidthY = null;
-    bs_x0Error = null;
-    bs_y0Error = null;
-    bs_z0Error = null;
-    bs_sigmaZ0Error = null;
-    bs_dxdzError = null;
-    bs_dydzError = null;
-    bs_BeamWidthXError = null;
-    bs_BeamWidthYError = null;
-    bs_emittanceX = null;
-    bs_emittanceY = null;
-    bs_betaStar = null;
-
-    pv_IsValid.clear();
-    pv_IsFake.clear();
-    pv_NTracks.clear();
-    pv_SumTrackPt.clear();
-    pv_SumTrackPt2.clear();
-    pv_fracHighPurity.clear();
-    pv_chi2.clear();
-    pv_ndof.clear();
-    pv_x.clear();
-    pv_y.clear();
-    pv_z.clear();
-    pv_xError.clear();
-    pv_yError.clear();
-    pv_zError.clear();
+    pv_IsValid = false;
+    pv_IsFake = false;
+    pv_NTracks = null;
+    pv_SumTrackPt = null;
+    pv_SumTrackPt2 = null;
+    pv_fracHighPurity = null;
+    pv_chi2 = null;
+    pv_ndof = null;
+    pv_x = null;
+    pv_y = null;
+    pv_z = null;
+    pv_xError = null;
+    pv_yError = null;
+    pv_zError = null;
 
     pv_trk_weight.clear();
     pv_trk_isHighPurity.clear();
     pv_trk_algo.clear();
     pv_trk_originalAlgo.clear();
-    pv_trk_idx.clear();
     pv_trk_pvN.clear();
 
     pv_trk_pvunbiased_IsValid.clear();
@@ -115,46 +84,39 @@ void ResTree::Init()
     pv_trk_d0Err.clear();
     pv_trk_dzErr.clear();
 
-    pv_IsValid_p1.clear();
-    pv_IsFake_p1.clear();
-    pv_NTracks_p1.clear();
-    pv_SumTrackPt_p1.clear();
-    pv_SumTrackPt2_p1.clear();
-    pv_fracHighPurity_p1.clear();
-    pv_chi2_p1.clear();
-    pv_ndof_p1.clear();
-    pv_x_p1.clear();
-    pv_y_p1.clear();
-    pv_z_p1.clear();
-    pv_xError_p1.clear();
-    pv_yError_p1.clear();
-    pv_zError_p1.clear();
+    pv_IsValid_p1 = false;
+    pv_IsFake_p1 = false;
+    pv_NTracks_p1 = null;
+    pv_SumTrackPt_p1 = null;
+    pv_SumTrackPt2_p1 = null;
+    pv_fracHighPurity_p1 = null;
+    pv_chi2_p1 = null;
+    pv_ndof_p1 = null;
+    pv_x_p1 = null;
+    pv_y_p1 = null;
+    pv_z_p1 = null;
+    pv_xError_p1 = null;
+    pv_yError_p1 = null;
+    pv_zError_p1 = null;
 
-    pv_IsValid_p2.clear();
-    pv_IsFake_p2.clear();
-    pv_NTracks_p2.clear();
-    pv_SumTrackPt_p2.clear();
-    pv_SumTrackPt2_p2.clear();
-    pv_fracHighPurity_p2.clear();
-    pv_chi2_p2.clear();
-    pv_ndof_p2.clear();
-    pv_x_p2.clear();
-    pv_y_p2.clear();
-    pv_z_p2.clear();
-    pv_xError_p2.clear();
-    pv_yError_p2.clear();
-    pv_zError_p2.clear();
+    pv_IsValid_p2 = false;
+    pv_IsFake_p2 = false;
+    pv_NTracks_p2 = null;
+    pv_SumTrackPt_p2 = null;
+    pv_SumTrackPt2_p2 = null;
+    pv_fracHighPurity_p2 = null;
+    pv_chi2_p2 = null;
+    pv_ndof_p2 = null;
+    pv_x_p2 = null;
+    pv_y_p2 = null;
+    pv_z_p2 = null;
+    pv_xError_p2 = null;
+    pv_yError_p2 = null;
+    pv_zError_p2 = null;
 }
 
 void ResTree::CreateBranches(Bool_t runOnData)
 {
-    tree->Branch("ev_run", &ev_run);
-    tree->Branch("ev_id", &ev_id);
-    tree->Branch("ev_lumi", &ev_lumi);
-    tree->Branch("ev_bunchCrossing", &ev_bunchCrossing);
-    tree->Branch("ev_orbitNumber", &ev_orbitNumber);
-    tree->Branch("ev_time", &ev_time);
-    tree->Branch("ev_rho", &ev_rho);
     tree->Branch("ev_nPV", &ev_nPV);
 
     tree->Branch("trig_ZeroBias_pass", &trig_ZeroBias_pass);
@@ -176,29 +138,6 @@ void ResTree::CreateBranches(Bool_t runOnData)
         tree->Branch("NumPUInts", &NumPUInts);
     }
 
-    tree->Branch("bs_type", &bs_type);
-    tree->Branch("bs_x0", &bs_x0);
-    tree->Branch("bs_y0", &bs_y0);
-    tree->Branch("bs_z0", &bs_z0);
-    tree->Branch("bs_x_zpv", &bs_x_zpv);
-    tree->Branch("bs_y_zpv", &bs_y_zpv);
-    tree->Branch("bs_sigmaZ", &bs_sigmaZ);
-    tree->Branch("bs_dxdz", &bs_dxdz);
-    tree->Branch("bs_dydz", &bs_dydz);
-    tree->Branch("bs_BeamWidthX", &bs_BeamWidthX);
-    tree->Branch("bs_BeamWidthY", &bs_BeamWidthY);
-    tree->Branch("bs_x0Error", &bs_x0Error);
-    tree->Branch("bs_y0Error", &bs_y0Error);
-    tree->Branch("bs_z0Error", &bs_z0Error);
-    tree->Branch("bs_sigmaZ0Error", &bs_sigmaZ0Error);
-    tree->Branch("bs_dxdzError", &bs_dxdzError);
-    tree->Branch("bs_dydzError", &bs_dydzError);
-    tree->Branch("bs_BeamWidthXError", &bs_BeamWidthXError);
-    tree->Branch("bs_BeamWidthYError", &bs_BeamWidthYError);
-    tree->Branch("bs_emittanceX", &bs_emittanceX);
-    tree->Branch("bs_emittanceY", &bs_emittanceY);
-    tree->Branch("bs_betaStar", &bs_betaStar);
-
     tree->Branch("pv_IsValid", &pv_IsValid);
     tree->Branch("pv_IsFake", &pv_IsFake);
     tree->Branch("pv_NTracks", &pv_NTracks);
@@ -218,7 +157,6 @@ void ResTree::CreateBranches(Bool_t runOnData)
     tree->Branch("pv_trk_isHighPurity", &pv_trk_isHighPurity);
     tree->Branch("pv_trk_algo", &pv_trk_algo);
     tree->Branch("pv_trk_originalAlgo", &pv_trk_originalAlgo);
-    tree->Branch("pv_trk_idx", &pv_trk_idx);
     tree->Branch("pv_trk_pvN", &pv_trk_pvN);
 
     tree->Branch("pv_trk_pvunbiased_IsValid", &pv_trk_pvunbiased_IsValid);

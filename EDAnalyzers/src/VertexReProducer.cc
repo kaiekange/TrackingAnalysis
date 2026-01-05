@@ -63,24 +63,15 @@ std::vector<TransientVertex> VertexReProducer::makeVertices(const reco::TrackCol
     {
         TransientVertex v;
 
-        if (beamSpotConfig_ == "WithBS" && validBS && ((*iclus).size() > 1))
-        {
-            v = fit.vertex(*iclus, bs);
-        }
-        else if (beamSpotConfig_ != "WithBS" && ((*iclus).size() > 1))
-        {
+        if ((*iclus).size() > 1)
             v = fit.vertex(*iclus);
-        }
 
-        if (v.isValid() && (v.degreesOfFreedom() >= minNdof_) &&
-            (!validBS || (*(vertexSelector_))(v, beamVertexState)))
+        if (v.isValid() && (v.degreesOfFreedom() >= minNdof_) && (!validBS || (*(vertexSelector_))(v, beamVertexState)))
             pvs.push_back(v);
     }
 
     if (pvs.size() > 1)
-    {
         sort(pvs.begin(), pvs.end(), VertexHigherPtSquared());
-    }
 
     return pvs;
 }

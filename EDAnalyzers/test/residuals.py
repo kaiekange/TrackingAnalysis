@@ -6,6 +6,7 @@ options.register("RunOnData", False, VarParsing.multiplicity.singleton, VarParsi
 options.register("GlobalTag", "124X_dataRun3_v15", VarParsing.multiplicity.singleton, VarParsing.varType.string, "Global tag")
 options.register("EventScale", 100, VarParsing.multiplicity.singleton, VarParsing.varType.int, "Event scale")
 options.register("EventModulo", 0, VarParsing.multiplicity.singleton, VarParsing.varType.int, "Event modulo")
+options.register("SampleType", "ZeroBias", VarParsing.multiplicity.singleton, VarParsing.varType.string, "Sample type")
 options.parseArguments()
 
 readFiles = cms.untracked.vstring()
@@ -40,6 +41,7 @@ process.residuals.stageL1Trigger = cms.uint32(2)
 process.residuals.RunOnData = cms.bool(options.RunOnData)
 process.residuals.EventScale = cms.int32(options.EventScale)
 process.residuals.EventModulo = cms.int32(options.EventModulo)
+process.residuals.SampleType = cms.string(options.SampleType)
 
 process.TFileService = cms.Service("TFileService", fileName=cms.string("output.root"), closeFileFast=cms.untracked.bool(True))
 

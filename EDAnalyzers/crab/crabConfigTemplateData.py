@@ -7,7 +7,7 @@ config.General.transferLogs = True
 config.section_('JobType')
 config.JobType.psetName = '../test/residuals.py'
 config.JobType.pluginName = 'Analysis'
-config.JobType.pyCfgParams = ['RunOnData=True', 'GlobalTag=GLOBALTAG', 'EventScale=EVENTSCALE', 'EventModulo=EVENTMODULO']
+config.JobType.pyCfgParams = ['RunOnData=True', 'GlobalTag=GLOBALTAG', 'EventScale=EVENTSCALE', 'EventModulo=EVENTMODULO', 'SampleType=SAMPLETYPE']
 config.JobType.allowUndistributedCMSSW = True
 #config.JobType.maxMemoryMB = 4000
 config.JobType.maxJobRuntimeMin = 3000 # min
@@ -31,5 +31,5 @@ config.section_('User')
 config.User.voGroup = 'becms'
 config.section_('Site')
 # config.Site.storageSite = 'T2_BE_IIHE'
-config.Site.storageSite = 'T3_CH_CERNBOX'
+config.Site.storageSite = 'T2_CH_CERN'
 # config.Site.blacklist = ['T2_BE_IIHE']

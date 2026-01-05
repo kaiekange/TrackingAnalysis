@@ -142,10 +142,8 @@ private:
 
     edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magFieldToken_;
     edm::EDGetTokenT<reco::VertexCollection> primvtxToken_;
-    /* edm::EDGetTokenT<reco::TrackCollection> tracksToken_; */
     edm::EDGetTokenT<edm::View<pat::PackedCandidate>> tracksToken_;
     edm::EDGetTokenT<reco::BeamSpot> beamspotToken_;
-    edm::EDGetTokenT<Double_t> rhoToken_;
     edm::EDGetTokenT<edm::TriggerResults> triggerToken_;
     edm::EDGetTokenT<std::vector<PileupSummaryInfo>> PileupToken;
 
@@ -164,18 +162,22 @@ private:
 
     VertexReProducer *revertex;
 
+    Double_t micron = 10000;
+
     Bool_t runOnData;
     Int_t eventScale;
     Int_t eventModulo;
-    Int_t trackScale;
+    std::string SampleType;
 
     TRandom3 *rnd;
 
     const edm::Service<TFileService> fs;
     ResTree *ftree;
+    TTree *InfoTree;
 
     ULong_t nEventsProcessed_;
     ULong_t nEventsScaled_;
+    ULong_t nEventsTriggered_;
 };
 
 Residuals::Residuals(const edm::ParameterSet &pset) : magFieldToken_(esConsumes<MagneticField, IdealMagneticFieldRecord>())
@@ -188,9 +190,6 @@ Residuals::Residuals(const edm::ParameterSet &pset) : magFieldToken_(esConsumes<
 
     edm::InputTag BeamspotTag_ = edm::InputTag("offlineBeamSpot");
     beamspotToken_ = consumes<reco::BeamSpot>(BeamspotTag_);
-
-    edm::InputTag RhoTag_ = pset.getParameter<edm::InputTag>("RhoLabel");
-    rhoToken_ = consumes<Double_t>(RhoTag_);
 
     edm::InputTag TriggerBitsTag_ = pset.getParameter<edm::InputTag>("TriggerResultsLabel");
     triggerToken_ = consumes<edm::TriggerResults>(TriggerBitsTag_);
@@ -207,12 +206,12 @@ Residuals::Residuals(const edm::ParameterSet &pset) : magFieldToken_(esConsumes<
 
     vtxTracksSizeMin = pset.getParameter<Int_t>("VtxTracksSizeMin");
     vtxTracksSizeMax = pset.getParameter<Int_t>("VtxTracksSizeMax");
-    //   vtxErrorXMin     = pset.getParameter<Double_t>("VtxErrorXMin");
-    //   vtxErrorXMax     = pset.getParameter<Double_t>("VtxErrorXMax");
-    //   vtxErrorYMin     = pset.getParameter<Double_t>("VtxErrorYMin");
-    //   vtxErrorYMax     = pset.getParameter<Double_t>("VtxErrorYMax");
-    //   vtxErrorZMin     = pset.getParameter<Double_t>("VtxErrorZMin");
-    //   vtxErrorZMax     = pset.getParameter<Double_t>("VtxErrorZMax");
+    // vtxErrorXMin     = pset.getParameter<Double_t>("VtxErrorXMin");
+    // vtxErrorXMax     = pset.getParameter<Double_t>("VtxErrorXMax");
+    // vtxErrorYMin     = pset.getParameter<Double_t>("VtxErrorYMin");
+    // vtxErrorYMax     = pset.getParameter<Double_t>("VtxErrorYMax");
+    // vtxErrorZMin     = pset.getParameter<Double_t>("VtxErrorZMin");
+    // vtxErrorZMax     = pset.getParameter<Double_t>("VtxErrorZMax");
 
     edm::ConsumesCollector c{consumesCollector()};
     revertex = new VertexReProducer(pset, c);
@@ -220,7 +219,7 @@ Residuals::Residuals(const edm::ParameterSet &pset) : magFieldToken_(esConsumes<
     runOnData = pset.getParameter<Bool_t>("RunOnData");
     eventScale = pset.getParameter<Int_t>("EventScale");
     eventModulo = pset.getParameter<Int_t>("EventModulo");
-    trackScale = pset.getParameter<Int_t>("TrackScale");
+    SampleType = pset.getParameter<std::string>("SampleType");
 
     rnd = new TRandom3();
 }
@@ -235,8 +234,14 @@ void Residuals::beginJob()
     ftree = new ResTree(fs->make<TTree>("tree", "tree"));
     ftree->CreateBranches(runOnData);
 
+    InfoTree = fs->make<TTree>("RunInfo", "RunInfo");
+    InfoTree->Branch("nEventsProcessed_", &nEventsProcessed_);
+    InfoTree->Branch("nEventsScaled_", &nEventsScaled_);
+    InfoTree->Branch("nEventsTriggered_", &nEventsTriggered_);
+
     nEventsProcessed_ = 0;
     nEventsScaled_ = 0;
+    nEventsTriggered_ = 0;
 }
 
 void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
@@ -248,68 +253,11 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
 
     nEventsScaled_++;
 
-    using namespace edm;
-    using namespace reco;
-    using namespace std;
-
     ftree->Init();
 
-    Handle<edm::View<pat::PackedCandidate>> tracksHandle;
-    iEvent.getByToken(tracksToken_, tracksHandle);
-
-    edm::View<pat::PackedCandidate> tracksPacked = (*tracksHandle.product());
-
-    TrackCollection tracks;
-
-    for (size_t it = 0; it < tracksPacked.size(); it++)
-    {
-        const pat::PackedCandidate &trkPacked = tracksPacked[it];
-        if (!trkPacked.hasTrackDetails())
-            continue;
-        tracks.push_back(trkPacked.pseudoTrack());
-    }
-
-    Handle<VertexCollection> primvtxHandle;
-    iEvent.getByToken(primvtxToken_, primvtxHandle);
-
-    Handle<BeamSpot> beamspotHandle;
-    iEvent.getByToken(beamspotToken_, beamspotHandle);
-
-    if (!primvtxHandle.isValid())
-        return;
-    if (primvtxHandle->size() == 0)
-        return;
-
-    // refit primary vertices and put it in a new handle (note: TrackBaseRefs are different)
-    vector<TransientVertex> pvs = revertex->makeVertices(tracks, *beamspotHandle, iSetup);
-    edm::LogPrint("Residuals") << "Primary vertices = " << primvtxHandle->size() << ", refitted vertices = " << pvs.size() << ", tracks = " << tracks.size();
-    // std::cout << "Primary vertices = " << primvtxHandle->size() << ", refitted vertices = " << pvs.size() << ", tracks = " << tracks.size() << std::endl;
-    if (pvs.empty())
-        return;
-
-    TransientVertex tvtx = pvs.front();
-    reco::Vertex vtx = reco::Vertex(pvs.front());
-
-    if (!vertexSelection(vtx))
-        return;
-
-    edm::ESHandle<MagneticField> magField = iSetup.getHandle(magFieldToken_);
-
-    Handle<Double_t> rhoHandle;
-    iEvent.getByToken(rhoToken_, rhoHandle);
-
-    ftree->ev_run = iEvent.id().run();
-    ftree->ev_id = iEvent.id().event();
-    ftree->ev_lumi = iEvent.id().luminosityBlock();
-    ftree->ev_bunchCrossing = iEvent.bunchCrossing();
-    ftree->ev_orbitNumber = iEvent.orbitNumber();
-    ftree->ev_time = iEvent.time().unixTime();
-    ftree->ev_rho = *rhoHandle;
-    ftree->ev_nPV = pvs.size();
-
-    Handle<TriggerResults> triggerHandle;
+    edm::Handle<edm::TriggerResults> triggerHandle;
     iEvent.getByToken(triggerToken_, triggerHandle);
-    const TriggerNames &names = iEvent.triggerNames(*triggerHandle);
+    const edm::TriggerNames &names = iEvent.triggerNames(*triggerHandle);
     for (UInt_t i = 0; i < names.size(); i++)
     {
         TString trigName = TString(names.triggerName(i));
@@ -341,103 +289,85 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
             ftree->trig_PFHT1050_pass = pass;
     }
 
-    // Pileup info
+    Bool_t trigger_pass = false;
+
+    if (SampleType == "ZeroBias")
+        trigger_pass = ftree->trig_ZeroBias_pass;
+    else if (SampleType == "JetHT")
+        trigger_pass = (ftree->trig_PFHT180_pass) || (ftree->trig_PFHT250_pass) || (ftree->trig_PFHT370_pass) || (ftree->trig_PFHT430_pass) || (ftree->trig_PFHT510_pass) || (ftree->trig_PFHT590_pass) || (ftree->trig_PFHT680_pass) || (ftree->trig_PFHT780_pass) || (ftree->trig_PFHT890_pass) || (ftree->trig_PFHT1050_pass);
+
+    if (!trigger_pass)
+        return;
+    nEventsTriggered_++;
+
+
     if (!runOnData)
     {
         edm::Handle<std::vector<PileupSummaryInfo>> PileupInfo;
         iEvent.getByToken(PileupToken, PileupInfo);
 
-        for(std::vector<PileupSummaryInfo>::const_iterator iPU = PileupInfo->begin(); iPU != PileupInfo->end(); iPU++){
+        for (std::vector<PileupSummaryInfo>::const_iterator iPU = PileupInfo->begin(); iPU != PileupInfo->end(); iPU++)
+        {
             Int_t BX = iPU->getBunchCrossing();
-            if(BX == 0){
+            if (BX == 0)
+            {
                 ftree->NumTrueInts = iPU->getTrueNumInteractions();
                 ftree->NumPUInts = iPU->getPU_NumInteractions();
             }
         }
     }
 
-    Double_t micron = 10000;
+    edm::Handle<reco::VertexCollection> primvtxHandle;
+    iEvent.getByToken(primvtxToken_, primvtxHandle);
 
-    ftree->bs_type = beamspotHandle->type();
-    ftree->bs_x0 = beamspotHandle->x0();
-    ftree->bs_y0 = beamspotHandle->y0();
-    ftree->bs_z0 = beamspotHandle->z0();
-    ftree->bs_x_zpv = beamspotHandle->x(vtx.z());
-    ftree->bs_y_zpv = beamspotHandle->y(vtx.z());
-    ftree->bs_sigmaZ = beamspotHandle->sigmaZ();
-    ftree->bs_dxdz = beamspotHandle->dxdz();
-    ftree->bs_dydz = beamspotHandle->dydz();
-    ftree->bs_BeamWidthX = beamspotHandle->BeamWidthX();
-    ftree->bs_BeamWidthY = beamspotHandle->BeamWidthY();
-    ftree->bs_x0Error = beamspotHandle->x0Error();
-    ftree->bs_y0Error = beamspotHandle->y0Error();
-    ftree->bs_z0Error = beamspotHandle->z0Error();
-    ftree->bs_sigmaZ0Error = beamspotHandle->sigmaZ0Error();
-    ftree->bs_dxdzError = beamspotHandle->dxdzError();
-    ftree->bs_dydzError = beamspotHandle->dydzError();
-    ftree->bs_BeamWidthXError = beamspotHandle->BeamWidthXError();
-    ftree->bs_BeamWidthYError = beamspotHandle->BeamWidthYError();
-    ftree->bs_emittanceX = beamspotHandle->emittanceX();
-    ftree->bs_emittanceY = beamspotHandle->emittanceY();
-    ftree->bs_betaStar = beamspotHandle->betaStar();
+    edm::Handle<reco::BeamSpot> beamspotHandle;
+    iEvent.getByToken(beamspotToken_, beamspotHandle);
 
-    std::vector<reco::TransientTrack> vtxTracks = tvtx.originalTracks();
+    if (!primvtxHandle.isValid())
+        return;
+    if (primvtxHandle->size() == 0)
+        return;
+
+    edm::Handle<edm::View<pat::PackedCandidate>> tracksHandle;
+    iEvent.getByToken(tracksToken_, tracksHandle);
+    edm::View<pat::PackedCandidate> tracksPacked = (*tracksHandle.product());
+    reco::TrackCollection tracks;
+    for (size_t it = 0; it < tracksPacked.size(); it++)
+    {
+        const pat::PackedCandidate &trkPacked = tracksPacked[it];
+        if (!trkPacked.hasTrackDetails())
+            continue;
+        tracks.push_back(trkPacked.pseudoTrack());
+    }
+
+    std::vector<TransientVertex> refitted_tPVs = revertex->makeVertices(tracks, *beamspotHandle, iSetup);
+
+    edm::LogPrint("Residuals") << "Primary vertices = " << primvtxHandle->size() << ", refitted vertices = " << refitted_tPVs.size() << ", tracks = " << tracks.size();
+    if (refitted_tPVs.empty())
+        return;
+
+    TransientVertex refitted_tPV_front = refitted_tPVs.front();
+    reco::Vertex refitted_PV_front = reco::Vertex(refitted_tPVs.front());
+
+    if (!vertexSelection(refitted_PV_front))
+        return;
+
+    edm::ESHandle<MagneticField> magField = iSetup.getHandle(magFieldToken_);
+
+    ftree->ev_nPV = refitted_tPVs.size();
+
+    std::vector<reco::TransientTrack> vtxTracks = refitted_tPV_front.originalTracks();
     stable_sort(vtxTracks.begin(), vtxTracks.end(), sortPt);
 
-    Int_t nTracks = vtx.tracksSize();
+    Int_t nTracks = refitted_PV_front.tracksSize();
 
-    Track::Point vtxPosition = Track::Point(vtx.position().x(), vtx.position().y(), vtx.position().z());
+    reco::Track::Point vtxPosition = reco::Track::Point(refitted_PV_front.position().x(), refitted_PV_front.position().y(), refitted_PV_front.position().z());
 
     Float_t pv_SumTrackPt = 0.;
     Float_t pv_SumTrackPt2 = 0.;
     Float_t pv_fracHighPurity = 0.;
 
-    std::vector<Float_t> pv_trackWeight;
-    std::vector<Int_t> pv_trk_algo;
-    std::vector<Int_t> pv_trk_originalAlgo;
-    std::vector<Bool_t> pv_trk_isHighPurity;
-    std::vector<Int_t> pv_trk_idx;
-    std::vector<Int_t> pv_trk_pvN;
-
-    std::vector<Bool_t> pv_trk_pvunbiased_IsValid;
-    std::vector<Bool_t> pv_trk_pvunbiased_IsFake;
-    std::vector<Int_t> pv_trk_pvunbiased_NTracks;
-    std::vector<Float_t> pv_trk_pvunbiased_SumTrackPt;
-    std::vector<Float_t> pv_trk_pvunbiased_SumTrackPt2;
-    std::vector<Float_t> pv_trk_pvunbiased_fracHighPurity;
-    std::vector<Float_t> pv_trk_pvunbiased_chi2;
-    std::vector<Int_t> pv_trk_pvunbiased_ndof;
-    std::vector<Float_t> pv_trk_pvunbiased_x;
-    std::vector<Float_t> pv_trk_pvunbiased_y;
-    std::vector<Float_t> pv_trk_pvunbiased_z;
-    std::vector<Float_t> pv_trk_pvunbiased_xError;
-    std::vector<Float_t> pv_trk_pvunbiased_yError;
-    std::vector<Float_t> pv_trk_pvunbiased_zError;
-
-    std::vector<Float_t> pv_trk_d0_pvunbiased;
-    std::vector<Float_t> pv_trk_dz_pvunbiased;
-    std::vector<Float_t> pv_trk_d0_bs_zpvunbiased;
-
-    std::vector<Float_t> pv_trk_pt;
-    std::vector<Float_t> pv_trk_px;
-    std::vector<Float_t> pv_trk_py;
-    std::vector<Float_t> pv_trk_pz;
-    std::vector<Float_t> pv_trk_p;
-    std::vector<Float_t> pv_trk_eta;
-    std::vector<Float_t> pv_trk_phi;
-
-    std::vector<Float_t> pv_trk_d0;
-    std::vector<Float_t> pv_trk_dz;
-    std::vector<Float_t> pv_trk_d0_pv;
-    std::vector<Float_t> pv_trk_dz_pv;
-    std::vector<Float_t> pv_trk_d0_bs;
-    std::vector<Float_t> pv_trk_d0_bs_zpca;
-    std::vector<Float_t> pv_trk_d0_bs_zpv;
-    std::vector<Float_t> pv_trk_dz_bs;
-    std::vector<Float_t> pv_trk_d0Err;
-    std::vector<Float_t> pv_trk_dzErr;
-
-    TrackCollection initPVTkCollection;
+    reco::TrackCollection initPVTkCollection;
     for (std::vector<reco::TransientTrack>::const_iterator it = vtxTracks.begin(); it != vtxTracks.end(); it++)
     {
         reco::Track trk = (*it).track();
@@ -449,114 +379,107 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
     {
         reco::Track trk = (*it).track();
 
-        TrackCollection::const_iterator itt = find_if(tracks.begin(), tracks.end(), TrackEqualReco(trk));
+        pv_SumTrackPt += trk.pt();
+        pv_SumTrackPt2 += trk.pt() * trk.pt();
+        pv_fracHighPurity += trk.quality(reco::TrackBase::highPurity);
 
-        if (itt != tracks.end())
-            pv_trk_idx.push_back(itt - tracks.begin());
+        if (refitted_tPV_front.hasTrackWeight())
+            ftree->pv_trk_weight.push_back(refitted_tPV_front.trackWeight(*it));
         else
-            pv_trk_idx.push_back(-1);
+            ftree->pv_trk_weight.push_back(null);
+
+        ftree->pv_trk_isHighPurity.push_back(trk.quality(reco::TrackBase::highPurity));
+        ftree->pv_trk_algo.push_back(trk.algo());
+        ftree->pv_trk_originalAlgo.push_back(trk.originalAlgo());
+
+        ftree->pv_trk_pt.push_back(trk.pt());
+        ftree->pv_trk_px.push_back(trk.px());
+        ftree->pv_trk_py.push_back(trk.py());
+        ftree->pv_trk_pz.push_back(trk.pz());
+        ftree->pv_trk_p.push_back(trk.p());
+        ftree->pv_trk_eta.push_back(trk.eta());
+        ftree->pv_trk_phi.push_back(trk.phi());
+
+        ftree->pv_trk_d0.push_back(trk.dxy() * micron);
+        ftree->pv_trk_dz.push_back(trk.dz() * micron);
+        ftree->pv_trk_d0_pv.push_back(trk.dxy(vtxPosition) * micron);
+        ftree->pv_trk_dz_pv.push_back(trk.dz(vtxPosition) * micron);
+        ftree->pv_trk_d0_bs.push_back(trk.dxy(beamspotHandle->position()) * micron);
+        ftree->pv_trk_d0_bs_zpca.push_back(trk.dxy(*beamspotHandle) * micron);
+        ftree->pv_trk_d0_bs_zpv.push_back(trk.dxy(beamspotHandle->position(vtxPosition.z())) * micron);
+        ftree->pv_trk_dz_bs.push_back(trk.dz(beamspotHandle->position()) * micron);
+        ftree->pv_trk_d0Err.push_back(trk.d0Error() * micron);
+        ftree->pv_trk_dzErr.push_back(trk.dzError() * micron);
 
         // Remove the track from the PV track collection
-        TrackCollection newPVTkCollection;
+        reco::TrackCollection newPVTkCollection;
         newPVTkCollection.assign(initPVTkCollection.begin(), initPVTkCollection.begin() + iTrk);
         newPVTkCollection.insert(newPVTkCollection.end(), initPVTkCollection.begin() + iTrk + 1, initPVTkCollection.end());
 
-        vector<TransientVertex> pvst = revertex->makeVertices(newPVTkCollection, *beamspotHandle, iSetup);
+        std::vector<TransientVertex> refitted_tPVs_unbiased = revertex->makeVertices(newPVTkCollection, *beamspotHandle, iSetup);
 
-        pv_trk_pvN.push_back(pvst.size());
+        ftree->pv_trk_pvN.push_back(refitted_tPVs_unbiased.size());
 
-        if (!pvst.empty())
+        if (!refitted_tPVs_unbiased.empty())
         {
-            reco::Vertex vtxt = reco::Vertex(pvst.front());
+            reco::Vertex refitted_PV_front_unbiased = reco::Vertex(refitted_tPVs_unbiased.front());
 
             Float_t unbiasedSumTrackPt = 0.;
             Float_t unbiasedSumTrackPt2 = 0.;
             Float_t unbiasedFracHighPurity = 0.;
 
-            for (TrackCollection::const_iterator itt = newPVTkCollection.begin(); itt != newPVTkCollection.end(); itt++)
+            for (reco::TrackCollection::const_iterator itt = newPVTkCollection.begin(); itt != newPVTkCollection.end(); itt++)
             {
                 unbiasedSumTrackPt += (*itt).pt();
                 unbiasedSumTrackPt2 += (*itt).pt() * (*itt).pt();
                 unbiasedFracHighPurity += (*itt).quality(reco::TrackBase::highPurity);
             }
-            Int_t nTracksUnbiased = vtxt.tracksSize();
+            Int_t nTracksUnbiased = refitted_PV_front_unbiased.tracksSize();
             if (nTracksUnbiased)
                 unbiasedFracHighPurity /= Float_t(nTracksUnbiased);
 
-            pv_trk_pvunbiased_IsValid.push_back(vtxt.isValid());
-            pv_trk_pvunbiased_IsFake.push_back(vtxt.isFake());
-            pv_trk_pvunbiased_NTracks.push_back(newPVTkCollection.size());
-            pv_trk_pvunbiased_SumTrackPt.push_back(unbiasedSumTrackPt);
-            pv_trk_pvunbiased_SumTrackPt2.push_back(unbiasedSumTrackPt2);
-            pv_trk_pvunbiased_fracHighPurity.push_back(unbiasedFracHighPurity);
-            pv_trk_pvunbiased_chi2.push_back(vtxt.chi2());
-            pv_trk_pvunbiased_ndof.push_back(vtxt.ndof());
-            pv_trk_pvunbiased_x.push_back(vtxt.x() * micron);
-            pv_trk_pvunbiased_y.push_back(vtxt.y() * micron);
-            pv_trk_pvunbiased_z.push_back(vtxt.z() * micron);
-            pv_trk_pvunbiased_xError.push_back(vtxt.xError() * micron);
-            pv_trk_pvunbiased_yError.push_back(vtxt.yError() * micron);
-            pv_trk_pvunbiased_zError.push_back(vtxt.zError() * micron);
+            ftree->pv_trk_pvunbiased_IsValid.push_back(refitted_PV_front_unbiased.isValid());
+            ftree->pv_trk_pvunbiased_IsFake.push_back(refitted_PV_front_unbiased.isFake());
+            ftree->pv_trk_pvunbiased_NTracks.push_back(nTracksUnbiased);
+            ftree->pv_trk_pvunbiased_SumTrackPt.push_back(unbiasedSumTrackPt);
+            ftree->pv_trk_pvunbiased_SumTrackPt2.push_back(unbiasedSumTrackPt2);
+            ftree->pv_trk_pvunbiased_fracHighPurity.push_back(unbiasedFracHighPurity);
+            ftree->pv_trk_pvunbiased_chi2.push_back(refitted_PV_front_unbiased.chi2());
+            ftree->pv_trk_pvunbiased_ndof.push_back(refitted_PV_front_unbiased.ndof());
+            ftree->pv_trk_pvunbiased_x.push_back(refitted_PV_front_unbiased.x() * micron);
+            ftree->pv_trk_pvunbiased_y.push_back(refitted_PV_front_unbiased.y() * micron);
+            ftree->pv_trk_pvunbiased_z.push_back(refitted_PV_front_unbiased.z() * micron);
+            ftree->pv_trk_pvunbiased_xError.push_back(refitted_PV_front_unbiased.xError() * micron);
+            ftree->pv_trk_pvunbiased_yError.push_back(refitted_PV_front_unbiased.yError() * micron);
+            ftree->pv_trk_pvunbiased_zError.push_back(refitted_PV_front_unbiased.zError() * micron);
 
-            Track::Point vtxPositionUnbiased = Track::Point(vtxt.position().x(), vtxt.position().y(), vtxt.position().z());
+            reco::Track::Point vtxPositionUnbiased = reco::Track::Point(refitted_PV_front_unbiased.position().x(), refitted_PV_front_unbiased.position().y(), refitted_PV_front_unbiased.position().z());
 
-            pv_trk_d0_pvunbiased.push_back(trk.dxy(vtxPositionUnbiased) * micron);
-            pv_trk_dz_pvunbiased.push_back(trk.dz(vtxPositionUnbiased) * micron);
-            pv_trk_d0_bs_zpvunbiased.push_back(trk.dxy(beamspotHandle->position(vtxPositionUnbiased.z())) * micron);
+            ftree->pv_trk_d0_pvunbiased.push_back(trk.dxy(vtxPositionUnbiased) * micron);
+            ftree->pv_trk_dz_pvunbiased.push_back(trk.dz(vtxPositionUnbiased) * micron);
+            ftree->pv_trk_d0_bs_zpvunbiased.push_back(trk.dxy(beamspotHandle->position(vtxPositionUnbiased.z())) * micron);
         }
         else
         {
-            pv_trk_pvunbiased_IsValid.push_back(false);
-            pv_trk_pvunbiased_IsFake.push_back(true);
-            pv_trk_pvunbiased_NTracks.push_back(null);
-            pv_trk_pvunbiased_SumTrackPt.push_back(null);
-            pv_trk_pvunbiased_SumTrackPt2.push_back(null);
-            pv_trk_pvunbiased_fracHighPurity.push_back(null);
-            pv_trk_pvunbiased_chi2.push_back(null);
-            pv_trk_pvunbiased_ndof.push_back(null);
-            pv_trk_pvunbiased_x.push_back(null);
-            pv_trk_pvunbiased_y.push_back(null);
-            pv_trk_pvunbiased_z.push_back(null);
-            pv_trk_pvunbiased_xError.push_back(null);
-            pv_trk_pvunbiased_yError.push_back(null);
-            pv_trk_pvunbiased_zError.push_back(null);
+            ftree->pv_trk_pvunbiased_IsValid.push_back(false);
+            ftree->pv_trk_pvunbiased_IsFake.push_back(true);
+            ftree->pv_trk_pvunbiased_NTracks.push_back(null);
+            ftree->pv_trk_pvunbiased_SumTrackPt.push_back(null);
+            ftree->pv_trk_pvunbiased_SumTrackPt2.push_back(null);
+            ftree->pv_trk_pvunbiased_fracHighPurity.push_back(null);
+            ftree->pv_trk_pvunbiased_chi2.push_back(null);
+            ftree->pv_trk_pvunbiased_ndof.push_back(null);
+            ftree->pv_trk_pvunbiased_x.push_back(null);
+            ftree->pv_trk_pvunbiased_y.push_back(null);
+            ftree->pv_trk_pvunbiased_z.push_back(null);
+            ftree->pv_trk_pvunbiased_xError.push_back(null);
+            ftree->pv_trk_pvunbiased_yError.push_back(null);
+            ftree->pv_trk_pvunbiased_zError.push_back(null);
 
-            pv_trk_d0_pvunbiased.push_back(null);
-            pv_trk_dz_pvunbiased.push_back(null);
-            pv_trk_d0_bs_zpvunbiased.push_back(null);
+            ftree->pv_trk_d0_pvunbiased.push_back(null);
+            ftree->pv_trk_dz_pvunbiased.push_back(null);
+            ftree->pv_trk_d0_bs_zpvunbiased.push_back(null);
         }
-
-        pv_SumTrackPt += trk.pt();
-        pv_SumTrackPt2 += trk.pt() * trk.pt();
-        pv_fracHighPurity += trk.quality(reco::TrackBase::highPurity);
-
-        if (tvtx.hasTrackWeight())
-            pv_trackWeight.push_back(tvtx.trackWeight(*it));
-        else
-            pv_trackWeight.push_back(null);
-
-        pv_trk_isHighPurity.push_back(trk.quality(reco::TrackBase::highPurity));
-        pv_trk_algo.push_back(trk.algo());
-        pv_trk_originalAlgo.push_back(trk.originalAlgo());
-
-        pv_trk_pt.push_back(trk.pt());
-        pv_trk_px.push_back(trk.px());
-        pv_trk_py.push_back(trk.py());
-        pv_trk_pz.push_back(trk.pz());
-        pv_trk_p.push_back(trk.p());
-        pv_trk_eta.push_back(trk.eta());
-        pv_trk_phi.push_back(trk.phi());
-
-        pv_trk_d0.push_back(trk.dxy() * micron);
-        pv_trk_dz.push_back(trk.dz() * micron);
-        pv_trk_d0_pv.push_back(trk.dxy(vtxPosition) * micron);
-        pv_trk_dz_pv.push_back(trk.dz(vtxPosition) * micron);
-        pv_trk_d0_bs.push_back(trk.dxy(beamspotHandle->position()) * micron);
-        pv_trk_d0_bs_zpca.push_back(trk.dxy(*beamspotHandle) * micron);
-        pv_trk_d0_bs_zpv.push_back(trk.dxy(beamspotHandle->position(vtxPosition.z())) * micron);
-        pv_trk_dz_bs.push_back(trk.dz(beamspotHandle->position()) * micron);
-        pv_trk_d0Err.push_back(trk.d0Error() * micron);
-        pv_trk_dzErr.push_back(trk.dzError() * micron);
 
         iTrk++;
     }
@@ -564,66 +487,20 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
     if (nTracks)
         pv_fracHighPurity /= Float_t(nTracks);
 
-    ftree->pv_IsValid.push_back(vtx.isValid());
-    ftree->pv_IsFake.push_back(vtx.isFake());
-    ftree->pv_NTracks.push_back(nTracks);
-    ftree->pv_SumTrackPt.push_back(pv_SumTrackPt);
-    ftree->pv_SumTrackPt2.push_back(pv_SumTrackPt2);
-    ftree->pv_fracHighPurity.push_back(pv_fracHighPurity);
-    ftree->pv_chi2.push_back(vtx.chi2());
-    ftree->pv_ndof.push_back(vtx.ndof());
-    ftree->pv_x.push_back(vtx.x() * micron);
-    ftree->pv_y.push_back(vtx.y() * micron);
-    ftree->pv_z.push_back(vtx.z() * micron);
-    ftree->pv_xError.push_back(vtx.xError() * micron);
-    ftree->pv_yError.push_back(vtx.yError() * micron);
-    ftree->pv_zError.push_back(vtx.zError() * micron);
-
-    ftree->pv_trk_weight.push_back(pv_trackWeight);
-    ftree->pv_trk_isHighPurity.push_back(pv_trk_isHighPurity);
-    ftree->pv_trk_algo.push_back(pv_trk_algo);
-    ftree->pv_trk_originalAlgo.push_back(pv_trk_originalAlgo);
-
-    ftree->pv_trk_idx.push_back(pv_trk_idx);
-    ftree->pv_trk_pvN.push_back(pv_trk_pvN);
-
-    ftree->pv_trk_pvunbiased_IsValid.push_back(pv_trk_pvunbiased_IsValid);
-    ftree->pv_trk_pvunbiased_IsFake.push_back(pv_trk_pvunbiased_IsFake);
-    ftree->pv_trk_pvunbiased_NTracks.push_back(pv_trk_pvunbiased_NTracks);
-    ftree->pv_trk_pvunbiased_SumTrackPt.push_back(pv_trk_pvunbiased_SumTrackPt);
-    ftree->pv_trk_pvunbiased_SumTrackPt2.push_back(pv_trk_pvunbiased_SumTrackPt2);
-    ftree->pv_trk_pvunbiased_fracHighPurity.push_back(pv_trk_pvunbiased_fracHighPurity);
-    ftree->pv_trk_pvunbiased_chi2.push_back(pv_trk_pvunbiased_chi2);
-    ftree->pv_trk_pvunbiased_ndof.push_back(pv_trk_pvunbiased_ndof);
-    ftree->pv_trk_pvunbiased_x.push_back(pv_trk_pvunbiased_x);
-    ftree->pv_trk_pvunbiased_y.push_back(pv_trk_pvunbiased_y);
-    ftree->pv_trk_pvunbiased_z.push_back(pv_trk_pvunbiased_z);
-    ftree->pv_trk_pvunbiased_xError.push_back(pv_trk_pvunbiased_xError);
-    ftree->pv_trk_pvunbiased_yError.push_back(pv_trk_pvunbiased_yError);
-    ftree->pv_trk_pvunbiased_zError.push_back(pv_trk_pvunbiased_zError);
-
-    ftree->pv_trk_d0_pvunbiased.push_back(pv_trk_d0_pvunbiased);
-    ftree->pv_trk_dz_pvunbiased.push_back(pv_trk_dz_pvunbiased);
-    ftree->pv_trk_d0_bs_zpvunbiased.push_back(pv_trk_d0_bs_zpvunbiased);
-
-    ftree->pv_trk_pt.push_back(pv_trk_pt);
-    ftree->pv_trk_px.push_back(pv_trk_px);
-    ftree->pv_trk_py.push_back(pv_trk_py);
-    ftree->pv_trk_pz.push_back(pv_trk_pz);
-    ftree->pv_trk_p.push_back(pv_trk_p);
-    ftree->pv_trk_eta.push_back(pv_trk_eta);
-    ftree->pv_trk_phi.push_back(pv_trk_phi);
-
-    ftree->pv_trk_d0.push_back(pv_trk_d0);
-    ftree->pv_trk_dz.push_back(pv_trk_dz);
-    ftree->pv_trk_d0_pv.push_back(pv_trk_d0_pv);
-    ftree->pv_trk_dz_pv.push_back(pv_trk_dz_pv);
-    ftree->pv_trk_d0_bs.push_back(pv_trk_d0_bs);
-    ftree->pv_trk_d0_bs_zpca.push_back(pv_trk_d0_bs_zpca);
-    ftree->pv_trk_d0_bs_zpv.push_back(pv_trk_d0_bs_zpv);
-    ftree->pv_trk_dz_bs.push_back(pv_trk_dz_bs);
-    ftree->pv_trk_d0Err.push_back(pv_trk_d0Err);
-    ftree->pv_trk_dzErr.push_back(pv_trk_dzErr);
+    ftree->pv_IsValid = refitted_PV_front.isValid();
+    ftree->pv_IsFake = refitted_PV_front.isFake();
+    ftree->pv_NTracks = nTracks;
+    ftree->pv_SumTrackPt = pv_SumTrackPt;
+    ftree->pv_SumTrackPt2 = pv_SumTrackPt2;
+    ftree->pv_fracHighPurity = pv_fracHighPurity;
+    ftree->pv_chi2 = refitted_PV_front.chi2();
+    ftree->pv_ndof = refitted_PV_front.ndof();
+    ftree->pv_x = refitted_PV_front.x() * micron;
+    ftree->pv_y = refitted_PV_front.y() * micron;
+    ftree->pv_z = refitted_PV_front.z() * micron;
+    ftree->pv_xError = refitted_PV_front.xError() * micron;
+    ftree->pv_yError = refitted_PV_front.yError() * micron;
+    ftree->pv_zError = refitted_PV_front.zError() * micron;
 
     reco::TrackCollection vtxTkCollection1;
     reco::TrackCollection vtxTkCollection2;
@@ -662,42 +539,42 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
         pv_fracHighPurity_p2 /= Float_t(nTracks);
     }
 
-    vector<TransientVertex> pvs1 = revertex->makeVertices(vtxTkCollection1, *beamspotHandle, iSetup);
-    vector<TransientVertex> pvs2 = revertex->makeVertices(vtxTkCollection2, *beamspotHandle, iSetup);
+    std::vector<TransientVertex> refitted_tPVs1 = revertex->makeVertices(vtxTkCollection1, *beamspotHandle, iSetup);
+    std::vector<TransientVertex> refitted_tPVs2 = revertex->makeVertices(vtxTkCollection2, *beamspotHandle, iSetup);
 
-    if (!pvs1.empty() && !pvs2.empty())
+    if (!refitted_tPVs1.empty() && !refitted_tPVs2.empty())
     {
-        reco::Vertex vtx1 = reco::Vertex(pvs1.front());
-        ftree->pv_IsValid_p1.push_back(vtx1.isValid());
-        ftree->pv_IsFake_p1.push_back(vtx1.isFake());
-        ftree->pv_NTracks_p1.push_back(vtxTkCollection1.size());
-        ftree->pv_SumTrackPt_p1.push_back(SumTrackPt_p1);
-        ftree->pv_SumTrackPt2_p1.push_back(SumTrackPt2_p1);
-        ftree->pv_fracHighPurity_p1.push_back(pv_fracHighPurity_p1);
-        ftree->pv_chi2_p1.push_back(vtx1.chi2());
-        ftree->pv_ndof_p1.push_back(vtx1.ndof());
-        ftree->pv_x_p1.push_back(vtx1.x() * micron);
-        ftree->pv_y_p1.push_back(vtx1.y() * micron);
-        ftree->pv_z_p1.push_back(vtx1.z() * micron);
-        ftree->pv_xError_p1.push_back(vtx1.xError() * micron);
-        ftree->pv_yError_p1.push_back(vtx1.yError() * micron);
-        ftree->pv_zError_p1.push_back(vtx1.zError() * micron);
+        reco::Vertex vtx1 = reco::Vertex(refitted_tPVs1.front());
+        ftree->pv_IsValid_p1 = vtx1.isValid();
+        ftree->pv_IsFake_p1 = vtx1.isFake();
+        ftree->pv_NTracks_p1 = vtxTkCollection1.size();
+        ftree->pv_SumTrackPt_p1 = SumTrackPt_p1;
+        ftree->pv_SumTrackPt2_p1 = SumTrackPt2_p1;
+        ftree->pv_fracHighPurity_p1 = pv_fracHighPurity_p1;
+        ftree->pv_chi2_p1 = vtx1.chi2();
+        ftree->pv_ndof_p1 = vtx1.ndof();
+        ftree->pv_x_p1 = vtx1.x() * micron;
+        ftree->pv_y_p1 = vtx1.y() * micron;
+        ftree->pv_z_p1 = vtx1.z() * micron;
+        ftree->pv_xError_p1 = vtx1.xError() * micron;
+        ftree->pv_yError_p1 = vtx1.yError() * micron;
+        ftree->pv_zError_p1 = vtx1.zError() * micron;
 
-        reco::Vertex vtx2 = reco::Vertex(pvs2.front());
-        ftree->pv_IsValid_p2.push_back(vtx2.isValid());
-        ftree->pv_IsFake_p2.push_back(vtx2.isFake());
-        ftree->pv_NTracks_p2.push_back(vtxTkCollection2.size());
-        ftree->pv_SumTrackPt_p2.push_back(SumTrackPt_p2);
-        ftree->pv_SumTrackPt2_p2.push_back(SumTrackPt2_p2);
-        ftree->pv_fracHighPurity_p2.push_back(pv_fracHighPurity_p2);
-        ftree->pv_chi2_p2.push_back(vtx2.chi2());
-        ftree->pv_ndof_p2.push_back(vtx2.ndof());
-        ftree->pv_x_p2.push_back(vtx2.x() * micron);
-        ftree->pv_y_p2.push_back(vtx2.y() * micron);
-        ftree->pv_z_p2.push_back(vtx2.z() * micron);
-        ftree->pv_xError_p2.push_back(vtx2.xError() * micron);
-        ftree->pv_yError_p2.push_back(vtx2.yError() * micron);
-        ftree->pv_zError_p2.push_back(vtx2.zError() * micron);
+        reco::Vertex vtx2 = reco::Vertex(refitted_tPVs2.front());
+        ftree->pv_IsValid_p2 = vtx2.isValid();
+        ftree->pv_IsFake_p2 = vtx2.isFake();
+        ftree->pv_NTracks_p2 = vtxTkCollection2.size();
+        ftree->pv_SumTrackPt_p2 = SumTrackPt_p2;
+        ftree->pv_SumTrackPt2_p2 = SumTrackPt2_p2;
+        ftree->pv_fracHighPurity_p2 = pv_fracHighPurity_p2;
+        ftree->pv_chi2_p2 = vtx2.chi2();
+        ftree->pv_ndof_p2 = vtx2.ndof();
+        ftree->pv_x_p2 = vtx2.x() * micron;
+        ftree->pv_y_p2 = vtx2.y() * micron;
+        ftree->pv_z_p2 = vtx2.z() * micron;
+        ftree->pv_xError_p2 = vtx2.xError() * micron;
+        ftree->pv_yError_p2 = vtx2.yError() * micron;
+        ftree->pv_zError_p2 = vtx2.zError() * micron;
     }
 
     ftree->tree->Fill();
@@ -708,6 +585,9 @@ void Residuals::endJob()
     edm::LogInfo("Residuals") << "Processed all events.";
     edm::LogPrint("Residuals") << "Total number of events before event scale: " << nEventsProcessed_;
     edm::LogPrint("Residuals") << "Total number of events after event scale: " << nEventsScaled_;
+    edm::LogPrint("Residuals") << "Total number of triggered events: " << nEventsTriggered_;
+    
+    InfoTree->Fill();
 }
 
 Bool_t Residuals::trackSelection(const reco::Track &track) const
