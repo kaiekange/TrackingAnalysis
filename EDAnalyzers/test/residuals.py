@@ -2,9 +2,8 @@ import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 
 options = VarParsing("analysis")
-options.register("RunOnData", False, VarParsing.multiplicity.singleton, VarParsing.varType.bool, "Run on data")
-options.register("GlobalTag", "124X_dataRun3_v15", VarParsing.multiplicity.singleton, VarParsing.varType.string, "Global tag")
-options.register("EventScale", 100, VarParsing.multiplicity.singleton, VarParsing.varType.int, "Event scale")
+options.register("GlobalTag", "140X_mcRun3_2024_realistic_v26", VarParsing.multiplicity.singleton, VarParsing.varType.string, "Global tag")
+options.register("EventScale", 1, VarParsing.multiplicity.singleton, VarParsing.varType.int, "Event scale")
 options.register("EventModulo", 0, VarParsing.multiplicity.singleton, VarParsing.varType.int, "Event modulo")
 options.register("SampleType", "ZeroBias", VarParsing.multiplicity.singleton, VarParsing.varType.string, "Sample type")
 options.parseArguments()
@@ -38,7 +37,6 @@ process.residuals.BeamSpotConfig = ""
 
 process.residuals.stageL1Trigger = cms.uint32(2)
 
-process.residuals.RunOnData = cms.bool(options.RunOnData)
 process.residuals.EventScale = cms.int32(options.EventScale)
 process.residuals.EventModulo = cms.int32(options.EventModulo)
 process.residuals.SampleType = cms.string(options.SampleType)

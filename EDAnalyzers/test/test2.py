@@ -2,8 +2,7 @@ import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 
 options = VarParsing("analysis")
-options.register("RunOnData", True, VarParsing.multiplicity.singleton, VarParsing.varType.bool, "Run on data")
-options.register("GlobalTag", "150X_dataRun3_v2", VarParsing.multiplicity.singleton, VarParsing.varType.string, "Global tag")
+options.register("GlobalTag", "140X_mcRun3_2024_realistic_v26", VarParsing.multiplicity.singleton, VarParsing.varType.string, "Global tag")
 options.register("EventScale", 1, VarParsing.multiplicity.singleton, VarParsing.varType.int, "Event scale")
 options.register("EventModulo", 0, VarParsing.multiplicity.singleton, VarParsing.varType.int, "Event modulo")
 options.register("SampleType", "ZeroBias", VarParsing.multiplicity.singleton, VarParsing.varType.string, "Sample type")
@@ -12,7 +11,7 @@ options.parseArguments()
 readFiles = cms.untracked.vstring()
 
 source = cms.Source("PoolSource", fileNames=readFiles)
-readFiles.extend(["/store/data/Run2024C/ZeroBias/MINIAOD/MINIv6NANOv15-v1/2530000/004c523d-7e53-40e5-9ca0-7063f00703cb.root"])
+readFiles.extend(["/store/mc/RunIII2024Summer24DRPremix/SingleNeutrino_Par-E-10_gun/AODSIM/140X_mcRun3_2024_realistic_v26-v2/100000/061379f8-3407-40ba-b92b-dd1d5c8acbf7.root"])
 
 process = cms.Process("IpResiduals")
 
@@ -27,7 +26,7 @@ process.load("CondCore.CondDB.CondDB_cfi")
 process.load("Configuration.Geometry.GeometryRecoDB_cff")
 process.load("Configuration.StandardSequences.MagneticField_38T_cff")
 
-process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(-1))
+process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(5))
 
 process.source = source
 
@@ -39,7 +38,6 @@ process.residuals.BeamSpotConfig = ""
 
 process.residuals.stageL1Trigger = cms.uint32(2)
 
-process.residuals.RunOnData = cms.bool(options.RunOnData)
 process.residuals.EventScale = cms.int32(options.EventScale)
 process.residuals.EventModulo = cms.int32(options.EventModulo)
 process.residuals.SampleType = cms.string(options.SampleType)

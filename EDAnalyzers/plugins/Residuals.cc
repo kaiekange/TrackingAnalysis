@@ -43,6 +43,14 @@
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
+#include "SimDataFormats/TrackingAnalysis/interface/TrackingParticle.h"
+#include "SimDataFormats/TrackingAnalysis/interface/TrackingParticleFwd.h"
+#include "SimDataFormats/Track/interface/SimTrack.h"
+#include "SimDataFormats/Track/interface/SimTrackContainer.h"
+#include "SimDataFormats/Vertex/interface/SimVertex.h"
+#include "SimDataFormats/Vertex/interface/SimVertexContainer.h"
+#include "SimDataFormats/Associations/interface/TrackAssociation.h"
+
 #include <TrackingTools/TrajectoryState/interface/PerigeeConversions.h>
 #include <TrackingTools/TrajectoryState/interface/TrajectoryStateClosestToPoint.h>
 #include <TrackingTools/PatternTools/interface/TSCPBuilderNoMaterial.h>
@@ -142,10 +150,15 @@ private:
 
     edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magFieldToken_;
     edm::EDGetTokenT<reco::VertexCollection> primvtxToken_;
-    edm::EDGetTokenT<edm::View<pat::PackedCandidate>> tracksToken_;
+    // edm::EDGetTokenT<edm::View<pat::PackedCandidate>> tracksToken_;
+    edm::EDGetTokenT<reco::TrackCollection> tracksToken_;
     edm::EDGetTokenT<reco::BeamSpot> beamspotToken_;
     edm::EDGetTokenT<edm::TriggerResults> triggerToken_;
-    edm::EDGetTokenT<std::vector<PileupSummaryInfo>> PileupToken;
+    edm::EDGetTokenT<std::vector<PileupSummaryInfo>> PileupToken_;
+
+    edm::EDGetTokenT<TrackingParticleCollection> trackingparticleToken_;
+    edm::EDGetTokenT<edm::SimVertexContainer> simvtxToken_;
+    edm::EDGetTokenT<reco::RecoToSimCollection> recoToSimToken_;
 
     // --- track selection variables
     Double_t tkMinPt;
@@ -164,7 +177,6 @@ private:
 
     Double_t micron = 10000;
 
-    Bool_t runOnData;
     Int_t eventScale;
     Int_t eventModulo;
     std::string SampleType;
@@ -183,7 +195,7 @@ private:
 Residuals::Residuals(const edm::ParameterSet &pset) : magFieldToken_(esConsumes<MagneticField, IdealMagneticFieldRecord>())
 {
     edm::InputTag TrackCollectionTag_ = pset.getParameter<edm::InputTag>("TrackLabel");
-    tracksToken_ = consumes<edm::View<pat::PackedCandidate>>(TrackCollectionTag_);
+    tracksToken_ = consumes<reco::TrackCollection>(TrackCollectionTag_);
 
     edm::InputTag VertexCollectionTag_ = pset.getParameter<edm::InputTag>("VertexLabel");
     primvtxToken_ = consumes<reco::VertexCollection>(VertexCollectionTag_);
@@ -194,10 +206,20 @@ Residuals::Residuals(const edm::ParameterSet &pset) : magFieldToken_(esConsumes<
     edm::InputTag TriggerBitsTag_ = pset.getParameter<edm::InputTag>("TriggerResultsLabel");
     triggerToken_ = consumes<edm::TriggerResults>(TriggerBitsTag_);
 
-    edm::InputTag PileupTag("slimmedAddPileupInfo");
-    PileupToken = consumes<std::vector<PileupSummaryInfo>>(PileupTag);
+    // edm::InputTag PileupTag_("slimmedAddPileupInfo");
+    edm::InputTag PileupTag_("addPileupInfo");
+    PileupToken_ = consumes<std::vector<PileupSummaryInfo>>(PileupTag_);
 
     beamSpotConfig = pset.getParameter<std::string>("BeamSpotConfig");
+
+    edm::InputTag trackingparticleTag_ = pset.getParameter<edm::InputTag>("trackingParticles");
+    trackingparticleToken_ = consumes<TrackingParticleCollection>(trackingparticleTag_);
+
+    edm::InputTag simvtxTag_ = pset.getParameter<edm::InputTag>("simVertices");
+    simvtxToken_ = consumes<std::vector<SimVertex>>(simvtxTag_);
+
+    edm::InputTag recoToSimTag_ = pset.getParameter<edm::InputTag>("recoToSim");
+    recoToSimToken_ = consumes<reco::RecoToSimCollection>(recoToSimTag_);
 
     tkMinPt = pset.getParameter<Double_t>("TkMinPt");
     tkMinXLayers = pset.getParameter<Int_t>("TkMinXLayers");
@@ -216,7 +238,6 @@ Residuals::Residuals(const edm::ParameterSet &pset) : magFieldToken_(esConsumes<
     edm::ConsumesCollector c{consumesCollector()};
     revertex = new VertexReProducer(pset, c);
 
-    runOnData = pset.getParameter<Bool_t>("RunOnData");
     eventScale = pset.getParameter<Int_t>("EventScale");
     eventModulo = pset.getParameter<Int_t>("EventModulo");
     SampleType = pset.getParameter<std::string>("SampleType");
@@ -232,7 +253,7 @@ void Residuals::beginJob()
     f.SetCompressionAlgorithm(ROOT::kZSTD);
     f.SetCompressionLevel(5);
     ftree = new ResTree(fs->make<TTree>("tree", "tree"));
-    ftree->CreateBranches(runOnData);
+    ftree->CreateBranches();
 
     InfoTree = fs->make<TTree>("RunInfo", "RunInfo");
     InfoTree->Branch("nEventsProcessed_", &nEventsProcessed_);
@@ -300,22 +321,24 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
         return;
     nEventsTriggered_++;
 
+    edm::Handle<std::vector<PileupSummaryInfo>> PileupInfo;
+    iEvent.getByToken(PileupToken_, PileupInfo);
 
-    if (!runOnData)
+    for (std::vector<PileupSummaryInfo>::const_iterator iPU = PileupInfo->begin(); iPU != PileupInfo->end(); iPU++)
     {
-        edm::Handle<std::vector<PileupSummaryInfo>> PileupInfo;
-        iEvent.getByToken(PileupToken, PileupInfo);
-
-        for (std::vector<PileupSummaryInfo>::const_iterator iPU = PileupInfo->begin(); iPU != PileupInfo->end(); iPU++)
+        Int_t BX = iPU->getBunchCrossing();
+        if (BX == 0)
         {
-            Int_t BX = iPU->getBunchCrossing();
-            if (BX == 0)
-            {
-                ftree->NumTrueInts = iPU->getTrueNumInteractions();
-                ftree->NumPUInts = iPU->getPU_NumInteractions();
-            }
+            ftree->NumTrueInts = iPU->getTrueNumInteractions();
+            ftree->NumPUInts = iPU->getPU_NumInteractions();
         }
     }
+
+    edm::Handle<TrackingParticleCollection> trackingparticleHandle;
+    iEvent.getByToken(trackingparticleToken_, trackingparticleHandle);
+
+    edm::Handle<edm::SimVertexContainer> simvtxHandle;
+    iEvent.getByToken(simvtxToken_, simvtxHandle);
 
     edm::Handle<reco::VertexCollection> primvtxHandle;
     iEvent.getByToken(primvtxToken_, primvtxHandle);
@@ -328,21 +351,19 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
     if (primvtxHandle->size() == 0)
         return;
 
-    edm::Handle<edm::View<pat::PackedCandidate>> tracksHandle;
-    iEvent.getByToken(tracksToken_, tracksHandle);
-    edm::View<pat::PackedCandidate> tracksPacked = (*tracksHandle.product());
-    reco::TrackCollection tracks;
-    for (size_t it = 0; it < tracksPacked.size(); it++)
-    {
-        const pat::PackedCandidate &trkPacked = tracksPacked[it];
-        if (!trkPacked.hasTrackDetails())
-            continue;
-        tracks.push_back(trkPacked.pseudoTrack());
-    }
+    edm::Handle<reco::TrackCollection> tracks;
+    iEvent.getByToken(tracksToken_, tracks);
 
-    std::vector<TransientVertex> refitted_tPVs = revertex->makeVertices(tracks, *beamspotHandle, iSetup);
+    std::cout << "hey ccc" << std::endl;
 
-    edm::LogPrint("Residuals") << "Primary vertices = " << primvtxHandle->size() << ", refitted vertices = " << refitted_tPVs.size() << ", tracks = " << tracks.size();
+    edm::Handle<reco::RecoToSimCollection> recoToSim;
+    iEvent.getByToken(recoToSimToken_, recoToSim);
+
+    std::cout << "hey ddd" << std::endl;
+
+    std::vector<TransientVertex> refitted_tPVs = revertex->makeVertices(*tracks, *beamspotHandle, iSetup);
+
+    edm::LogPrint("Residuals") << "Primary vertices = " << primvtxHandle->size() << ", refitted vertices = " << refitted_tPVs.size() << ", tracks = " << tracks->size();
     if (refitted_tPVs.empty())
         return;
 
@@ -377,6 +398,11 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
     Int_t iTrk = 0;
     for (std::vector<reco::TransientTrack>::const_iterator it = vtxTracks.begin(); it != vtxTracks.end(); it++)
     {
+        const reco::TransientTrack &ttrk = *it;
+        edm::RefToBase<reco::Track> trackRefBase = ttrk.trackBaseRef();
+
+        // reco::TrackBaseRef tbr = ttrk.trackBaseRef();
+
         reco::Track trk = (*it).track();
 
         pv_SumTrackPt += trk.pt();
@@ -480,8 +506,71 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
             ftree->pv_trk_dz_pvunbiased.push_back(null);
             ftree->pv_trk_d0_bs_zpvunbiased.push_back(null);
         }
-
         iTrk++;
+
+        // reco::TrackRef tbr = ttrk.trackBaseRef();
+        // edm::RefToBase<reco::Track> trackRefBase = ttrk.trackBaseRef();
+        // if (!tbr.isNonnull()) continue;
+
+        // reco::TrackRef leftOutTkRef = tbr.castTo<reco::TrackRef>();
+        // if (!leftOutTkRef.isNonnull()) continue;
+
+        std::cout << "Track " << iTrk << std::endl;
+
+        // auto found = recoToSim->find(trackRef);
+        // auto assocIt = recoToSim->find(leftOutTkRef);
+        auto assocIt = recoToSim->find(trackRefBase);
+        if (assocIt == recoToSim->end())
+        {
+            std::cout << "can't find 1" << std::endl;
+            continue;
+        }
+
+        const auto &matches = assocIt->val;
+        if (matches.empty()){
+            std::cout << "has nothing" << std::endl;
+            continue;
+        }
+
+        TrackingParticleRef bestTP;
+        float bestWeight = -1.f;
+
+        for (const auto &m : matches)
+        {
+            if (m.second > bestWeight)
+            {
+                bestWeight = m.second;
+                bestTP = m.first;
+            }
+        }
+
+        if (bestTP.isNull()){
+            std::cout << "no best" << std::endl;
+            continue;
+        }
+
+        const auto &simTracks = bestTP->g4Tracks();
+        if (simTracks.empty()){
+            std::cout << "no track" << std::endl;
+            continue;
+        }
+
+        int vtxIdx = simTracks.front().vertIndex();
+        std::cout << "vtxIdx = " << vtxIdx << std::endl;
+        // if (vtxIdx < 0) continue;
+
+        // if (vtxIdx >= (int)simvtxHandle->size()) continue;
+
+        // const SimVertex &sv = (*simvtxHandle)[vtxIdx];
+        // const auto &pos = sv.position();
+
+        // double truth_vx = pos.x();
+        // double truth_vy = pos.y();
+        // double truth_vz = pos.z();
+
+        // 到这里为止：
+        // truth_vx, truth_vy, truth_vz
+        // 就是这个 left-out track 的 truth 顶点
     }
 
     if (nTracks)
@@ -586,7 +675,7 @@ void Residuals::endJob()
     edm::LogPrint("Residuals") << "Total number of events before event scale: " << nEventsProcessed_;
     edm::LogPrint("Residuals") << "Total number of events after event scale: " << nEventsScaled_;
     edm::LogPrint("Residuals") << "Total number of triggered events: " << nEventsTriggered_;
-    
+
     InfoTree->Fill();
 }
 

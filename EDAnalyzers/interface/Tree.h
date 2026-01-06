@@ -18,7 +18,7 @@ public:
     TTree *tree;
 
     void Init();
-    void CreateBranches(Bool_t runOnData);
+    void CreateBranches();
 
     Int_t ev_run;
     Int_t ev_id;

@@ -115,7 +115,7 @@ void ResTree::Init()
     pv_zError_p2 = null;
 }
 
-void ResTree::CreateBranches(Bool_t runOnData)
+void ResTree::CreateBranches()
 {
     tree->Branch("ev_nPV", &ev_nPV);
 
@@ -132,11 +132,8 @@ void ResTree::CreateBranches(Bool_t runOnData)
     tree->Branch("trig_PFHT1050_pass", &trig_PFHT1050_pass);
     tree->Branch("trig_PFHT350_pass", &trig_PFHT350_pass);
 
-    if (!runOnData)
-    {
-        tree->Branch("NumTrueInts", &NumTrueInts);
-        tree->Branch("NumPUInts", &NumPUInts);
-    }
+    tree->Branch("NumTrueInts", &NumTrueInts);
+    tree->Branch("NumPUInts", &NumPUInts);
 
     tree->Branch("pv_IsValid", &pv_IsValid);
     tree->Branch("pv_IsFake", &pv_IsFake);

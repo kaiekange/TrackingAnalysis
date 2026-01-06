@@ -17,6 +17,9 @@
 <use   name="SimTracker/TrackerHitAssociation"/>
 <use   name="SimGeneral/HepPDTRecord"/>
 <use   name="SimTracker/TrackHistory"/>
+<use name="DataFormats/TrackReco"/>
+<use name="SimDataFormats/Track"/>
+<use name="SimDataFormats/Vertex"/>
 
 <use   name="rootcore"/>
 <use   name="root"/>
