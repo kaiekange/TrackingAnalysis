@@ -52,22 +52,16 @@ residuals = cms.EDAnalyzer("Residuals",
                 ),
 
         # Selection of Tracks
-        TrackLabel = cms.InputTag("generalTracks"),
+        TrackLabel = cms.InputTag("packedPFCandidates"),
         TkMinPt = cms.double(0.0),
         TkMinXLayers = cms.int32(7),
         TkMaxMissedOuterLayers = cms.int32(4),
         TkMaxMissedInnerLayers = cms.int32(0),
 
         # Selection of Vertices
-        # VertexLabel = cms.InputTag("offlineSlimmedPrimaryVertices"),
-        VertexLabel = cms.InputTag("offlinePrimaryVertices"),
+        VertexLabel = cms.InputTag("offlineSlimmedPrimaryVertices"),
         VtxTracksSizeMin = cms.int32(2),
         VtxTracksSizeMax = cms.int32(1000),
-
-        trackingParticles = cms.InputTag("mix","mergedTruth"),
-        simVertices = cms.InputTag("g4SimHits"),
-        recoToSim = cms.InputTag("g4SimHits")
-
 
         # Vertex selection for Jet6U trigger
         # VtxErrorXMin = cms.double(0.0015),

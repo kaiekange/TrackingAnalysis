@@ -40,16 +40,10 @@
 #include "DataFormats/TrackReco/interface/HitPattern.h"
 
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
-
-#include "SimDataFormats/TrackingAnalysis/interface/TrackingParticle.h"
-#include "SimDataFormats/TrackingAnalysis/interface/TrackingParticleFwd.h"
-#include "SimDataFormats/Track/interface/SimTrack.h"
-#include "SimDataFormats/Track/interface/SimTrackContainer.h"
-#include "SimDataFormats/Vertex/interface/SimVertex.h"
-#include "SimDataFormats/Vertex/interface/SimVertexContainer.h"
-#include "SimDataFormats/Associations/interface/TrackAssociation.h"
+#include "DataFormats/Common/interface/Association.h"
 
 #include <TrackingTools/TrajectoryState/interface/PerigeeConversions.h>
 #include <TrackingTools/TrajectoryState/interface/TrajectoryStateClosestToPoint.h>
@@ -120,18 +114,33 @@ private:
         const reco::Track &track_;
     };
 
-    class TrackEqualRef
+    // class TrackEqualPFCands
+    // {
+    // public:
+    //     explicit TrackEqualPFCands(reco::Track const &trk) : trk_(&trk) {}
+
+    //     bool operator()(pat::PackedCandidate const &pc) const
+    //     {
+    //         return pc.pt() == trk_->pt();
+    //     }
+
+    // private:
+    //     reco::Track const *trk_;
+    // };
+
+    class TrackEqualPFCandsByRef
     {
     public:
-        TrackEqualRef(const reco::TrackRef &t) : track_(t) {}
+        explicit TrackEqualPFCandsByRef(reco::TrackRef const &trkRef) : trkRef_(trkRef) {}
 
-        Bool_t operator()(const reco::TrackRef &t) const
+        bool operator()(pat::PackedCandidate const &pc) const
         {
-            return t->pt() == track_->pt();
+            auto pcRef = pc.bestTrackRef(); // 常用：bestTrackRef()
+            return pcRef.isNonnull() && pcRef == trkRef_;
         }
 
     private:
-        const reco::TrackRef &track_;
+        reco::TrackRef trkRef_;
     };
 
     class VertexEqual
@@ -150,15 +159,11 @@ private:
 
     edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magFieldToken_;
     edm::EDGetTokenT<reco::VertexCollection> primvtxToken_;
-    // edm::EDGetTokenT<edm::View<pat::PackedCandidate>> tracksToken_;
-    edm::EDGetTokenT<reco::TrackCollection> tracksToken_;
+    edm::EDGetTokenT<pat::PackedCandidateCollection> tracksToken_;
     edm::EDGetTokenT<reco::BeamSpot> beamspotToken_;
     edm::EDGetTokenT<edm::TriggerResults> triggerToken_;
     edm::EDGetTokenT<std::vector<PileupSummaryInfo>> PileupToken_;
-
-    edm::EDGetTokenT<TrackingParticleCollection> trackingparticleToken_;
-    edm::EDGetTokenT<edm::SimVertexContainer> simvtxToken_;
-    edm::EDGetTokenT<reco::RecoToSimCollection> recoToSimToken_;
+    edm::EDGetTokenT<edm::Association<reco::GenParticleCollection>> associationToken_;
 
     // --- track selection variables
     Double_t tkMinPt;
@@ -195,7 +200,7 @@ private:
 Residuals::Residuals(const edm::ParameterSet &pset) : magFieldToken_(esConsumes<MagneticField, IdealMagneticFieldRecord>())
 {
     edm::InputTag TrackCollectionTag_ = pset.getParameter<edm::InputTag>("TrackLabel");
-    tracksToken_ = consumes<reco::TrackCollection>(TrackCollectionTag_);
+    tracksToken_ = consumes<pat::PackedCandidateCollection>(TrackCollectionTag_);
 
     edm::InputTag VertexCollectionTag_ = pset.getParameter<edm::InputTag>("VertexLabel");
     primvtxToken_ = consumes<reco::VertexCollection>(VertexCollectionTag_);
@@ -206,20 +211,13 @@ Residuals::Residuals(const edm::ParameterSet &pset) : magFieldToken_(esConsumes<
     edm::InputTag TriggerBitsTag_ = pset.getParameter<edm::InputTag>("TriggerResultsLabel");
     triggerToken_ = consumes<edm::TriggerResults>(TriggerBitsTag_);
 
-    // edm::InputTag PileupTag_("slimmedAddPileupInfo");
-    edm::InputTag PileupTag_("addPileupInfo");
+    edm::InputTag PileupTag_("slimmedAddPileupInfo");
     PileupToken_ = consumes<std::vector<PileupSummaryInfo>>(PileupTag_);
 
+    edm::InputTag assotiationTag_("packedPFCandidateToGenAssociation");
+    associationToken_ = consumes<edm::Association<reco::GenParticleCollection>>(assotiationTag_);
+
     beamSpotConfig = pset.getParameter<std::string>("BeamSpotConfig");
-
-    edm::InputTag trackingparticleTag_ = pset.getParameter<edm::InputTag>("trackingParticles");
-    trackingparticleToken_ = consumes<TrackingParticleCollection>(trackingparticleTag_);
-
-    edm::InputTag simvtxTag_ = pset.getParameter<edm::InputTag>("simVertices");
-    simvtxToken_ = consumes<std::vector<SimVertex>>(simvtxTag_);
-
-    edm::InputTag recoToSimTag_ = pset.getParameter<edm::InputTag>("recoToSim");
-    recoToSimToken_ = consumes<reco::RecoToSimCollection>(recoToSimTag_);
 
     tkMinPt = pset.getParameter<Double_t>("TkMinPt");
     tkMinXLayers = pset.getParameter<Int_t>("TkMinXLayers");
@@ -334,12 +332,6 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
         }
     }
 
-    edm::Handle<TrackingParticleCollection> trackingparticleHandle;
-    iEvent.getByToken(trackingparticleToken_, trackingparticleHandle);
-
-    edm::Handle<edm::SimVertexContainer> simvtxHandle;
-    iEvent.getByToken(simvtxToken_, simvtxHandle);
-
     edm::Handle<reco::VertexCollection> primvtxHandle;
     iEvent.getByToken(primvtxToken_, primvtxHandle);
 
@@ -351,19 +343,24 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
     if (primvtxHandle->size() == 0)
         return;
 
-    edm::Handle<reco::TrackCollection> tracks;
-    iEvent.getByToken(tracksToken_, tracks);
+    edm::Handle<pat::PackedCandidateCollection> tracksHandle;
+    iEvent.getByToken(tracksToken_, tracksHandle);
+    pat::PackedCandidateCollection tracksPacked = *tracksHandle;
+    reco::TrackCollection tracks;
+    for (size_t it = 0; it < tracksPacked.size(); it++)
+    {
+        const pat::PackedCandidate &trkPacked = tracksPacked[it];
+        if (!trkPacked.hasTrackDetails())
+            continue;
+        tracks.push_back(trkPacked.pseudoTrack());
+    }
 
-    std::cout << "hey ccc" << std::endl;
+    edm::Handle<edm::Association<reco::GenParticleCollection>> associationHandle;
+    iEvent.getByToken(associationToken_, associationHandle);
 
-    edm::Handle<reco::RecoToSimCollection> recoToSim;
-    iEvent.getByToken(recoToSimToken_, recoToSim);
+    std::vector<TransientVertex> refitted_tPVs = revertex->makeVertices(tracks, *beamspotHandle, iSetup);
 
-    std::cout << "hey ddd" << std::endl;
-
-    std::vector<TransientVertex> refitted_tPVs = revertex->makeVertices(*tracks, *beamspotHandle, iSetup);
-
-    edm::LogPrint("Residuals") << "Primary vertices = " << primvtxHandle->size() << ", refitted vertices = " << refitted_tPVs.size() << ", tracks = " << tracks->size();
+    edm::LogPrint("Residuals") << "Primary vertices = " << primvtxHandle->size() << ", refitted vertices = " << refitted_tPVs.size() << ", tracks = " << tracks.size();
     if (refitted_tPVs.empty())
         return;
 
@@ -378,7 +375,6 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
     ftree->ev_nPV = refitted_tPVs.size();
 
     std::vector<reco::TransientTrack> vtxTracks = refitted_tPV_front.originalTracks();
-    stable_sort(vtxTracks.begin(), vtxTracks.end(), sortPt);
 
     Int_t nTracks = refitted_PV_front.tracksSize();
 
@@ -398,12 +394,34 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
     Int_t iTrk = 0;
     for (std::vector<reco::TransientTrack>::const_iterator it = vtxTracks.begin(); it != vtxTracks.end(); it++)
     {
-        const reco::TransientTrack &ttrk = *it;
-        edm::RefToBase<reco::Track> trackRefBase = ttrk.trackBaseRef();
-
-        // reco::TrackBaseRef tbr = ttrk.trackBaseRef();
-
         reco::Track trk = (*it).track();
+
+        reco::TrackBaseRef tbr = it->trackBaseRef();
+        if (tbr.isNull())
+            continue;
+
+        reco::TrackRef trkRef = tbr.castTo<reco::TrackRef>();
+        if (trkRef.isNull())
+            continue;
+
+        auto itt = std::find_if(tracksHandle->begin(), tracksHandle->end(),
+                                TrackEqualPFCandsByRef(trkRef));
+
+        pat::PackedCandidateCollection::const_iterator itt = find_if(tracksHandle->begin(), tracksHandle->end(), TrackEqualPFCands(trk));
+
+        int pv_trk_idx = (itt != tracksHandle->end()) ? int(itt - tracksHandle->begin()) : -1;
+
+        std::cout << pv_trk_idx << std::endl;
+
+        // pat::PackedCandidateRef packedPFCandRef(tracksHandle, pv_trk_idx);
+        // reco::GenParticleRef genRef = (*associationHandle)[packedPFCandRef];
+
+        // if (genRef.isNonnull())
+        // {
+        //     std::cout << "found" << std::endl;
+        // }
+        // else
+        //     std::cout << "not found" << std::endl;
 
         pv_SumTrackPt += trk.pt();
         pv_SumTrackPt2 += trk.pt() * trk.pt();
@@ -506,71 +524,8 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
             ftree->pv_trk_dz_pvunbiased.push_back(null);
             ftree->pv_trk_d0_bs_zpvunbiased.push_back(null);
         }
+
         iTrk++;
-
-        // reco::TrackRef tbr = ttrk.trackBaseRef();
-        // edm::RefToBase<reco::Track> trackRefBase = ttrk.trackBaseRef();
-        // if (!tbr.isNonnull()) continue;
-
-        // reco::TrackRef leftOutTkRef = tbr.castTo<reco::TrackRef>();
-        // if (!leftOutTkRef.isNonnull()) continue;
-
-        std::cout << "Track " << iTrk << std::endl;
-
-        // auto found = recoToSim->find(trackRef);
-        // auto assocIt = recoToSim->find(leftOutTkRef);
-        auto assocIt = recoToSim->find(trackRefBase);
-        if (assocIt == recoToSim->end())
-        {
-            std::cout << "can't find 1" << std::endl;
-            continue;
-        }
-
-        const auto &matches = assocIt->val;
-        if (matches.empty()){
-            std::cout << "has nothing" << std::endl;
-            continue;
-        }
-
-        TrackingParticleRef bestTP;
-        float bestWeight = -1.f;
-
-        for (const auto &m : matches)
-        {
-            if (m.second > bestWeight)
-            {
-                bestWeight = m.second;
-                bestTP = m.first;
-            }
-        }
-
-        if (bestTP.isNull()){
-            std::cout << "no best" << std::endl;
-            continue;
-        }
-
-        const auto &simTracks = bestTP->g4Tracks();
-        if (simTracks.empty()){
-            std::cout << "no track" << std::endl;
-            continue;
-        }
-
-        int vtxIdx = simTracks.front().vertIndex();
-        std::cout << "vtxIdx = " << vtxIdx << std::endl;
-        // if (vtxIdx < 0) continue;
-
-        // if (vtxIdx >= (int)simvtxHandle->size()) continue;
-
-        // const SimVertex &sv = (*simvtxHandle)[vtxIdx];
-        // const auto &pos = sv.position();
-
-        // double truth_vx = pos.x();
-        // double truth_vy = pos.y();
-        // double truth_vz = pos.z();
-
-        // 到这里为止：
-        // truth_vx, truth_vy, truth_vz
-        // 就是这个 left-out track 的 truth 顶点
     }
 
     if (nTracks)
@@ -590,81 +545,6 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
     ftree->pv_xError = refitted_PV_front.xError() * micron;
     ftree->pv_yError = refitted_PV_front.yError() * micron;
     ftree->pv_zError = refitted_PV_front.zError() * micron;
-
-    reco::TrackCollection vtxTkCollection1;
-    reco::TrackCollection vtxTkCollection2;
-
-    Float_t SumTrackPt_p1 = 0;
-    Float_t SumTrackPt2_p1 = 0;
-    Float_t pv_fracHighPurity_p1 = 0;
-
-    Float_t SumTrackPt_p2 = 0;
-    Float_t SumTrackPt2_p2 = 0;
-    Float_t pv_fracHighPurity_p2 = 0;
-
-    for (std::vector<reco::TransientTrack>::const_iterator it = vtxTracks.begin(); it != vtxTracks.end(); it++)
-    {
-        reco::Track trk = (*it).track();
-
-        if (rnd->Rndm() > 0.5)
-        {
-            vtxTkCollection1.push_back(trk);
-            SumTrackPt_p1 += trk.pt();
-            SumTrackPt2_p1 += trk.pt() * trk.pt();
-            pv_fracHighPurity_p1 += trk.quality(reco::TrackBase::highPurity);
-        }
-        else
-        {
-            vtxTkCollection2.push_back(trk);
-            SumTrackPt_p2 += trk.pt();
-            SumTrackPt2_p2 += trk.pt() * trk.pt();
-            pv_fracHighPurity_p2 += trk.quality(reco::TrackBase::highPurity);
-        }
-    }
-
-    if (nTracks)
-    {
-        pv_fracHighPurity_p1 /= Float_t(nTracks);
-        pv_fracHighPurity_p2 /= Float_t(nTracks);
-    }
-
-    std::vector<TransientVertex> refitted_tPVs1 = revertex->makeVertices(vtxTkCollection1, *beamspotHandle, iSetup);
-    std::vector<TransientVertex> refitted_tPVs2 = revertex->makeVertices(vtxTkCollection2, *beamspotHandle, iSetup);
-
-    if (!refitted_tPVs1.empty() && !refitted_tPVs2.empty())
-    {
-        reco::Vertex vtx1 = reco::Vertex(refitted_tPVs1.front());
-        ftree->pv_IsValid_p1 = vtx1.isValid();
-        ftree->pv_IsFake_p1 = vtx1.isFake();
-        ftree->pv_NTracks_p1 = vtxTkCollection1.size();
-        ftree->pv_SumTrackPt_p1 = SumTrackPt_p1;
-        ftree->pv_SumTrackPt2_p1 = SumTrackPt2_p1;
-        ftree->pv_fracHighPurity_p1 = pv_fracHighPurity_p1;
-        ftree->pv_chi2_p1 = vtx1.chi2();
-        ftree->pv_ndof_p1 = vtx1.ndof();
-        ftree->pv_x_p1 = vtx1.x() * micron;
-        ftree->pv_y_p1 = vtx1.y() * micron;
-        ftree->pv_z_p1 = vtx1.z() * micron;
-        ftree->pv_xError_p1 = vtx1.xError() * micron;
-        ftree->pv_yError_p1 = vtx1.yError() * micron;
-        ftree->pv_zError_p1 = vtx1.zError() * micron;
-
-        reco::Vertex vtx2 = reco::Vertex(refitted_tPVs2.front());
-        ftree->pv_IsValid_p2 = vtx2.isValid();
-        ftree->pv_IsFake_p2 = vtx2.isFake();
-        ftree->pv_NTracks_p2 = vtxTkCollection2.size();
-        ftree->pv_SumTrackPt_p2 = SumTrackPt_p2;
-        ftree->pv_SumTrackPt2_p2 = SumTrackPt2_p2;
-        ftree->pv_fracHighPurity_p2 = pv_fracHighPurity_p2;
-        ftree->pv_chi2_p2 = vtx2.chi2();
-        ftree->pv_ndof_p2 = vtx2.ndof();
-        ftree->pv_x_p2 = vtx2.x() * micron;
-        ftree->pv_y_p2 = vtx2.y() * micron;
-        ftree->pv_z_p2 = vtx2.z() * micron;
-        ftree->pv_xError_p2 = vtx2.xError() * micron;
-        ftree->pv_yError_p2 = vtx2.yError() * micron;
-        ftree->pv_zError_p2 = vtx2.zError() * micron;
-    }
 
     ftree->tree->Fill();
 }
