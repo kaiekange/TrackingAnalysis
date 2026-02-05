@@ -85,6 +85,8 @@ public:
     Float_t pv_yError;
     Float_t pv_zError;
 
+    std::vector<Int_t> pv_trk_pvAssociationQuality;
+    std::vector<Int_t> pv_trk_fromPV;
     std::vector<Float_t> pv_trk_weight;
     std::vector<Bool_t> pv_trk_isHighPurity;
     std::vector<Int_t> pv_trk_algo;

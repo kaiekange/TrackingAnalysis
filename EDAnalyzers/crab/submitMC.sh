@@ -2,6 +2,9 @@
 
 source /cvmfs/cms.cern.ch/crab3/crab.sh
 
+SAMPLETYPE="ZeroBias"
+# SAMPLETYPE="JetHT"
+
 ##2022 preEE
 # datasetlist="DatasetList/mc_2022_ZeroBias_preEE.txt"
 # GLOBALTAG="132X_mcRun3_2022_realistic_v3"
@@ -25,13 +28,13 @@ source /cvmfs/cms.cern.ch/crab3/crab.sh
 # GLOBALTAG="130X_mcRun3_2023_realistic_postBPix_v2"
 
 ##2024
-# datasetlist="DatasetList/mc_2024_ZeroBias.txt"
-datasetlist="DatasetList/mc_2024_JetHT.txt"
+datasetlist="DatasetList/mc_2024_ZeroBias.txt"
+# datasetlist="DatasetList/mc_2024_JetHT.txt"
 GLOBALTAG="150X_mcRun3_2024_realistic_v2"
 
 configtemplate="crabConfigTemplate.py"
-ver="Track-v20251203"
-prodv="/store/user/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
+ver="Track-v20260113"
+prodv="/store/group/phys_tracking/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
 pver="0"
 EVENTSCALE=10
 
@@ -76,10 +79,11 @@ for i in ${!datasets[@]}; do
 			| sed "s|GLOBALTAG|${GLOBALTAG}|g" \
 			| sed "s|EVENTSCALE|${EVENTSCALE}|g" \
 			| sed "s|EVENTMODULO|${EVENTMODULO}|g" \
+			| sed "s|SAMPLETYPE|${SAMPLETYPE}|g" \
 			> "crabConfig.py"
 
-		# crab submit -c crabConfig.py --dryrun
-		crab submit -c crabConfig.py
+		crab submit -c crabConfig.py --dryrun
+		# crab submit -c crabConfig.py
     done 
 
 done

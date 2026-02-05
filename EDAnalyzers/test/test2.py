@@ -2,8 +2,8 @@ import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 
 options = VarParsing("analysis")
-options.register("RunOnData", True, VarParsing.multiplicity.singleton, VarParsing.varType.bool, "Run on data")
-options.register("GlobalTag", "150X_dataRun3_v2", VarParsing.multiplicity.singleton, VarParsing.varType.string, "Global tag")
+options.register("RunOnData", False, VarParsing.multiplicity.singleton, VarParsing.varType.bool, "Run on data")
+options.register("GlobalTag", "150X_mcRun3_2024_realistic_v2", VarParsing.multiplicity.singleton, VarParsing.varType.string, "Global tag")
 options.register("EventScale", 1, VarParsing.multiplicity.singleton, VarParsing.varType.int, "Event scale")
 options.register("EventModulo", 0, VarParsing.multiplicity.singleton, VarParsing.varType.int, "Event modulo")
 options.register("SampleType", "ZeroBias", VarParsing.multiplicity.singleton, VarParsing.varType.string, "Sample type")
@@ -12,7 +12,7 @@ options.parseArguments()
 readFiles = cms.untracked.vstring()
 
 source = cms.Source("PoolSource", fileNames=readFiles)
-readFiles.extend(["/store/data/Run2024C/ZeroBias/MINIAOD/MINIv6NANOv15-v1/2530000/004c523d-7e53-40e5-9ca0-7063f00703cb.root"])
+readFiles.extend(["/store/mc/RunIII2024Summer24MiniAODv6/SingleNeutrino_Par-E-10_gun/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/096f7efe-6846-4acc-b5d5-f5aa7db44286.root"])
 
 process = cms.Process("IpResiduals")
 
@@ -27,7 +27,7 @@ process.load("CondCore.CondDB.CondDB_cfi")
 process.load("Configuration.Geometry.GeometryRecoDB_cff")
 process.load("Configuration.StandardSequences.MagneticField_38T_cff")
 
-process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(-1))
+process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(100))
 
 process.source = source
 

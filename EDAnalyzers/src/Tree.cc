@@ -40,6 +40,8 @@ void ResTree::Init()
     pv_yError = null;
     pv_zError = null;
 
+    pv_trk_pvAssociationQuality.clear();
+    pv_trk_fromPV.clear();
     pv_trk_weight.clear();
     pv_trk_isHighPurity.clear();
     pv_trk_algo.clear();
@@ -153,6 +155,8 @@ void ResTree::CreateBranches(Bool_t runOnData)
     tree->Branch("pv_yError", &pv_yError);
     tree->Branch("pv_zError", &pv_zError);
 
+    tree->Branch("pv_trk_pvAssociationQuality", &pv_trk_pvAssociationQuality);
+    tree->Branch("pv_trk_fromPV", &pv_trk_fromPV);
     tree->Branch("pv_trk_weight", &pv_trk_weight);
     tree->Branch("pv_trk_isHighPurity", &pv_trk_isHighPurity);
     tree->Branch("pv_trk_algo", &pv_trk_algo);

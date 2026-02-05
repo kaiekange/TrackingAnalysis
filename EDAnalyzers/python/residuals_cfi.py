@@ -3,11 +3,7 @@ import FWCore.ParameterSet.Config as cms
 residuals = cms.EDAnalyzer("Residuals",
 
         # Beam spot
-        BeamSpotLabel = cms.InputTag("offlineBeamSpot"),
         BeamSpotConfig = cms.string(""),
-
-        # Trigger results
-        TriggerResultsLabel = cms.InputTag("TriggerResults", "", "HLT"),
 
         # https://github.com/cms-sw/cmssw/blob/master/RecoVertex/PrimaryVertexProducer/python/OfflinePrimaryVertices_cfi.py#L12
         TkFilterParameters = cms.PSet(algorithm=cms.string('filter'),
@@ -52,14 +48,12 @@ residuals = cms.EDAnalyzer("Residuals",
                 ),
 
         # Selection of Tracks
-        TrackLabel = cms.InputTag("packedPFCandidates"),
         TkMinPt = cms.double(0.0),
         TkMinXLayers = cms.int32(7),
         TkMaxMissedOuterLayers = cms.int32(4),
         TkMaxMissedInnerLayers = cms.int32(0),
 
         # Selection of Vertices
-        VertexLabel = cms.InputTag("offlineSlimmedPrimaryVertices"),
         VtxTracksSizeMin = cms.int32(2),
         VtxTracksSizeMax = cms.int32(1000),
 

@@ -106,7 +106,7 @@ def submitMC(period, datatype):
     GlobalTag = CONFIG[period][datatype]["GlobalTag"]
     Datasets = load_datasets(DatasetList)
 
-    ver = "Track-v20251204"
+    ver = "Track-v20251213"
     prodv = f"/eos/home-k/kakang/Run3TrackingAnalysis/Ntuple/{ver}"
 
     for dataset in Datasets:
@@ -116,7 +116,7 @@ def submitMC(period, datatype):
         InputList = f"/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/EDAnalyzers/condor/InputList/{period}_{datatype}_{title}.txt"
 
         njobs = save_das_files(dataset, InputList)
-        njobs = min(njobs, 500)
+        # njobs = min(njobs, 500)
 
         outdir = convert(dataset, prodv, EVENTSCALE, EVENTMODULO)
 
