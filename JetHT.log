@@ -1,519 +1,519 @@
-05-Feb-2026 16:35:48 CET  Initiating request to open file root://eoscms.cern.ch//eos/cms/store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/005c37f7-ef8a-46d1-9155-308dbf22b8d7.root
-%MSG-w XrdAdaptorInternal:  file_open 05-Feb-2026 16:35:49 CET pre-events
-Failed to open file at URL root://eoscms.cern.ch:1094//eos/cms/store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/005c37f7-ef8a-46d1-9155-308dbf22b8d7.root?xrdcl.requuid=6b415a45-05f9-4880-84d9-69303184167c.
+05-Feb-2026 16:47:20 CET  Initiating request to open file root://eoscms.cern.ch//eos/cms/store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/005c37f7-ef8a-46d1-9155-308dbf22b8d7.root
+%MSG-w XrdAdaptorInternal:  file_open 05-Feb-2026 16:47:21 CET pre-events
+Failed to open file at URL root://eoscms.cern.ch:1094//eos/cms/store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/005c37f7-ef8a-46d1-9155-308dbf22b8d7.root?xrdcl.requuid=79c917d4-cf76-4b98-bfca-b90b4a64a20c.
 %MSG
-%MSG-w XrdAdaptorInternal:  file_open 05-Feb-2026 16:35:49 CET pre-events
-Failed to open file at URL root://eoscms.cern.ch:1094//eos/cms/store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/005c37f7-ef8a-46d1-9155-308dbf22b8d7.root?tried=&xrdcl.requuid=76db670c-5595-498e-8bff-3ca3e0e1f8c1.
+%MSG-w XrdAdaptorInternal:  file_open 05-Feb-2026 16:47:21 CET pre-events
+Failed to open file at URL root://eoscms.cern.ch:1094//eos/cms/store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/005c37f7-ef8a-46d1-9155-308dbf22b8d7.root?tried=&xrdcl.requuid=afbd8efe-2f31-4b2c-bee1-b5138bd579e1.
 %MSG
-05-Feb-2026 16:35:49 CET  Initiating request to open file root://xrootd-cms.infn.it//store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/005c37f7-ef8a-46d1-9155-308dbf22b8d7.root
-%MSG-f XrdAdaptor:  file_open 05-Feb-2026 16:35:51 CET pre-events
-Opened a file at URL root://ccdcacli481.in2p3.fr:30477//store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/005c37f7-ef8a-46d1-9155-308dbf22b8d7.root?org.dcache.uuid=e361c74a-c464-456c-aabc-f9acb62bbd4c&org.dcache.xrootd.client=kakang.3281510@lxplus805.cern.ch&xrd.logintoken=org.dcache.door=2001:660:5009:91:134:158:208:167:1094&xrdcl.requuid=7b21c60d-ec63-4018-aefb-cad088947cc9
+05-Feb-2026 16:47:21 CET  Initiating request to open file root://xrootd-cms.infn.it//store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/005c37f7-ef8a-46d1-9155-308dbf22b8d7.root
+%MSG-f XrdAdaptor:  file_open 05-Feb-2026 16:47:22 CET pre-events
+Opened a file at URL root://ccdcacli481.in2p3.fr:30477//store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/005c37f7-ef8a-46d1-9155-308dbf22b8d7.root?org.dcache.uuid=4977a622-9e64-4ee1-a1ac-e14d98502a9a&org.dcache.xrootd.client=kakang.3303965@lxplus805.cern.ch&xrd.logintoken=org.dcache.door=2001:660:5009:91:134:158:208:167:1094&xrdcl.requuid=bd147c10-e0d4-4411-81ca-7500b30334cf
 %MSG
-05-Feb-2026 16:35:53 CET  Successfully opened file root://xrootd-cms.infn.it//store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/005c37f7-ef8a-46d1-9155-308dbf22b8d7.root
-Begin processing the 1st record. Run 1, Event 1178359, LumiSection 1800 on stream 0 at 05-Feb-2026 16:35:55.563 CET
+05-Feb-2026 16:47:25 CET  Successfully opened file root://xrootd-cms.infn.it//store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/005c37f7-ef8a-46d1-9155-308dbf22b8d7.root
+Begin processing the 1st record. Run 1, Event 1178359, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:28.437 CET
+%MSG-f XrdAdaptor:  (NoModuleName) 05-Feb-2026 16:47:36 CET pre-events
+Opened a file at URL root://cmsstor202.fnal.gov:34483//store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/005c37f7-ef8a-46d1-9155-308dbf22b8d7.root?org.dcache.uuid=f7bd08f8-c598-49e2-8f9e-e28e300c1d60&org.dcache.xrootd.client=kakang.3303965@lxplus805.cern.ch&tried=+1213llrxrd-redir.in2p3.fr,+1213xrootd-redic.pi.infn.it,+1213xrootd-cms-redir-int.cr.cnaf.infn.it,ccdcacli501.in2p3.fr&triedrc=resel&xrd.logintoken=org.dcache.door=2620:6a:0:8420:0:0:0:101:1095&xrdcl.requuid=039505ef-058b-495f-8213-c31ff6072025
+%MSG
 
 All PFCandidate tracks size = 1135, 0.0463607% have Gen match, refitted PV tracks size = 50, PackedGenParticle size = 277
-Refitted PV tracks size = 50, with a match = 0, ratio: 0%
+Refitted PV tracks size = 50, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 2nd record. Run 1, Event 1178350, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:11.059 CET
+Begin processing the 2nd record. Run 1, Event 1178350, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:45.515 CET
 
 All PFCandidate tracks size = 1402, 0.0810045% have Gen match, refitted PV tracks size = 139, PackedGenParticle size = 586
-Refitted PV tracks size = 139, with a match = 0, ratio: 0%
+Refitted PV tracks size = 139, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 3rd record. Run 1, Event 1178352, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:11.120 CET
+Begin processing the 3rd record. Run 1, Event 1178352, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:45.597 CET
 
 All PFCandidate tracks size = 1389, 0% have Gen match, refitted PV tracks size = 114, PackedGenParticle size = 523
-Refitted PV tracks size = 114, with a match = 0, ratio: 0%
+Refitted PV tracks size = 114, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 4th record. Run 1, Event 1178351, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:11.181 CET
+Begin processing the 4th record. Run 1, Event 1178351, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:45.652 CET
 
 All PFCandidate tracks size = 914, 0% have Gen match, refitted PV tracks size = 79, PackedGenParticle size = 539
-Refitted PV tracks size = 79, with a match = 0, ratio: 0%
+Refitted PV tracks size = 79, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 5th record. Run 1, Event 1178348, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:11.226 CET
+Begin processing the 5th record. Run 1, Event 1178348, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:45.689 CET
 
 All PFCandidate tracks size = 1340, 0% have Gen match, refitted PV tracks size = 104, PackedGenParticle size = 478
-Refitted PV tracks size = 104, with a match = 0, ratio: 0%
+Refitted PV tracks size = 104, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 6th record. Run 1, Event 1178353, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:11.287 CET
+Begin processing the 6th record. Run 1, Event 1178353, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:45.746 CET
 
 All PFCandidate tracks size = 1399, 0.202184% have Gen match, refitted PV tracks size = 153, PackedGenParticle size = 710
-Refitted PV tracks size = 153, with a match = 5, ratio: 0.704225%
+Refitted PV tracks size = 153, found the original PFCandidate?: yes, PF with a match = 5, ratio: 0.704225%
 
-Begin processing the 7th record. Run 1, Event 1178349, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:11.344 CET
+Begin processing the 7th record. Run 1, Event 1178349, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:45.802 CET
 
 All PFCandidate tracks size = 1844, 0.0670466% have Gen match, refitted PV tracks size = 105, PackedGenParticle size = 519
-Refitted PV tracks size = 105, with a match = 1, ratio: 0.192678%
+Refitted PV tracks size = 105, found the original PFCandidate?: yes, PF with a match = 1, ratio: 0.192678%
 
-Begin processing the 8th record. Run 1, Event 1178347, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:11.438 CET
+Begin processing the 8th record. Run 1, Event 1178347, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:45.886 CET
 
 All PFCandidate tracks size = 979, 0.208225% have Gen match, refitted PV tracks size = 48, PackedGenParticle size = 180
-Refitted PV tracks size = 48, with a match = 4, ratio: 2.22222%
+Refitted PV tracks size = 48, found the original PFCandidate?: yes, PF with a match = 4, ratio: 2.22222%
 
-Begin processing the 9th record. Run 1, Event 1178360, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:11.479 CET
+Begin processing the 9th record. Run 1, Event 1178360, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:45.925 CET
 
 All PFCandidate tracks size = 1223, 0% have Gen match, refitted PV tracks size = 99, PackedGenParticle size = 449
-Refitted PV tracks size = 99, with a match = 0, ratio: 0%
+Refitted PV tracks size = 99, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 10th record. Run 1, Event 1178346, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:11.532 CET
+Begin processing the 10th record. Run 1, Event 1178346, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:45.973 CET
 
 All PFCandidate tracks size = 1759, 0% have Gen match, refitted PV tracks size = 9, PackedGenParticle size = 645
-Refitted PV tracks size = 9, with a match = 0, ratio: 0%
+Refitted PV tracks size = 9, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 11th record. Run 1, Event 1178354, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:11.617 CET
+Begin processing the 11th record. Run 1, Event 1178354, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:46.051 CET
 
 All PFCandidate tracks size = 1655, 0.0361533% have Gen match, refitted PV tracks size = 153, PackedGenParticle size = 741
-Refitted PV tracks size = 153, with a match = 1, ratio: 0.134953%
+Refitted PV tracks size = 153, found the original PFCandidate?: yes, PF with a match = 1, ratio: 0.134953%
 
-Begin processing the 12th record. Run 1, Event 1178355, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:11.700 CET
+Begin processing the 12th record. Run 1, Event 1178355, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:46.130 CET
 
 All PFCandidate tracks size = 1198, 0.0452694% have Gen match, refitted PV tracks size = 108, PackedGenParticle size = 373
-Refitted PV tracks size = 108, with a match = 1, ratio: 0.268097%
+Refitted PV tracks size = 108, found the original PFCandidate?: yes, PF with a match = 1, ratio: 0.268097%
 
-Begin processing the 13th record. Run 1, Event 1178363, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:11.759 CET
+Begin processing the 13th record. Run 1, Event 1178363, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:46.187 CET
 
 All PFCandidate tracks size = 1199, 0% have Gen match, refitted PV tracks size = 114, PackedGenParticle size = 542
-Refitted PV tracks size = 114, with a match = 0, ratio: 0%
+Refitted PV tracks size = 114, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 14th record. Run 1, Event 1178357, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:11.818 CET
+Begin processing the 14th record. Run 1, Event 1178357, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:46.239 CET
 
 All PFCandidate tracks size = 1574, 0.0371471% have Gen match, refitted PV tracks size = 100, PackedGenParticle size = 377
-Refitted PV tracks size = 100, with a match = 1, ratio: 0.265252%
+Refitted PV tracks size = 100, found the original PFCandidate?: yes, PF with a match = 1, ratio: 0.265252%
 
-Begin processing the 15th record. Run 1, Event 1178358, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:11.906 CET
+Begin processing the 15th record. Run 1, Event 1178358, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:46.299 CET
 
 All PFCandidate tracks size = 2030, 0% have Gen match, refitted PV tracks size = 95, PackedGenParticle size = 513
-Refitted PV tracks size = 95, with a match = 0, ratio: 0%
+Refitted PV tracks size = 95, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 16th record. Run 1, Event 1178365, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:12.044 CET
+Begin processing the 16th record. Run 1, Event 1178365, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:46.397 CET
 
 All PFCandidate tracks size = 866, 0.107066% have Gen match, refitted PV tracks size = 102, PackedGenParticle size = 314
-Refitted PV tracks size = 102, with a match = 1, ratio: 0.318471%
+Refitted PV tracks size = 102, found the original PFCandidate?: yes, PF with a match = 1, ratio: 0.318471%
 
-Begin processing the 17th record. Run 1, Event 1178356, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:12.092 CET
+Begin processing the 17th record. Run 1, Event 1178356, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:46.433 CET
 
 All PFCandidate tracks size = 1232, 0% have Gen match, refitted PV tracks size = 110, PackedGenParticle size = 641
-Refitted PV tracks size = 110, with a match = 0, ratio: 0%
+Refitted PV tracks size = 110, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 18th record. Run 1, Event 1178368, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:12.162 CET
+Begin processing the 18th record. Run 1, Event 1178368, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:46.490 CET
 
 All PFCandidate tracks size = 1210, 0.0877963% have Gen match, refitted PV tracks size = 111, PackedGenParticle size = 487
-Refitted PV tracks size = 111, with a match = 2, ratio: 0.410678%
+Refitted PV tracks size = 111, found the original PFCandidate?: yes, PF with a match = 2, ratio: 0.410678%
 
-Begin processing the 19th record. Run 1, Event 1178362, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:12.241 CET
+Begin processing the 19th record. Run 1, Event 1178362, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:46.549 CET
 
 All PFCandidate tracks size = 1922, 0.292873% have Gen match, refitted PV tracks size = 55, PackedGenParticle size = 296
-Refitted PV tracks size = 55, with a match = 3, ratio: 1.01351%
+Refitted PV tracks size = 55, found the original PFCandidate?: yes, PF with a match = 3, ratio: 1.01351%
 
-Begin processing the 20th record. Run 1, Event 1178371, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:12.356 CET
+Begin processing the 20th record. Run 1, Event 1178371, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:46.644 CET
 
 All PFCandidate tracks size = 1600, 0% have Gen match, refitted PV tracks size = 74, PackedGenParticle size = 285
-Refitted PV tracks size = 74, with a match = 0, ratio: 0%
-
-Begin processing the 21st record. Run 1, Event 1178367, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:12.456 CET
-
-All PFCandidate tracks size = 1124, 0.139535% have Gen match, refitted PV tracks size = 59, PackedGenParticle size = 352
-Refitted PV tracks size = 59, with a match = 0, ratio: 0%
-
-Begin processing the 22nd record. Run 1, Event 1178364, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:12.668 CET
-
-All PFCandidate tracks size = 1340, 0.20202% have Gen match, refitted PV tracks size = 154, PackedGenParticle size = 654
-Refitted PV tracks size = 154, with a match = 3, ratio: 0.458716%
-
-Begin processing the 23rd record. Run 1, Event 1178370, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:12.732 CET
-
-All PFCandidate tracks size = 1233, 0% have Gen match, refitted PV tracks size = 122, PackedGenParticle size = 620
-Refitted PV tracks size = 122, with a match = 0, ratio: 0%
-
-Begin processing the 24th record. Run 1, Event 1178361, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:12.807 CET
-
-All PFCandidate tracks size = 1480, 0% have Gen match, refitted PV tracks size = 73, PackedGenParticle size = 297
-Refitted PV tracks size = 73, with a match = 0, ratio: 0%
-
-Begin processing the 25th record. Run 1, Event 1178366, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:12.880 CET
-
-All PFCandidate tracks size = 1412, 0% have Gen match, refitted PV tracks size = 172, PackedGenParticle size = 643
-Refitted PV tracks size = 172, with a match = 0, ratio: 0%
-
-Begin processing the 26th record. Run 1, Event 1178369, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:12.940 CET
-
-All PFCandidate tracks size = 1063, 0% have Gen match, refitted PV tracks size = 107, PackedGenParticle size = 508
-Refitted PV tracks size = 107, with a match = 0, ratio: 0%
-
-Begin processing the 27th record. Run 1, Event 1178377, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:12.988 CET
-
-All PFCandidate tracks size = 713, 0% have Gen match, refitted PV tracks size = 77, PackedGenParticle size = 243
-Refitted PV tracks size = 77, with a match = 0, ratio: 0%
-
-Begin processing the 28th record. Run 1, Event 1178373, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:13.015 CET
-
-All PFCandidate tracks size = 1073, 0% have Gen match, refitted PV tracks size = 91, PackedGenParticle size = 536
-Refitted PV tracks size = 91, with a match = 0, ratio: 0%
-
-Begin processing the 29th record. Run 1, Event 1178376, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:13.059 CET
-
-All PFCandidate tracks size = 1033, 0.148957% have Gen match, refitted PV tracks size = 144, PackedGenParticle size = 706
-Refitted PV tracks size = 144, with a match = 1, ratio: 0.141643%
-
-Begin processing the 30th record. Run 1, Event 1178375, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:13.099 CET
-
-All PFCandidate tracks size = 1036, 0.0494805% have Gen match, refitted PV tracks size = 99, PackedGenParticle size = 448
-Refitted PV tracks size = 99, with a match = 1, ratio: 0.223214%
-
-Begin processing the 31st record. Run 1, Event 1178372, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:13.144 CET
-
-All PFCandidate tracks size = 1246, 0% have Gen match, refitted PV tracks size = 113, PackedGenParticle size = 457
-Refitted PV tracks size = 113, with a match = 0, ratio: 0%
-
-Begin processing the 32nd record. Run 1, Event 1178387, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:13.190 CET
-
-All PFCandidate tracks size = 947, 0.15873% have Gen match, refitted PV tracks size = 83, PackedGenParticle size = 522
-Refitted PV tracks size = 83, with a match = 1, ratio: 0.191571%
-
-Begin processing the 33rd record. Run 1, Event 1178374, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:13.238 CET
-
-All PFCandidate tracks size = 1217, 0.177384% have Gen match, refitted PV tracks size = 191, PackedGenParticle size = 754
-Refitted PV tracks size = 191, with a match = 1, ratio: 0.132626%
-
-Begin processing the 34th record. Run 1, Event 1178378, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:13.298 CET
-
-All PFCandidate tracks size = 545, 0.0765697% have Gen match, refitted PV tracks size = 121, PackedGenParticle size = 500
-Refitted PV tracks size = 121, with a match = 0, ratio: 0%
-
-Begin processing the 35th record. Run 1, Event 1178386, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:13.328 CET
-
-All PFCandidate tracks size = 1325, 0% have Gen match, refitted PV tracks size = 72, PackedGenParticle size = 273
-Refitted PV tracks size = 72, with a match = 0, ratio: 0%
-
-Begin processing the 36th record. Run 1, Event 1178383, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:13.381 CET
-
-All PFCandidate tracks size = 1588, 0% have Gen match, refitted PV tracks size = 128, PackedGenParticle size = 543
-Refitted PV tracks size = 128, with a match = 0, ratio: 0%
-
-Begin processing the 37th record. Run 1, Event 1178380, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:13.456 CET
-
-All PFCandidate tracks size = 1310, 0.0837521% have Gen match, refitted PV tracks size = 132, PackedGenParticle size = 745
-Refitted PV tracks size = 132, with a match = 1, ratio: 0.134228%
-
-Begin processing the 38th record. Run 1, Event 1178385, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:13.514 CET
-
-All PFCandidate tracks size = 1475, 0.195618% have Gen match, refitted PV tracks size = 71, PackedGenParticle size = 343
-Refitted PV tracks size = 71, with a match = 4, ratio: 1.16618%
-
-Begin processing the 39th record. Run 1, Event 1178389, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:13.585 CET
-
-All PFCandidate tracks size = 1608, 0.21978% have Gen match, refitted PV tracks size = 106, PackedGenParticle size = 470
-Refitted PV tracks size = 106, with a match = 5, ratio: 1.06383%
-
-Begin processing the 40th record. Run 1, Event 1178391, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:13.657 CET
-
-All PFCandidate tracks size = 1550, 0.188537% have Gen match, refitted PV tracks size = 91, PackedGenParticle size = 373
-Refitted PV tracks size = 91, with a match = 0, ratio: 0%
-
-Begin processing the 41st record. Run 1, Event 1178384, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:13.726 CET
-
-All PFCandidate tracks size = 1087, 0.140845% have Gen match, refitted PV tracks size = 89, PackedGenParticle size = 429
-Refitted PV tracks size = 89, with a match = 1, ratio: 0.2331%
-
-Begin processing the 42nd record. Run 1, Event 1178394, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:13.771 CET
-
-All PFCandidate tracks size = 782, 0% have Gen match, refitted PV tracks size = 35, PackedGenParticle size = 176
-Refitted PV tracks size = 35, with a match = 0, ratio: 0%
-
-Begin processing the 43rd record. Run 1, Event 1178390, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:13.798 CET
-
-All PFCandidate tracks size = 845, 0.0548246% have Gen match, refitted PV tracks size = 117, PackedGenParticle size = 517
-Refitted PV tracks size = 117, with a match = 1, ratio: 0.193424%
-
-Begin processing the 44th record. Run 1, Event 1178379, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:13.833 CET
-
-All PFCandidate tracks size = 1128, 0.277136% have Gen match, refitted PV tracks size = 196, PackedGenParticle size = 742
-Refitted PV tracks size = 196, with a match = 2, ratio: 0.269542%
-
-Begin processing the 45th record. Run 1, Event 1178406, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:13.879 CET
-
-All PFCandidate tracks size = 1173, 0.0459982% have Gen match, refitted PV tracks size = 17, PackedGenParticle size = 85
-Refitted PV tracks size = 17, with a match = 0, ratio: 0%
-
-Begin processing the 46th record. Run 1, Event 1178381, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:13.923 CET
-
-All PFCandidate tracks size = 1296, 0.588235% have Gen match, refitted PV tracks size = 162, PackedGenParticle size = 641
-Refitted PV tracks size = 162, with a match = 7, ratio: 1.09204%
-
-Begin processing the 47th record. Run 1, Event 1178388, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:13.981 CET
-
-All PFCandidate tracks size = 1375, 0.287238% have Gen match, refitted PV tracks size = 116, PackedGenParticle size = 509
-Refitted PV tracks size = 116, with a match = 4, ratio: 0.785855%
-
-Begin processing the 48th record. Run 1, Event 1178382, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:14.053 CET
-
-All PFCandidate tracks size = 1455, 0% have Gen match, refitted PV tracks size = 113, PackedGenParticle size = 526
-Refitted PV tracks size = 113, with a match = 0, ratio: 0%
-
-Begin processing the 49th record. Run 1, Event 1178392, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:14.126 CET
-
-All PFCandidate tracks size = 1693, 0.105522% have Gen match, refitted PV tracks size = 173, PackedGenParticle size = 555
-Refitted PV tracks size = 173, with a match = 3, ratio: 0.540541%
-
-Begin processing the 50th record. Run 1, Event 1178398, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:14.205 CET
-
-All PFCandidate tracks size = 1270, 0% have Gen match, refitted PV tracks size = 80, PackedGenParticle size = 326
-Refitted PV tracks size = 80, with a match = 0, ratio: 0%
-
-Begin processing the 51st record. Run 1, Event 1178395, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:14.266 CET
-
-All PFCandidate tracks size = 1431, 0% have Gen match, refitted PV tracks size = 133, PackedGenParticle size = 575
-Refitted PV tracks size = 133, with a match = 0, ratio: 0%
-
-Begin processing the 52nd record. Run 1, Event 1178402, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:14.320 CET
-
-All PFCandidate tracks size = 1495, 0% have Gen match, refitted PV tracks size = 84, PackedGenParticle size = 569
-Refitted PV tracks size = 84, with a match = 0, ratio: 0%
-
-Begin processing the 53rd record. Run 1, Event 1178396, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:14.389 CET
-
-All PFCandidate tracks size = 696, 0% have Gen match, refitted PV tracks size = 59, PackedGenParticle size = 400
-Refitted PV tracks size = 59, with a match = 0, ratio: 0%
-
-Begin processing the 54th record. Run 1, Event 1178401, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:14.419 CET
-
-All PFCandidate tracks size = 1381, 0.0405351% have Gen match, refitted PV tracks size = 103, PackedGenParticle size = 565
-Refitted PV tracks size = 103, with a match = 0, ratio: 0%
-
-Begin processing the 55th record. Run 1, Event 1178393, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:14.477 CET
-
-All PFCandidate tracks size = 1761, 0.102705% have Gen match, refitted PV tracks size = 128, PackedGenParticle size = 661
-Refitted PV tracks size = 128, with a match = 2, ratio: 0.302572%
-
-Begin processing the 56th record. Run 1, Event 1178399, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:14.567 CET
-
-All PFCandidate tracks size = 1571, 0% have Gen match, refitted PV tracks size = 172, PackedGenParticle size = 252
-Refitted PV tracks size = 172, with a match = 0, ratio: 0%
-
-Begin processing the 57th record. Run 1, Event 1178400, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:14.646 CET
-
-All PFCandidate tracks size = 1659, 0.143937% have Gen match, refitted PV tracks size = 132, PackedGenParticle size = 613
-Refitted PV tracks size = 132, with a match = 2, ratio: 0.326264%
-
-Begin processing the 58th record. Run 1, Event 1178416, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:14.726 CET
-
-All PFCandidate tracks size = 482, 0.399361% have Gen match, refitted PV tracks size = 87, PackedGenParticle size = 350
-Refitted PV tracks size = 87, with a match = 4, ratio: 1.14286%
-
-Begin processing the 59th record. Run 1, Event 1178397, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:14.752 CET
-
-All PFCandidate tracks size = 1163, 0.583745% have Gen match, refitted PV tracks size = 180, PackedGenParticle size = 644
-Refitted PV tracks size = 180, with a match = 9, ratio: 1.39752%
-
-Begin processing the 60th record. Run 1, Event 1178404, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:14.805 CET
-
-All PFCandidate tracks size = 1275, 0.129983% have Gen match, refitted PV tracks size = 141, PackedGenParticle size = 528
-Refitted PV tracks size = 141, with a match = 3, ratio: 0.568182%
-
-Begin processing the 61st record. Run 1, Event 1178413, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:14.866 CET
-
-All PFCandidate tracks size = 640, 0.133156% have Gen match, refitted PV tracks size = 94, PackedGenParticle size = 323
-Refitted PV tracks size = 94, with a match = 0, ratio: 0%
-
-Begin processing the 62nd record. Run 1, Event 1178415, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:14.892 CET
-
-All PFCandidate tracks size = 1021, 0% have Gen match, refitted PV tracks size = 78, PackedGenParticle size = 465
-Refitted PV tracks size = 78, with a match = 0, ratio: 0%
-
-Begin processing the 63rd record. Run 1, Event 1178403, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:14.932 CET
-
-All PFCandidate tracks size = 1445, 0% have Gen match, refitted PV tracks size = 128, PackedGenParticle size = 450
-Refitted PV tracks size = 128, with a match = 0, ratio: 0%
-
-Begin processing the 64th record. Run 1, Event 1178408, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:15.001 CET
-
-All PFCandidate tracks size = 1956, 0.128082% have Gen match, refitted PV tracks size = 144, PackedGenParticle size = 671
-Refitted PV tracks size = 144, with a match = 3, ratio: 0.447094%
-
-Begin processing the 65th record. Run 1, Event 1178412, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:15.115 CET
-
-All PFCandidate tracks size = 1411, 0.202593% have Gen match, refitted PV tracks size = 117, PackedGenParticle size = 611
-Refitted PV tracks size = 117, with a match = 2, ratio: 0.327332%
-
-Begin processing the 66th record. Run 1, Event 1178411, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:15.201 CET
-
-All PFCandidate tracks size = 1220, 0.222519% have Gen match, refitted PV tracks size = 115, PackedGenParticle size = 543
-Refitted PV tracks size = 115, with a match = 3, ratio: 0.552486%
-
-Begin processing the 67th record. Run 1, Event 1178422, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:15.262 CET
-
-All PFCandidate tracks size = 1227, 0% have Gen match, refitted PV tracks size = 95, PackedGenParticle size = 348
-Refitted PV tracks size = 95, with a match = 0, ratio: 0%
-
-Begin processing the 68th record. Run 1, Event 1178425, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:15.331 CET
-
-All PFCandidate tracks size = 760, 0% have Gen match, refitted PV tracks size = 169, PackedGenParticle size = 734
-Refitted PV tracks size = 169, with a match = 0, ratio: 0%
-
-Begin processing the 69th record. Run 1, Event 1178419, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:15.360 CET
-
-All PFCandidate tracks size = 1421, 0% have Gen match, refitted PV tracks size = 120, PackedGenParticle size = 658
-Refitted PV tracks size = 120, with a match = 0, ratio: 0%
-
-Begin processing the 70th record. Run 1, Event 1178409, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:15.415 CET
-%MSG-f XrdAdaptor:  (NoModuleName) 05-Feb-2026 16:36:15 CET pre-events
-Opened a file at URL root://cmsstor202.fnal.gov:34483//store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/005c37f7-ef8a-46d1-9155-308dbf22b8d7.root?org.dcache.uuid=3a9a477e-4517-4703-b26b-5e6b5ba199f0&org.dcache.xrootd.client=kakang.3281510@lxplus805.cern.ch&tried=+1213xrootd-cms-redir-int.cr.cnaf.infn.it,ccdcacli501.in2p3.fr&triedrc=resel&xrd.logintoken=org.dcache.door=2620:6a:0:8420:0:0:0:101:1095&xrdcl.requuid=9de27545-1b2c-4b65-b2d9-d595571fab4f
+Refitted PV tracks size = 74, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 21st record. Run 1, Event 1178367, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:46.732 CET
+%MSG-f XrdAdaptorLvl3:  PreProcPath p 05-Feb-2026 16:47:47 CET  Run: 1 Event: 1178367
+Deactivating cmsstor202.fnal.gov from active sources because its quality (767) is higher than 260 and 4 times larger than the other active server ccdcacli481.in2p3.fr (43) 
 %MSG
 
-All PFCandidate tracks size = 1714, 0% have Gen match, refitted PV tracks size = 125, PackedGenParticle size = 461
-Refitted PV tracks size = 125, with a match = 0, ratio: 0%
+All PFCandidate tracks size = 1124, 0.139535% have Gen match, refitted PV tracks size = 59, PackedGenParticle size = 352
+Refitted PV tracks size = 59, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 71st record. Run 1, Event 1178429, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:15.492 CET
+Begin processing the 22nd record. Run 1, Event 1178364, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:47.646 CET
+
+All PFCandidate tracks size = 1340, 0.20202% have Gen match, refitted PV tracks size = 154, PackedGenParticle size = 654
+Refitted PV tracks size = 154, found the original PFCandidate?: yes, PF with a match = 3, ratio: 0.458716%
+
+Begin processing the 23rd record. Run 1, Event 1178370, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:47.714 CET
+
+All PFCandidate tracks size = 1233, 0% have Gen match, refitted PV tracks size = 122, PackedGenParticle size = 620
+Refitted PV tracks size = 122, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 24th record. Run 1, Event 1178361, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:47.777 CET
+
+All PFCandidate tracks size = 1480, 0% have Gen match, refitted PV tracks size = 73, PackedGenParticle size = 297
+Refitted PV tracks size = 73, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 25th record. Run 1, Event 1178366, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:47.835 CET
+
+All PFCandidate tracks size = 1412, 0% have Gen match, refitted PV tracks size = 172, PackedGenParticle size = 643
+Refitted PV tracks size = 172, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 26th record. Run 1, Event 1178369, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:47.899 CET
+
+All PFCandidate tracks size = 1063, 0% have Gen match, refitted PV tracks size = 107, PackedGenParticle size = 508
+Refitted PV tracks size = 107, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 27th record. Run 1, Event 1178377, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:47.946 CET
+
+All PFCandidate tracks size = 713, 0% have Gen match, refitted PV tracks size = 77, PackedGenParticle size = 243
+Refitted PV tracks size = 77, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 28th record. Run 1, Event 1178373, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:47.974 CET
+
+All PFCandidate tracks size = 1073, 0% have Gen match, refitted PV tracks size = 91, PackedGenParticle size = 536
+Refitted PV tracks size = 91, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 29th record. Run 1, Event 1178376, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:48.028 CET
+
+All PFCandidate tracks size = 1033, 0.148957% have Gen match, refitted PV tracks size = 144, PackedGenParticle size = 706
+Refitted PV tracks size = 144, found the original PFCandidate?: yes, PF with a match = 1, ratio: 0.141643%
+
+Begin processing the 30th record. Run 1, Event 1178375, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:48.083 CET
+
+All PFCandidate tracks size = 1036, 0.0494805% have Gen match, refitted PV tracks size = 99, PackedGenParticle size = 448
+Refitted PV tracks size = 99, found the original PFCandidate?: yes, PF with a match = 1, ratio: 0.223214%
+
+Begin processing the 31st record. Run 1, Event 1178372, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:48.134 CET
+
+All PFCandidate tracks size = 1246, 0% have Gen match, refitted PV tracks size = 113, PackedGenParticle size = 457
+Refitted PV tracks size = 113, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 32nd record. Run 1, Event 1178387, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:48.178 CET
+
+All PFCandidate tracks size = 947, 0.15873% have Gen match, refitted PV tracks size = 83, PackedGenParticle size = 522
+Refitted PV tracks size = 83, found the original PFCandidate?: yes, PF with a match = 1, ratio: 0.191571%
+
+Begin processing the 33rd record. Run 1, Event 1178374, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:48.218 CET
+
+All PFCandidate tracks size = 1217, 0.177384% have Gen match, refitted PV tracks size = 191, PackedGenParticle size = 754
+Refitted PV tracks size = 191, found the original PFCandidate?: yes, PF with a match = 1, ratio: 0.132626%
+
+Begin processing the 34th record. Run 1, Event 1178378, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:48.273 CET
+
+All PFCandidate tracks size = 545, 0.0765697% have Gen match, refitted PV tracks size = 121, PackedGenParticle size = 500
+Refitted PV tracks size = 121, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 35th record. Run 1, Event 1178386, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:48.296 CET
+
+All PFCandidate tracks size = 1325, 0% have Gen match, refitted PV tracks size = 72, PackedGenParticle size = 273
+Refitted PV tracks size = 72, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 36th record. Run 1, Event 1178383, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:48.348 CET
+
+All PFCandidate tracks size = 1588, 0% have Gen match, refitted PV tracks size = 128, PackedGenParticle size = 543
+Refitted PV tracks size = 128, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 37th record. Run 1, Event 1178380, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:48.411 CET
+
+All PFCandidate tracks size = 1310, 0.0837521% have Gen match, refitted PV tracks size = 132, PackedGenParticle size = 745
+Refitted PV tracks size = 132, found the original PFCandidate?: yes, PF with a match = 1, ratio: 0.134228%
+
+Begin processing the 38th record. Run 1, Event 1178385, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:48.468 CET
+
+All PFCandidate tracks size = 1475, 0.195618% have Gen match, refitted PV tracks size = 71, PackedGenParticle size = 343
+Refitted PV tracks size = 71, found the original PFCandidate?: yes, PF with a match = 4, ratio: 1.16618%
+
+Begin processing the 39th record. Run 1, Event 1178389, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:48.529 CET
+
+All PFCandidate tracks size = 1608, 0.21978% have Gen match, refitted PV tracks size = 106, PackedGenParticle size = 470
+Refitted PV tracks size = 106, found the original PFCandidate?: yes, PF with a match = 5, ratio: 1.06383%
+
+Begin processing the 40th record. Run 1, Event 1178391, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:48.597 CET
+
+All PFCandidate tracks size = 1550, 0.188537% have Gen match, refitted PV tracks size = 91, PackedGenParticle size = 373
+Refitted PV tracks size = 91, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 41st record. Run 1, Event 1178384, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:48.666 CET
+
+All PFCandidate tracks size = 1087, 0.140845% have Gen match, refitted PV tracks size = 89, PackedGenParticle size = 429
+Refitted PV tracks size = 89, found the original PFCandidate?: yes, PF with a match = 1, ratio: 0.2331%
+
+Begin processing the 42nd record. Run 1, Event 1178394, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:48.711 CET
+
+All PFCandidate tracks size = 782, 0% have Gen match, refitted PV tracks size = 35, PackedGenParticle size = 176
+Refitted PV tracks size = 35, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 43rd record. Run 1, Event 1178390, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:48.744 CET
+
+All PFCandidate tracks size = 845, 0.0548246% have Gen match, refitted PV tracks size = 117, PackedGenParticle size = 517
+Refitted PV tracks size = 117, found the original PFCandidate?: yes, PF with a match = 1, ratio: 0.193424%
+
+Begin processing the 44th record. Run 1, Event 1178379, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:48.784 CET
+
+All PFCandidate tracks size = 1128, 0.277136% have Gen match, refitted PV tracks size = 196, PackedGenParticle size = 742
+Refitted PV tracks size = 196, found the original PFCandidate?: yes, PF with a match = 2, ratio: 0.269542%
+
+Begin processing the 45th record. Run 1, Event 1178406, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:48.838 CET
+
+All PFCandidate tracks size = 1173, 0.0459982% have Gen match, refitted PV tracks size = 17, PackedGenParticle size = 85
+Refitted PV tracks size = 17, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 46th record. Run 1, Event 1178381, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:48.895 CET
+
+All PFCandidate tracks size = 1296, 0.588235% have Gen match, refitted PV tracks size = 162, PackedGenParticle size = 641
+Refitted PV tracks size = 162, found the original PFCandidate?: yes, PF with a match = 7, ratio: 1.09204%
+
+Begin processing the 47th record. Run 1, Event 1178388, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:48.974 CET
+
+All PFCandidate tracks size = 1375, 0.287238% have Gen match, refitted PV tracks size = 116, PackedGenParticle size = 509
+Refitted PV tracks size = 116, found the original PFCandidate?: yes, PF with a match = 4, ratio: 0.785855%
+
+Begin processing the 48th record. Run 1, Event 1178382, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:49.035 CET
+
+All PFCandidate tracks size = 1455, 0% have Gen match, refitted PV tracks size = 113, PackedGenParticle size = 526
+Refitted PV tracks size = 113, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 49th record. Run 1, Event 1178392, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:49.098 CET
+
+All PFCandidate tracks size = 1693, 0.105522% have Gen match, refitted PV tracks size = 173, PackedGenParticle size = 555
+Refitted PV tracks size = 173, found the original PFCandidate?: yes, PF with a match = 3, ratio: 0.540541%
+
+Begin processing the 50th record. Run 1, Event 1178398, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:49.174 CET
+
+All PFCandidate tracks size = 1270, 0% have Gen match, refitted PV tracks size = 80, PackedGenParticle size = 326
+Refitted PV tracks size = 80, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 51st record. Run 1, Event 1178395, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:49.222 CET
+
+All PFCandidate tracks size = 1431, 0% have Gen match, refitted PV tracks size = 133, PackedGenParticle size = 575
+Refitted PV tracks size = 133, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 52nd record. Run 1, Event 1178402, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:49.284 CET
+
+All PFCandidate tracks size = 1495, 0% have Gen match, refitted PV tracks size = 84, PackedGenParticle size = 569
+Refitted PV tracks size = 84, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 53rd record. Run 1, Event 1178396, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:49.351 CET
+
+All PFCandidate tracks size = 696, 0% have Gen match, refitted PV tracks size = 59, PackedGenParticle size = 400
+Refitted PV tracks size = 59, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 54th record. Run 1, Event 1178401, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:49.375 CET
+
+All PFCandidate tracks size = 1381, 0.0405351% have Gen match, refitted PV tracks size = 103, PackedGenParticle size = 565
+Refitted PV tracks size = 103, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 55th record. Run 1, Event 1178393, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:49.426 CET
+
+All PFCandidate tracks size = 1761, 0.102705% have Gen match, refitted PV tracks size = 128, PackedGenParticle size = 661
+Refitted PV tracks size = 128, found the original PFCandidate?: yes, PF with a match = 2, ratio: 0.302572%
+
+Begin processing the 56th record. Run 1, Event 1178399, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:49.514 CET
+
+All PFCandidate tracks size = 1571, 0% have Gen match, refitted PV tracks size = 172, PackedGenParticle size = 252
+Refitted PV tracks size = 172, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 57th record. Run 1, Event 1178400, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:49.588 CET
+
+All PFCandidate tracks size = 1659, 0.143937% have Gen match, refitted PV tracks size = 132, PackedGenParticle size = 613
+Refitted PV tracks size = 132, found the original PFCandidate?: yes, PF with a match = 2, ratio: 0.326264%
+
+Begin processing the 58th record. Run 1, Event 1178416, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:49.665 CET
+
+All PFCandidate tracks size = 482, 0.399361% have Gen match, refitted PV tracks size = 87, PackedGenParticle size = 350
+Refitted PV tracks size = 87, found the original PFCandidate?: yes, PF with a match = 4, ratio: 1.14286%
+
+Begin processing the 59th record. Run 1, Event 1178397, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:49.691 CET
+
+All PFCandidate tracks size = 1163, 0.583745% have Gen match, refitted PV tracks size = 180, PackedGenParticle size = 644
+Refitted PV tracks size = 180, found the original PFCandidate?: yes, PF with a match = 9, ratio: 1.39752%
+
+Begin processing the 60th record. Run 1, Event 1178404, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:49.741 CET
+
+All PFCandidate tracks size = 1275, 0.129983% have Gen match, refitted PV tracks size = 141, PackedGenParticle size = 528
+Refitted PV tracks size = 141, found the original PFCandidate?: yes, PF with a match = 3, ratio: 0.568182%
+
+Begin processing the 61st record. Run 1, Event 1178413, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:49.803 CET
+
+All PFCandidate tracks size = 640, 0.133156% have Gen match, refitted PV tracks size = 94, PackedGenParticle size = 323
+Refitted PV tracks size = 94, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 62nd record. Run 1, Event 1178415, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:49.837 CET
+
+All PFCandidate tracks size = 1021, 0% have Gen match, refitted PV tracks size = 78, PackedGenParticle size = 465
+Refitted PV tracks size = 78, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 63rd record. Run 1, Event 1178403, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:49.880 CET
+
+All PFCandidate tracks size = 1445, 0% have Gen match, refitted PV tracks size = 128, PackedGenParticle size = 450
+Refitted PV tracks size = 128, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 64th record. Run 1, Event 1178408, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:49.944 CET
+
+All PFCandidate tracks size = 1956, 0.128082% have Gen match, refitted PV tracks size = 144, PackedGenParticle size = 671
+Refitted PV tracks size = 144, found the original PFCandidate?: yes, PF with a match = 3, ratio: 0.447094%
+
+Begin processing the 65th record. Run 1, Event 1178412, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:50.036 CET
+
+All PFCandidate tracks size = 1411, 0.202593% have Gen match, refitted PV tracks size = 117, PackedGenParticle size = 611
+Refitted PV tracks size = 117, found the original PFCandidate?: yes, PF with a match = 2, ratio: 0.327332%
+
+Begin processing the 66th record. Run 1, Event 1178411, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:50.110 CET
+
+All PFCandidate tracks size = 1220, 0.222519% have Gen match, refitted PV tracks size = 115, PackedGenParticle size = 543
+Refitted PV tracks size = 115, found the original PFCandidate?: yes, PF with a match = 3, ratio: 0.552486%
+
+Begin processing the 67th record. Run 1, Event 1178422, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:50.173 CET
+
+All PFCandidate tracks size = 1227, 0% have Gen match, refitted PV tracks size = 95, PackedGenParticle size = 348
+Refitted PV tracks size = 95, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 68th record. Run 1, Event 1178425, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:50.232 CET
+
+All PFCandidate tracks size = 760, 0% have Gen match, refitted PV tracks size = 169, PackedGenParticle size = 734
+Refitted PV tracks size = 169, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 69th record. Run 1, Event 1178419, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:50.267 CET
+
+All PFCandidate tracks size = 1421, 0% have Gen match, refitted PV tracks size = 120, PackedGenParticle size = 658
+Refitted PV tracks size = 120, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 70th record. Run 1, Event 1178409, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:50.325 CET
+
+All PFCandidate tracks size = 1714, 0% have Gen match, refitted PV tracks size = 125, PackedGenParticle size = 461
+Refitted PV tracks size = 125, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
+
+Begin processing the 71st record. Run 1, Event 1178429, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:50.404 CET
 
 All PFCandidate tracks size = 811, 0% have Gen match, refitted PV tracks size = 82, PackedGenParticle size = 486
-Refitted PV tracks size = 82, with a match = 0, ratio: 0%
+Refitted PV tracks size = 82, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 72nd record. Run 1, Event 1178410, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:15.533 CET
+Begin processing the 72nd record. Run 1, Event 1178410, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:50.436 CET
 
 All PFCandidate tracks size = 1153, 0% have Gen match, refitted PV tracks size = 99, PackedGenParticle size = 602
-Refitted PV tracks size = 99, with a match = 0, ratio: 0%
+Refitted PV tracks size = 99, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 73rd record. Run 1, Event 1178424, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:15.583 CET
+Begin processing the 73rd record. Run 1, Event 1178424, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:50.486 CET
 
 All PFCandidate tracks size = 814, 0.114745% have Gen match, refitted PV tracks size = 141, PackedGenParticle size = 756
-Refitted PV tracks size = 141, with a match = 2, ratio: 0.26455%
+Refitted PV tracks size = 141, found the original PFCandidate?: yes, PF with a match = 2, ratio: 0.26455%
 
-Begin processing the 74th record. Run 1, Event 1178423, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:15.624 CET
+Begin processing the 74th record. Run 1, Event 1178423, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:50.525 CET
 
 All PFCandidate tracks size = 1193, 0% have Gen match, refitted PV tracks size = 105, PackedGenParticle size = 462
-Refitted PV tracks size = 105, with a match = 0, ratio: 0%
+Refitted PV tracks size = 105, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 75th record. Run 1, Event 1178418, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:15.673 CET
+Begin processing the 75th record. Run 1, Event 1178418, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:50.571 CET
 
 All PFCandidate tracks size = 1400, 0% have Gen match, refitted PV tracks size = 140, PackedGenParticle size = 687
-Refitted PV tracks size = 140, with a match = 0, ratio: 0%
+Refitted PV tracks size = 140, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 76th record. Run 1, Event 1178414, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:15.745 CET
+Begin processing the 76th record. Run 1, Event 1178414, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:50.630 CET
 
 All PFCandidate tracks size = 1707, 0.177431% have Gen match, refitted PV tracks size = 112, PackedGenParticle size = 368
-Refitted PV tracks size = 112, with a match = 5, ratio: 1.3587%
+Refitted PV tracks size = 112, found the original PFCandidate?: yes, PF with a match = 5, ratio: 1.3587%
 
-Begin processing the 77th record. Run 1, Event 1178407, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:15.871 CET
+Begin processing the 77th record. Run 1, Event 1178407, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:50.711 CET
 
 All PFCandidate tracks size = 1492, 0% have Gen match, refitted PV tracks size = 191, PackedGenParticle size = 871
-Refitted PV tracks size = 191, with a match = 0, ratio: 0%
+Refitted PV tracks size = 191, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 78th record. Run 1, Event 1178421, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:15.953 CET
+Begin processing the 78th record. Run 1, Event 1178421, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:50.771 CET
 
 All PFCandidate tracks size = 1790, 0% have Gen match, refitted PV tracks size = 88, PackedGenParticle size = 432
-Refitted PV tracks size = 88, with a match = 0, ratio: 0%
+Refitted PV tracks size = 88, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 79th record. Run 1, Event 1178420, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:16.071 CET
+Begin processing the 79th record. Run 1, Event 1178420, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:50.851 CET
 
 All PFCandidate tracks size = 1629, 0% have Gen match, refitted PV tracks size = 94, PackedGenParticle size = 318
-Refitted PV tracks size = 94, with a match = 0, ratio: 0%
+Refitted PV tracks size = 94, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 80th record. Run 1, Event 1178430, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:16.161 CET
+Begin processing the 80th record. Run 1, Event 1178430, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:50.930 CET
 
 All PFCandidate tracks size = 1653, 0% have Gen match, refitted PV tracks size = 95, PackedGenParticle size = 497
-Refitted PV tracks size = 95, with a match = 0, ratio: 0%
+Refitted PV tracks size = 95, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 81st record. Run 1, Event 1178426, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:16.254 CET
+Begin processing the 81st record. Run 1, Event 1178426, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:51.008 CET
 
 All PFCandidate tracks size = 1383, 0.163066% have Gen match, refitted PV tracks size = 132, PackedGenParticle size = 607
-Refitted PV tracks size = 132, with a match = 1, ratio: 0.164745%
+Refitted PV tracks size = 132, found the original PFCandidate?: yes, PF with a match = 1, ratio: 0.164745%
 
-Begin processing the 82nd record. Run 1, Event 1178405, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:16.333 CET
+Begin processing the 82nd record. Run 1, Event 1178405, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:51.068 CET
 
 All PFCandidate tracks size = 1851, 0.132319% have Gen match, refitted PV tracks size = 156, PackedGenParticle size = 594
-Refitted PV tracks size = 156, with a match = 4, ratio: 0.673401%
+Refitted PV tracks size = 156, found the original PFCandidate?: yes, PF with a match = 4, ratio: 0.673401%
 
-Begin processing the 83rd record. Run 1, Event 1178432, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:16.431 CET
+Begin processing the 83rd record. Run 1, Event 1178432, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:51.144 CET
 
 All PFCandidate tracks size = 785, 0.292227% have Gen match, refitted PV tracks size = 86, PackedGenParticle size = 403
-Refitted PV tracks size = 86, with a match = 4, ratio: 0.992556%
+Refitted PV tracks size = 86, found the original PFCandidate?: yes, PF with a match = 4, ratio: 0.992556%
 
-Begin processing the 84th record. Run 1, Event 1178431, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:16.479 CET
+Begin processing the 84th record. Run 1, Event 1178431, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:51.184 CET
 
 All PFCandidate tracks size = 1550, 0.115518% have Gen match, refitted PV tracks size = 120, PackedGenParticle size = 589
-Refitted PV tracks size = 120, with a match = 2, ratio: 0.339559%
+Refitted PV tracks size = 120, found the original PFCandidate?: yes, PF with a match = 2, ratio: 0.339559%
 
-Begin processing the 85th record. Run 1, Event 1178434, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:16.557 CET
+Begin processing the 85th record. Run 1, Event 1178434, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:51.258 CET
 
 All PFCandidate tracks size = 863, 0% have Gen match, refitted PV tracks size = 115, PackedGenParticle size = 471
-Refitted PV tracks size = 115, with a match = 0, ratio: 0%
+Refitted PV tracks size = 115, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 86th record. Run 1, Event 1178427, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:16.602 CET
+Begin processing the 86th record. Run 1, Event 1178427, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:51.294 CET
 
 All PFCandidate tracks size = 1738, 0% have Gen match, refitted PV tracks size = 123, PackedGenParticle size = 590
-Refitted PV tracks size = 123, with a match = 0, ratio: 0%
+Refitted PV tracks size = 123, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 87th record. Run 1, Event 1178433, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:16.694 CET
+Begin processing the 87th record. Run 1, Event 1178433, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:51.369 CET
 
 All PFCandidate tracks size = 533, 0% have Gen match, refitted PV tracks size = 81, PackedGenParticle size = 434
-Refitted PV tracks size = 81, with a match = 0, ratio: 0%
+Refitted PV tracks size = 81, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 88th record. Run 1, Event 1178428, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:16.736 CET
+Begin processing the 88th record. Run 1, Event 1178428, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:51.395 CET
 
 All PFCandidate tracks size = 1430, 0.0395413% have Gen match, refitted PV tracks size = 131, PackedGenParticle size = 575
-Refitted PV tracks size = 131, with a match = 1, ratio: 0.173913%
+Refitted PV tracks size = 131, found the original PFCandidate?: yes, PF with a match = 1, ratio: 0.173913%
 
-Begin processing the 89th record. Run 1, Event 1178417, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:16.831 CET
+Begin processing the 89th record. Run 1, Event 1178417, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:51.456 CET
 
 All PFCandidate tracks size = 1386, 0.287711% have Gen match, refitted PV tracks size = 113, PackedGenParticle size = 495
-Refitted PV tracks size = 113, with a match = 5, ratio: 1.0101%
+Refitted PV tracks size = 113, found the original PFCandidate?: yes, PF with a match = 5, ratio: 1.0101%
 
-Begin processing the 90th record. Run 1, Event 1178435, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:16.927 CET
+Begin processing the 90th record. Run 1, Event 1178435, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:51.519 CET
 
 All PFCandidate tracks size = 1366, 0.166251% have Gen match, refitted PV tracks size = 93, PackedGenParticle size = 389
-Refitted PV tracks size = 93, with a match = 1, ratio: 0.257069%
+Refitted PV tracks size = 93, found the original PFCandidate?: yes, PF with a match = 1, ratio: 0.257069%
 
-Begin processing the 91st record. Run 1, Event 1178449, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:17.017 CET
+Begin processing the 91st record. Run 1, Event 1178449, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:51.586 CET
 
 All PFCandidate tracks size = 907, 0.107066% have Gen match, refitted PV tracks size = 112, PackedGenParticle size = 535
-Refitted PV tracks size = 112, with a match = 2, ratio: 0.373832%
+Refitted PV tracks size = 112, found the original PFCandidate?: yes, PF with a match = 2, ratio: 0.373832%
 
-Begin processing the 92nd record. Run 1, Event 1178436, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:17.061 CET
+Begin processing the 92nd record. Run 1, Event 1178436, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:51.625 CET
 
 All PFCandidate tracks size = 1258, 0% have Gen match, refitted PV tracks size = 64, PackedGenParticle size = 364
-Refitted PV tracks size = 64, with a match = 0, ratio: 0%
+Refitted PV tracks size = 64, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 93rd record. Run 1, Event 1178437, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:17.130 CET
+Begin processing the 93rd record. Run 1, Event 1178437, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:51.683 CET
 
 All PFCandidate tracks size = 1472, 0% have Gen match, refitted PV tracks size = 101, PackedGenParticle size = 487
-Refitted PV tracks size = 101, with a match = 0, ratio: 0%
+Refitted PV tracks size = 101, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 94th record. Run 1, Event 1178447, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:17.211 CET
+Begin processing the 94th record. Run 1, Event 1178447, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:51.752 CET
 
 All PFCandidate tracks size = 848, 0.112171% have Gen match, refitted PV tracks size = 66, PackedGenParticle size = 330
-Refitted PV tracks size = 66, with a match = 1, ratio: 0.30303%
+Refitted PV tracks size = 66, found the original PFCandidate?: yes, PF with a match = 1, ratio: 0.30303%
 
-Begin processing the 95th record. Run 1, Event 1178442, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:17.257 CET
+Begin processing the 95th record. Run 1, Event 1178442, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:51.791 CET
 
 All PFCandidate tracks size = 882, 0% have Gen match, refitted PV tracks size = 63, PackedGenParticle size = 182
-Refitted PV tracks size = 63, with a match = 0, ratio: 0%
+Refitted PV tracks size = 63, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 96th record. Run 1, Event 1178440, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:17.301 CET
+Begin processing the 96th record. Run 1, Event 1178440, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:51.826 CET
 
 All PFCandidate tracks size = 1158, 0% have Gen match, refitted PV tracks size = 152, PackedGenParticle size = 861
-Refitted PV tracks size = 152, with a match = 0, ratio: 0%
+Refitted PV tracks size = 152, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-Begin processing the 97th record. Run 1, Event 1178444, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:17.350 CET
+Begin processing the 97th record. Run 1, Event 1178444, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:51.871 CET
 
 All PFCandidate tracks size = 1311, 0.125104% have Gen match, refitted PV tracks size = 109, PackedGenParticle size = 383
-Refitted PV tracks size = 109, with a match = 3, ratio: 0.78329%
+Refitted PV tracks size = 109, found the original PFCandidate?: yes, PF with a match = 3, ratio: 0.78329%
 
-Begin processing the 98th record. Run 1, Event 1178451, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:17.424 CET
+Begin processing the 98th record. Run 1, Event 1178451, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:51.930 CET
 
 All PFCandidate tracks size = 1097, 0.237982% have Gen match, refitted PV tracks size = 89, PackedGenParticle size = 505
-Refitted PV tracks size = 89, with a match = 1, ratio: 0.19802%
+Refitted PV tracks size = 89, found the original PFCandidate?: yes, PF with a match = 1, ratio: 0.19802%
 
-Begin processing the 99th record. Run 1, Event 1178441, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:17.477 CET
+Begin processing the 99th record. Run 1, Event 1178441, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:51.981 CET
 
 All PFCandidate tracks size = 1568, 0.149701% have Gen match, refitted PV tracks size = 124, PackedGenParticle size = 445
-Refitted PV tracks size = 124, with a match = 1, ratio: 0.224719%
+Refitted PV tracks size = 124, found the original PFCandidate?: yes, PF with a match = 1, ratio: 0.224719%
 
-Begin processing the 100th record. Run 1, Event 1178438, LumiSection 1800 on stream 0 at 05-Feb-2026 16:36:17.558 CET
+Begin processing the 100th record. Run 1, Event 1178438, LumiSection 1800 on stream 0 at 05-Feb-2026 16:47:52.052 CET
 
 All PFCandidate tracks size = 1846, 0% have Gen match, refitted PV tracks size = 126, PackedGenParticle size = 628
-Refitted PV tracks size = 126, with a match = 0, ratio: 0%
+Refitted PV tracks size = 126, found the original PFCandidate?: yes, PF with a match = 0, ratio: 0%
 
-05-Feb-2026 16:36:17 CET  Closed file root://xrootd-cms.infn.it//store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/005c37f7-ef8a-46d1-9155-308dbf22b8d7.root
-Total number of events before event scale: 100
-Total number of events after event scale: 100
-Total number of triggered events: 100
+05-Feb-2026 16:47:52 CET  Closed file root://xrootd-cms.infn.it//store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/005c37f7-ef8a-46d1-9155-308dbf22b8d7.root

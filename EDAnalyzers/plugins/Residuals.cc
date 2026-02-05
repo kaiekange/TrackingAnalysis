@@ -470,6 +470,7 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
     reco::TrackCollection initPVTkCollection;
 
     Int_t newhasGen = 0;
+    TString foundPF = "no";
     for (const reco::TransientTrack &tt : vtxTracks)
     {
         reco::Track trk = tt.track();
@@ -477,6 +478,7 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
         pat::PackedCandidateCollection::const_iterator itt = find_if(tracksHandle->begin(), tracksHandle->end(), TrackEqualPF(trk));
         if (itt == tracksHandle->end())
             continue;
+        foundPF = "yes";
         size_t iidx = itt - tracksHandle->begin();
         edm::Ref<pat::PackedCandidateCollection> newpfRef(tracksHandle, iidx);
         reco::GenParticleRef newgenRef = (*associationHandle)[newpfRef];
@@ -484,7 +486,7 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
         if (newgenRef.isNonnull())
             newhasGen++;
     }
-    edm::LogPrint("Residuals") << "Refitted PV tracks size = " << vtxTracks.size() << ", with a match = " << newhasGen << ", ratio: " << Float_t(newhasGen) / GenPartHandle->size() * 100 << "\%\n";
+    edm::LogPrint("Residuals") << "Refitted PV tracks size = " << vtxTracks.size() << ", found the original PFCandidate?: " << foundPF << ", PF with a match = " << newhasGen << ", ratio: " << Float_t(newhasGen) / GenPartHandle->size() * 100 << "\%\n";
 }
 
 void Residuals::endJob() {}
