@@ -37,7 +37,6 @@ process.residuals.BeamSpotConfig = ""
 
 process.residuals.stageL1Trigger = cms.uint32(2)
 
-process.residuals.RunOnData = cms.bool(options.RunOnData)
 process.residuals.EventScale = cms.int32(options.EventScale)
 process.residuals.EventModulo = cms.int32(options.EventModulo)
 process.residuals.SampleType = cms.string(options.SampleType)

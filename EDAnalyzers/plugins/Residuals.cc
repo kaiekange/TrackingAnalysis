@@ -38,10 +38,8 @@
 #include "DataFormats/TrackReco/interface/HitPattern.h"
 
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
-// #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
-#include "DataFormats/Common/interface/Association.h"
-
 #include "DataFormats/Math/interface/deltaR.h"
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
@@ -159,9 +157,9 @@ private:
         {
             if (gp.charge() != trk_->charge())
                 return false;
-            if ((abs(gp.pt() - trk_->pt()) / trk_->pt()) > 0.3)
+            if ((abs(gp.pt() - trk_->pt()) / trk_->pt()) > 0.2)
                 return false;
-            if (reco::deltaR(gp.eta(), gp.phi(), trk_->eta(), trk_->phi()) > 0.1)
+            if (reco::deltaR(gp.eta(), gp.phi(), trk_->eta(), trk_->phi()) > 0.05)
                 return false;
             else
                 return true;
@@ -171,23 +169,22 @@ private:
         reco::Track const *trk_;
     };
 
-    class TrackEqualPF
+    class TrackEqualPFCands
     {
     public:
-        explicit TrackEqualPF(reco::Track const &trk) : trk_(&trk) {}
+        explicit TrackEqualPFCands(reco::Track const &trk) : trk_(&trk) {}
 
-        bool operator()(pat::PackedCandidate const &pf) const
+        bool operator()(pat::PackedCandidate const &pc) const
         {
-            if (!pf.hasTrackDetails())
+            if (!pc.hasTrackDetails())
                 return false;
-            reco::Track pftrack = pf.pseudoTrack();
-            if (pf.charge() != trk_->charge())
+            if (pc.charge() != trk_->charge())
                 return false;
-            if (abs(pftrack.pt() - trk_->pt()) > 1e-6)
+            if (abs(pc.pseudoTrack().pt() - trk_->pt()) > 1e-8)
                 return false;
-            if (abs(pftrack.eta() - trk_->eta()) > 1e-6)
+            if (abs(pc.pseudoTrack().eta() - trk_->eta()) > 1e-8)
                 return false;
-            if (abs(pftrack.phi() - trk_->phi()) > 1e-6)
+            if (abs(pc.pseudoTrack().phi() - trk_->phi()) > 1e-8)
                 return false;
             else
                 return true;
@@ -212,13 +209,12 @@ private:
     };
 
     edm::EDGetTokenT<reco::VertexCollection> primvtxToken_;
-    edm::EDGetTokenT<pat::PackedCandidateCollection> tracksToken_;
     edm::EDGetTokenT<reco::BeamSpot> beamspotToken_;
     edm::EDGetTokenT<edm::TriggerResults> triggerToken_;
+    edm::EDGetTokenT<pat::PackedCandidateCollection> PFCandToken_;
     edm::EDGetTokenT<std::vector<PileupSummaryInfo>> PileupToken_;
-    // edm::EDGetTokenT<reco::GenParticleCollection> GenPartToken_;
-    edm::EDGetTokenT<edm::Association<reco::GenParticleCollection>> associationToken_;
     edm::EDGetTokenT<pat::PackedGenParticleCollection> GenPartToken_;
+    // edm::EDGetTokenT<reco::GenParticleCollection> GenPartToken_;
 
     // --- track selection variables
     Double_t tkMinPt;
@@ -230,8 +226,6 @@ private:
     //   Double_t vtxErrorXMin,vtxErrorXMax;
     //   Double_t vtxErrorYMin,vtxErrorYMax;
     //   Double_t vtxErrorZMin,vtxErrorZMax;
-
-    std::string beamSpotConfig;
 
     VertexReProducer *revertex;
 
@@ -254,31 +248,26 @@ private:
 
 Residuals::Residuals(const edm::ParameterSet &pset)
 {
-    edm::InputTag TrackCollectionTag_ = pset.getParameter<edm::InputTag>("TrackLabel");
-    tracksToken_ = consumes<pat::PackedCandidateCollection>(TrackCollectionTag_);
-
-    edm::InputTag VertexCollectionTag_ = pset.getParameter<edm::InputTag>("VertexLabel");
-    primvtxToken_ = consumes<reco::VertexCollection>(VertexCollectionTag_);
-
-    edm::InputTag BeamspotTag_ = edm::InputTag("offlineBeamSpot");
-    beamspotToken_ = consumes<reco::BeamSpot>(BeamspotTag_);
-
-    edm::InputTag TriggerBitsTag_ = pset.getParameter<edm::InputTag>("TriggerResultsLabel");
-    triggerToken_ = consumes<edm::TriggerResults>(TriggerBitsTag_);
-
-    edm::InputTag PileupTag("slimmedAddPileupInfo");
-    PileupToken_ = consumes<std::vector<PileupSummaryInfo>>(PileupTag);
-
-    // edm::InputTag GenPartTag("prunedGenParticles");
-    // GenPartToken_ = consumes<reco::GenParticleCollection>(GenPartTag);
+    edm::InputTag PFCandTag_("packedPFCandidates");
+    PFCandToken_ = consumes<pat::PackedCandidateCollection>(PFCandTag_);
 
     edm::InputTag GenPartTag("packedGenParticles");
     GenPartToken_ = consumes<pat::PackedGenParticleCollection>(GenPartTag);
 
-    edm::InputTag assotiationTag_("packedPFCandidateToGenAssociation");
-    associationToken_ = consumes<edm::Association<reco::GenParticleCollection>>(assotiationTag_);
+    // edm::InputTag GenPartTag("prunedGenParticles");
+    // GenPartToken_ = consumes<reco::GenParticleCollection>(GenPartTag);
 
-    beamSpotConfig = pset.getParameter<std::string>("BeamSpotConfig");
+    edm::InputTag primvtxTag_("offlineSlimmedPrimaryVertices");
+    primvtxToken_ = consumes<reco::VertexCollection>(primvtxTag_);
+
+    edm::InputTag BeamspotTag_("offlineBeamSpot");
+    beamspotToken_ = consumes<reco::BeamSpot>(BeamspotTag_);
+
+    edm::InputTag triggerTag_("TriggerResults", "", "HLT");
+    triggerToken_ = consumes<edm::TriggerResults>(triggerTag_);
+
+    edm::InputTag PileupTag_("slimmedAddPileupInfo");
+    PileupToken_ = consumes<std::vector<PileupSummaryInfo>>(PileupTag_);
 
     tkMinPt = pset.getParameter<Double_t>("TkMinPt");
     tkMinXLayers = pset.getParameter<Int_t>("TkMinXLayers");
@@ -335,6 +324,7 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
 
     ftree->Init();
 
+    // ZeroBias trigger, JetHT trigger
     edm::Handle<edm::TriggerResults> triggerHandle;
     iEvent.getByToken(triggerToken_, triggerHandle);
     const edm::TriggerNames &names = iEvent.triggerNames(*triggerHandle);
@@ -380,18 +370,18 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
         return;
     nEventsTriggered_++;
 
-    // edm::Handle<std::vector<PileupSummaryInfo>> PileupInfo;
-    // iEvent.getByToken(PileupToken_, PileupInfo);
+    edm::Handle<std::vector<PileupSummaryInfo>> PileupInfo;
+    iEvent.getByToken(PileupToken_, PileupInfo);
 
-    // for (std::vector<PileupSummaryInfo>::const_iterator iPU = PileupInfo->begin(); iPU != PileupInfo->end(); iPU++)
-    // {
-    //     Int_t BX = iPU->getBunchCrossing();
-    //     if (BX == 0)
-    //     {
-    //         ftree->NumTrueInts = iPU->getTrueNumInteractions();
-    //         ftree->NumPUInts = iPU->getPU_NumInteractions();
-    //     }
-    // }
+    for (const PileupSummaryInfo &iPU : *PileupInfo)
+    {
+        Int_t BX = iPU.getBunchCrossing();
+        if (BX == 0)
+        {
+            ftree->NumTrueInts = iPU.getTrueNumInteractions();
+            ftree->NumPUInts = iPU.getPU_NumInteractions();
+        }
+    }
 
     edm::Handle<reco::VertexCollection> primvtxHandle;
     iEvent.getByToken(primvtxToken_, primvtxHandle);
@@ -404,40 +394,31 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
     if (primvtxHandle->size() == 0)
         return;
 
-    edm::Handle<edm::Association<reco::GenParticleCollection>> associationHandle;
-    iEvent.getByToken(associationToken_, associationHandle);
+    edm::Handle<pat::PackedCandidateCollection> PFCandHandle;
+    iEvent.getByToken(PFCandToken_, PFCandHandle);
 
-    edm::Handle<pat::PackedCandidateCollection> tracksHandle;
-    iEvent.getByToken(tracksToken_, tracksHandle);
     reco::TrackCollection tracks;
-    for (const pat::PackedCandidate &pf : *tracksHandle)
+    for (const pat::PackedCandidate &pf : *PFCandHandle)
     {
         if (!pf.hasTrackDetails())
             continue;
         tracks.push_back(pf.pseudoTrack());
     }
 
-    Int_t hasGen = 0;
-    for (size_t i = 0; i < tracksHandle->size(); ++i)
-    {
-        const auto &pf = (*tracksHandle)[i];
+    // edm::Handle<reco::GenParticleCollection> GenPartHandle;
+    // iEvent.getByToken(GenPartToken_, GenPartHandle);
+    edm::Handle<pat::PackedGenParticleCollection> GenPartHandle;
+    iEvent.getByToken(GenPartToken_, GenPartHandle);
 
-        // int pvAssoc = pf.fromPV(); // 0=NoPV, 1=PVLoose, 2=PVTight, 3=PVUsedInFit
-        // if (pvAssoc > 0)
-        // {
-        //     fromPV++;
+    // for (auto &gp : *GenPartHandle)
+    // {
+    //     std::cout << "vx: " << gp.vx() << ", vy: " << gp.vy() << ", vz: " << gp.vz() << std::endl;
+    // }
 
-        edm::Ref<pat::PackedCandidateCollection> pfRef(tracksHandle, i);
-        reco::GenParticleRef genRef = (*associationHandle)[pfRef];
-
-        if (genRef.isNonnull())
-            hasGen++;
-    }
-
-    float rate = float(hasGen) / float(tracksHandle->size());
 
     std::vector<TransientVertex> refitted_tPVs = revertex->makeVertices(tracks, *beamspotHandle, iSetup);
 
+    edm::LogPrint("Residuals") << "Primary vertices = " << primvtxHandle->size() << ", refitted vertices = " << refitted_tPVs.size() << ", tracks = " << tracks.size();
     if (refitted_tPVs.empty())
         return;
 
@@ -449,47 +430,277 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
 
     ftree->ev_nPV = refitted_tPVs.size();
 
+
     std::vector<reco::TransientTrack> vtxTracks = refitted_tPV_front.originalTracks();
-
-    edm::Handle<pat::PackedGenParticleCollection> GenPartHandle;
-    iEvent.getByToken(GenPartToken_, GenPartHandle);
-
-    // std::cout << "Size of the packedGenParticle: " << GenPartHandle->size() << std::endl;
-
-    // for(const pat::PackedGenParticle & gp : *GenPartHandle)
-    // {
-    //     std::cout << "pdgId: " << gp.pdgId() << std::endl;
-    // }
-
-    edm::LogPrint("Residuals") << "\nAll PFCandidate tracks size = " << tracks.size() << ", " << rate * 100 << "\% have Gen match, refitted PV tracks size = " << vtxTracks.size() << ", PackedGenParticle size = " << GenPartHandle->size();
-
     stable_sort(vtxTracks.begin(), vtxTracks.end(), sortPt);
+
+    // std::cout << "haha " << GenPartHandle->size() << ", and haha " << vtxTracks.size() << std::endl;
 
     Int_t nTracks = refitted_PV_front.tracksSize();
 
-    reco::TrackCollection initPVTkCollection;
+    reco::Track::Point vtxPosition = reco::Track::Point(refitted_PV_front.position().x(), refitted_PV_front.position().y(), refitted_PV_front.position().z());
 
-    Int_t newhasGen = 0;
-    TString foundPF = "no";
-    for (const reco::TransientTrack &tt : vtxTracks)
+    Float_t pv_SumTrackPt = 0.;
+    Float_t pv_SumTrackPt2 = 0.;
+    Float_t pv_fracHighPurity = 0.;
+
+    reco::TrackCollection initPVTkCollection;
+    for (reco::TransientTrack &tt : vtxTracks)
     {
         reco::Track trk = tt.track();
         initPVTkCollection.push_back(trk);
-        pat::PackedCandidateCollection::const_iterator itt = find_if(tracksHandle->begin(), tracksHandle->end(), TrackEqualPF(trk));
-        if (itt == tracksHandle->end())
-            continue;
-        foundPF = "yes";
-        size_t iidx = itt - tracksHandle->begin();
-        edm::Ref<pat::PackedCandidateCollection> newpfRef(tracksHandle, iidx);
-        reco::GenParticleRef newgenRef = (*associationHandle)[newpfRef];
-
-        if (newgenRef.isNonnull())
-            newhasGen++;
     }
-    edm::LogPrint("Residuals") << "Refitted PV tracks size = " << vtxTracks.size() << ", found the original PFCandidate?: " << foundPF << ", PF with a match = " << newhasGen << ", ratio: " << Float_t(newhasGen) / GenPartHandle->size() * 100 << "\%\n";
+
+    Int_t iTrk = 0;
+    for (reco::TransientTrack &tt : vtxTracks)
+    {
+        reco::Track trk = tt.track();
+
+        auto itt = std::find_if(PFCandHandle->begin(), PFCandHandle->end(), TrackEqualPFCands(trk));
+
+        if (itt != PFCandHandle->end())
+        {
+            const pat::PackedCandidate &pf_match = *itt;
+            ftree->pv_trk_pvAssociationQuality.push_back(pf_match.pvAssociationQuality());
+            ftree->pv_trk_fromPV.push_back(pf_match.fromPV());
+        }
+        else
+        {
+            ftree->pv_trk_pvAssociationQuality.push_back(null);
+            ftree->pv_trk_fromPV.push_back(null);
+        }
+
+        Int_t ngenmatch = count_if(GenPartHandle->begin(), GenPartHandle->end(), TrackEqualGen(trk));
+        // std::cout << "match " << ngenmatch << std::endl;
+        auto it_gen = std::find_if(GenPartHandle->begin(), GenPartHandle->end(), TrackEqualGen(trk));
+        if(ngenmatch == 1 && (it_gen != GenPartHandle->end()))
+        {
+            auto &gp_match = *it_gen;
+            // std::cout << "you gen? " << gp_match.lastPrunedRef().isNonnull() << std::endl;
+            // double vx = packedGenParticle.lastPrunedRef()->vx();
+            // std::cout << "vx " << gp_match.lastPrunedRef()->vx() << ", vy " << gp_match.lastPrunedRef()->vy() << ", vz " << gp_match.lastPrunedRef()->vz() << std::endl;
+            ftree->gen_vx.push_back(gp_match.lastPrunedRef()->vx() * micron);
+            ftree->gen_vy.push_back(gp_match.lastPrunedRef()->vy() * micron);
+            ftree->gen_vz.push_back(gp_match.lastPrunedRef()->vz() * micron);
+        }
+
+        else
+        {
+            ftree->gen_vx.push_back(null);
+            ftree->gen_vy.push_back(null);
+            ftree->gen_vz.push_back(null);
+        }
+
+        pv_SumTrackPt += trk.pt();
+        pv_SumTrackPt2 += trk.pt() * trk.pt();
+        pv_fracHighPurity += trk.quality(reco::TrackBase::highPurity);
+
+        if (refitted_tPV_front.hasTrackWeight())
+            ftree->pv_trk_weight.push_back(refitted_tPV_front.trackWeight(tt));
+        else
+            ftree->pv_trk_weight.push_back(null);
+
+        ftree->pv_trk_isHighPurity.push_back(trk.quality(reco::TrackBase::highPurity));
+        ftree->pv_trk_algo.push_back(trk.algo());
+        ftree->pv_trk_originalAlgo.push_back(trk.originalAlgo());
+
+        ftree->pv_trk_pt.push_back(trk.pt());
+        ftree->pv_trk_px.push_back(trk.px());
+        ftree->pv_trk_py.push_back(trk.py());
+        ftree->pv_trk_pz.push_back(trk.pz());
+        ftree->pv_trk_p.push_back(trk.p());
+        ftree->pv_trk_eta.push_back(trk.eta());
+        ftree->pv_trk_phi.push_back(trk.phi());
+
+        ftree->pv_trk_d0.push_back(trk.dxy() * micron);
+        ftree->pv_trk_dz.push_back(trk.dz() * micron);
+        ftree->pv_trk_d0_pv.push_back(trk.dxy(vtxPosition) * micron);
+        ftree->pv_trk_dz_pv.push_back(trk.dz(vtxPosition) * micron);
+        ftree->pv_trk_d0_bs.push_back(trk.dxy(beamspotHandle->position()) * micron);
+        ftree->pv_trk_d0_bs_zpca.push_back(trk.dxy(*beamspotHandle) * micron);
+        ftree->pv_trk_d0_bs_zpv.push_back(trk.dxy(beamspotHandle->position(vtxPosition.z())) * micron);
+        ftree->pv_trk_dz_bs.push_back(trk.dz(beamspotHandle->position()) * micron);
+        ftree->pv_trk_d0Err.push_back(trk.d0Error() * micron);
+        ftree->pv_trk_dzErr.push_back(trk.dzError() * micron);
+
+        // Remove the track from the PV track collection
+        reco::TrackCollection newPVTkCollection;
+        newPVTkCollection.assign(initPVTkCollection.begin(), initPVTkCollection.begin() + iTrk);
+        newPVTkCollection.insert(newPVTkCollection.end(), initPVTkCollection.begin() + iTrk + 1, initPVTkCollection.end());
+
+        std::vector<TransientVertex> refitted_tPVs_unbiased = revertex->makeVertices(newPVTkCollection, *beamspotHandle, iSetup);
+
+        ftree->pv_trk_pvN.push_back(refitted_tPVs_unbiased.size());
+
+        if (!refitted_tPVs_unbiased.empty())
+        {
+            reco::Vertex refitted_PV_front_unbiased = reco::Vertex(refitted_tPVs_unbiased.front());
+
+            Float_t unbiasedSumTrackPt = 0.;
+            Float_t unbiasedSumTrackPt2 = 0.;
+            Float_t unbiasedFracHighPurity = 0.;
+
+            for (reco::TrackCollection::const_iterator itt = newPVTkCollection.begin(); itt != newPVTkCollection.end(); itt++)
+            {
+                unbiasedSumTrackPt += (*itt).pt();
+                unbiasedSumTrackPt2 += (*itt).pt() * (*itt).pt();
+                unbiasedFracHighPurity += (*itt).quality(reco::TrackBase::highPurity);
+            }
+            Int_t nTracksUnbiased = refitted_PV_front_unbiased.tracksSize();
+            if (nTracksUnbiased)
+                unbiasedFracHighPurity /= Float_t(nTracksUnbiased);
+
+            ftree->pv_trk_pvunbiased_IsValid.push_back(refitted_PV_front_unbiased.isValid());
+            ftree->pv_trk_pvunbiased_IsFake.push_back(refitted_PV_front_unbiased.isFake());
+            ftree->pv_trk_pvunbiased_NTracks.push_back(nTracksUnbiased);
+            ftree->pv_trk_pvunbiased_SumTrackPt.push_back(unbiasedSumTrackPt);
+            ftree->pv_trk_pvunbiased_SumTrackPt2.push_back(unbiasedSumTrackPt2);
+            ftree->pv_trk_pvunbiased_fracHighPurity.push_back(unbiasedFracHighPurity);
+            ftree->pv_trk_pvunbiased_chi2.push_back(refitted_PV_front_unbiased.chi2());
+            ftree->pv_trk_pvunbiased_ndof.push_back(refitted_PV_front_unbiased.ndof());
+            ftree->pv_trk_pvunbiased_x.push_back(refitted_PV_front_unbiased.x() * micron);
+            ftree->pv_trk_pvunbiased_y.push_back(refitted_PV_front_unbiased.y() * micron);
+            ftree->pv_trk_pvunbiased_z.push_back(refitted_PV_front_unbiased.z() * micron);
+            ftree->pv_trk_pvunbiased_xError.push_back(refitted_PV_front_unbiased.xError() * micron);
+            ftree->pv_trk_pvunbiased_yError.push_back(refitted_PV_front_unbiased.yError() * micron);
+            ftree->pv_trk_pvunbiased_zError.push_back(refitted_PV_front_unbiased.zError() * micron);
+
+            reco::Track::Point vtxPositionUnbiased = reco::Track::Point(refitted_PV_front_unbiased.position().x(), refitted_PV_front_unbiased.position().y(), refitted_PV_front_unbiased.position().z());
+
+            ftree->pv_trk_d0_pvunbiased.push_back(trk.dxy(vtxPositionUnbiased) * micron);
+            ftree->pv_trk_dz_pvunbiased.push_back(trk.dz(vtxPositionUnbiased) * micron);
+            ftree->pv_trk_d0_bs_zpvunbiased.push_back(trk.dxy(beamspotHandle->position(vtxPositionUnbiased.z())) * micron);
+        }
+        else
+        {
+            ftree->pv_trk_pvunbiased_IsValid.push_back(false);
+            ftree->pv_trk_pvunbiased_IsFake.push_back(true);
+            ftree->pv_trk_pvunbiased_NTracks.push_back(null);
+            ftree->pv_trk_pvunbiased_SumTrackPt.push_back(null);
+            ftree->pv_trk_pvunbiased_SumTrackPt2.push_back(null);
+            ftree->pv_trk_pvunbiased_fracHighPurity.push_back(null);
+            ftree->pv_trk_pvunbiased_chi2.push_back(null);
+            ftree->pv_trk_pvunbiased_ndof.push_back(null);
+            ftree->pv_trk_pvunbiased_x.push_back(null);
+            ftree->pv_trk_pvunbiased_y.push_back(null);
+            ftree->pv_trk_pvunbiased_z.push_back(null);
+            ftree->pv_trk_pvunbiased_xError.push_back(null);
+            ftree->pv_trk_pvunbiased_yError.push_back(null);
+            ftree->pv_trk_pvunbiased_zError.push_back(null);
+
+            ftree->pv_trk_d0_pvunbiased.push_back(null);
+            ftree->pv_trk_dz_pvunbiased.push_back(null);
+            ftree->pv_trk_d0_bs_zpvunbiased.push_back(null);
+        }
+
+        iTrk++;
+    }
+
+    if (nTracks)
+        pv_fracHighPurity /= Float_t(nTracks);
+
+    ftree->pv_IsValid = refitted_PV_front.isValid();
+    ftree->pv_IsFake = refitted_PV_front.isFake();
+    ftree->pv_NTracks = nTracks;
+    ftree->pv_SumTrackPt = pv_SumTrackPt;
+    ftree->pv_SumTrackPt2 = pv_SumTrackPt2;
+    ftree->pv_fracHighPurity = pv_fracHighPurity;
+    ftree->pv_chi2 = refitted_PV_front.chi2();
+    ftree->pv_ndof = refitted_PV_front.ndof();
+    ftree->pv_x = refitted_PV_front.x() * micron;
+    ftree->pv_y = refitted_PV_front.y() * micron;
+    ftree->pv_z = refitted_PV_front.z() * micron;
+    ftree->pv_xError = refitted_PV_front.xError() * micron;
+    ftree->pv_yError = refitted_PV_front.yError() * micron;
+    ftree->pv_zError = refitted_PV_front.zError() * micron;
+
+    reco::TrackCollection vtxTkCollection1;
+    reco::TrackCollection vtxTkCollection2;
+
+    Float_t SumTrackPt_p1 = 0;
+    Float_t SumTrackPt2_p1 = 0;
+    Float_t pv_fracHighPurity_p1 = 0;
+
+    Float_t SumTrackPt_p2 = 0;
+    Float_t SumTrackPt2_p2 = 0;
+    Float_t pv_fracHighPurity_p2 = 0;
+
+    for (reco::TransientTrack &tt : vtxTracks)
+    {
+        reco::Track trk = tt.track();
+
+        if (rnd->Rndm() > 0.5)
+        {
+            vtxTkCollection1.push_back(trk);
+            SumTrackPt_p1 += trk.pt();
+            SumTrackPt2_p1 += trk.pt() * trk.pt();
+            pv_fracHighPurity_p1 += trk.quality(reco::TrackBase::highPurity);
+        }
+        else
+        {
+            vtxTkCollection2.push_back(trk);
+            SumTrackPt_p2 += trk.pt();
+            SumTrackPt2_p2 += trk.pt() * trk.pt();
+            pv_fracHighPurity_p2 += trk.quality(reco::TrackBase::highPurity);
+        }
+    }
+
+    if (nTracks)
+    {
+        pv_fracHighPurity_p1 /= Float_t(nTracks);
+        pv_fracHighPurity_p2 /= Float_t(nTracks);
+    }
+
+    std::vector<TransientVertex> refitted_tPVs1 = revertex->makeVertices(vtxTkCollection1, *beamspotHandle, iSetup);
+    std::vector<TransientVertex> refitted_tPVs2 = revertex->makeVertices(vtxTkCollection2, *beamspotHandle, iSetup);
+
+    if (!refitted_tPVs1.empty() && !refitted_tPVs2.empty())
+    {
+        reco::Vertex vtx1 = reco::Vertex(refitted_tPVs1.front());
+        ftree->pv_IsValid_p1 = vtx1.isValid();
+        ftree->pv_IsFake_p1 = vtx1.isFake();
+        ftree->pv_NTracks_p1 = vtxTkCollection1.size();
+        ftree->pv_SumTrackPt_p1 = SumTrackPt_p1;
+        ftree->pv_SumTrackPt2_p1 = SumTrackPt2_p1;
+        ftree->pv_fracHighPurity_p1 = pv_fracHighPurity_p1;
+        ftree->pv_chi2_p1 = vtx1.chi2();
+        ftree->pv_ndof_p1 = vtx1.ndof();
+        ftree->pv_x_p1 = vtx1.x() * micron;
+        ftree->pv_y_p1 = vtx1.y() * micron;
+        ftree->pv_z_p1 = vtx1.z() * micron;
+        ftree->pv_xError_p1 = vtx1.xError() * micron;
+        ftree->pv_yError_p1 = vtx1.yError() * micron;
+        ftree->pv_zError_p1 = vtx1.zError() * micron;
+
+        reco::Vertex vtx2 = reco::Vertex(refitted_tPVs2.front());
+        ftree->pv_IsValid_p2 = vtx2.isValid();
+        ftree->pv_IsFake_p2 = vtx2.isFake();
+        ftree->pv_NTracks_p2 = vtxTkCollection2.size();
+        ftree->pv_SumTrackPt_p2 = SumTrackPt_p2;
+        ftree->pv_SumTrackPt2_p2 = SumTrackPt2_p2;
+        ftree->pv_fracHighPurity_p2 = pv_fracHighPurity_p2;
+        ftree->pv_chi2_p2 = vtx2.chi2();
+        ftree->pv_ndof_p2 = vtx2.ndof();
+        ftree->pv_x_p2 = vtx2.x() * micron;
+        ftree->pv_y_p2 = vtx2.y() * micron;
+        ftree->pv_z_p2 = vtx2.z() * micron;
+        ftree->pv_xError_p2 = vtx2.xError() * micron;
+        ftree->pv_yError_p2 = vtx2.yError() * micron;
+        ftree->pv_zError_p2 = vtx2.zError() * micron;
+    }
+
+    ftree->tree->Fill();
 }
 
-void Residuals::endJob() {}
+void Residuals::endJob()
+{
+    edm::LogInfo("Residuals") << "Processed all events.";
+    edm::LogPrint("Residuals") << "Total number of events before event scale: " << nEventsProcessed_;
+    edm::LogPrint("Residuals") << "Total number of events after event scale: " << nEventsScaled_;
+    edm::LogPrint("Residuals") << "Total number of triggered events: " << nEventsTriggered_;
+
+    InfoTree->Fill();
+}
 
 Bool_t Residuals::trackSelection(const reco::Track &track) const
 {

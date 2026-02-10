@@ -12,7 +12,8 @@ readFiles = cms.untracked.vstring()
 
 source = cms.Source("PoolSource", fileNames=readFiles)
 # readFiles.extend(["/store/mc/RunIII2024Summer24MiniAODv6/SingleNeutrino_Par-E-10_gun/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/096f7efe-6846-4acc-b5d5-f5aa7db44286.root"])
-readFiles.extend(["/store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/005c37f7-ef8a-46d1-9155-308dbf22b8d7.root"])
+# readFiles.extend(["/store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-2500to3000_TuneCP5_13p6TeV_pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/005c37f7-ef8a-46d1-9155-308dbf22b8d7.root"])
+readFiles.extend(["/store/mc/RunIII2024Summer24MiniAODv6/QCD_Bin-PT-30to50_TuneCP5_13p6TeV_pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/120000/00a0c28c-1ac3-4b57-9a54-ab75d333bf46.root"])
 
 process = cms.Process("IpResiduals")
 
@@ -27,7 +28,7 @@ process.load("CondCore.CondDB.CondDB_cfi")
 process.load("Configuration.Geometry.GeometryRecoDB_cff")
 process.load("Configuration.StandardSequences.MagneticField_38T_cff")
 
-process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(100))
+process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(-1))
 
 process.source = source
 

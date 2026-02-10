@@ -41,3 +41,4 @@ EDAnalyzers/test/__init__.py
 EDAnalyzers/test/__pycache__
 analysis/macros/ZeroBias/condor_logs
 analysis/macros/JetHT/condor_logs
+spfigs
