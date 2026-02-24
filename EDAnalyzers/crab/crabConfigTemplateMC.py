@@ -14,7 +14,6 @@ config.JobType.maxJobRuntimeMin = 3000 # min
 
 config.section_('Data')
 config.Data.splitting='FileBased'
-#config.Data.splitting='EventAwareLumiBased'
 config.Data.totalUnits = -1
 #config.Data.unitsPerJob = 1
 #config.Data.unitsPerJob = 100
@@ -23,7 +22,6 @@ config.Data.unitsPerJob = 1
 #config.Data.allowNonValidInputDataset = True
 config.Data.publication = False
 config.Data.inputDataset = 'INPUTDATASET'
-# config.Data.secondaryInputDataset = 'SECONDARYDATASET'
 config.Data.outputDatasetTag = 'OUTPUTDATASETTAG'
 config.Data.publishDBS = 'https://cmsweb.cern.ch/dbs/prod/phys03/DBSWriter'
 config.Data.outLFNDirBase = 'OUTLFN'
@@ -31,7 +29,4 @@ config.Data.outLFNDirBase = 'OUTLFN'
 config.section_('User')
 config.User.voGroup = 'becms'
 config.section_('Site')
-# config.Site.storageSite = 'T2_BE_IIHE'
 config.Site.storageSite = 'T2_CH_CERN'
-# config.Site.storageSite = 'T3_CH_CERNBOX'
-# config.Site.blacklist = ['T2_BE_IIHE']

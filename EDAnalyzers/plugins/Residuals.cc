@@ -82,48 +82,6 @@ private:
     Bool_t trackSelection(const reco::Track &track) const;
     Bool_t vertexSelection(const reco::Vertex &vertex) const;
 
-    class TrackEqual
-    {
-    public:
-        TrackEqual(const edm::Ptr<reco::Track> &t) : track_(t) {}
-
-        Bool_t operator()(const edm::Ptr<reco::Track> &t) const
-        {
-            return t->pt() == track_->pt();
-        }
-
-    private:
-        const edm::Ptr<reco::Track> &track_;
-    };
-
-    class TrackEqualReco
-    {
-    public:
-        TrackEqualReco(const reco::Track &t) : track_(t) {}
-
-        Bool_t operator()(const reco::Track &t) const
-        {
-            return t.pt() == track_.pt();
-        }
-
-    private:
-        const reco::Track &track_;
-    };
-
-    class TrackEqualRef
-    {
-    public:
-        TrackEqualRef(const reco::TrackRef &t) : track_(t) {}
-
-        Bool_t operator()(const reco::TrackRef &t) const
-        {
-            return t->pt() == track_->pt();
-        }
-
-    private:
-        const reco::TrackRef &track_;
-    };
-
     class TrackEqualPFCands
     {
     public:
@@ -147,20 +105,6 @@ private:
 
     private:
         reco::Track const *trk_;
-    };
-
-    class VertexEqual
-    {
-    public:
-        VertexEqual(const reco::Vertex::Point &p) : p_(p) {}
-
-        Bool_t operator()(const reco::Vertex::Point &p) const
-        {
-            return (p.x() == p_.x() && p.y() == p_.y() && p.z() == p_.z());
-        }
-
-    private:
-        const reco::Vertex::Point &p_;
     };
 
     edm::EDGetTokenT<reco::VertexCollection> primvtxToken_;
@@ -273,7 +217,11 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
 
     ftree->Init();
 
-    // ZeroBias trigger, JetHT trigger
+    //==================================================//
+    //--------------------------------------------------//
+    // Triggers
+    //--------------------------------------------------//
+    //==================================================//
     edm::Handle<edm::TriggerResults> triggerHandle;
     iEvent.getByToken(triggerToken_, triggerHandle);
     const edm::TriggerNames &names = iEvent.triggerNames(*triggerHandle);
@@ -319,6 +267,11 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
         return;
     nEventsTriggered_++;
 
+    //==================================================//
+    //--------------------------------------------------//
+    // Pileup
+    //--------------------------------------------------//
+    //==================================================//
     if (!runOnData)
     {
         edm::Handle<std::vector<PileupSummaryInfo>> PileupInfo;
@@ -335,6 +288,11 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
         }
     }
 
+    //==================================================//
+    //--------------------------------------------------//
+    // primary vertex and beamspot
+    //--------------------------------------------------//
+    //==================================================//
     edm::Handle<reco::VertexCollection> primvtxHandle;
     iEvent.getByToken(primvtxToken_, primvtxHandle);
 
@@ -346,6 +304,13 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
     if (primvtxHandle->size() == 0)
         return;
 
+    //==================================================//
+    //--------------------------------------------------//
+    // Resolution
+    //--------------------------------------------------//
+    //==================================================//
+
+    // select tracks
     edm::Handle<pat::PackedCandidateCollection> PFCandHandle;
     iEvent.getByToken(PFCandToken_, PFCandHandle);
 
@@ -354,9 +319,12 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
     {
         if (!pf.hasTrackDetails())
             continue;
+        if (pf.pvAssociationQuality() < 2)
+            continue;
         tracks.push_back(pf.pseudoTrack());
     }
 
+    // PV refitting
     std::vector<TransientVertex> refitted_tPVs = revertex->makeVertices(tracks, *beamspotHandle, iSetup);
 
     edm::LogPrint("Residuals") << "Primary vertices = " << primvtxHandle->size() << ", refitted vertices = " << refitted_tPVs.size() << ", tracks = " << tracks.size();
@@ -371,6 +339,7 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
 
     ftree->ev_nPV = refitted_tPVs.size();
 
+    // Sort tracks by pt
     std::vector<reco::TransientTrack> vtxTracks = refitted_tPV_front.originalTracks();
     stable_sort(vtxTracks.begin(), vtxTracks.end(), sortPt);
 
@@ -378,6 +347,9 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
 
     reco::Track::Point vtxPosition = reco::Track::Point(refitted_PV_front.position().x(), refitted_PV_front.position().y(), refitted_PV_front.position().z());
 
+    //--------------------------------------------------//
+    // IP resolution
+    //--------------------------------------------------//
     Float_t pv_SumTrackPt = 0.;
     Float_t pv_SumTrackPt2 = 0.;
     Float_t pv_fracHighPurity = 0.;
@@ -394,19 +366,14 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
     {
         reco::Track trk = tt.track();
 
+        // find source PFCandidate
         auto itt = std::find_if(PFCandHandle->begin(), PFCandHandle->end(), TrackEqualPFCands(trk));
 
+        // pvAssociationQuality
         if (itt != PFCandHandle->end())
-        {
-            const pat::PackedCandidate &pf_match = *itt;
-            ftree->pv_trk_pvAssociationQuality.push_back(pf_match.pvAssociationQuality());
-            ftree->pv_trk_fromPV.push_back(pf_match.fromPV());
-        }
+            ftree->pv_trk_pvAssociationQuality.push_back(itt->pvAssociationQuality());
         else
-        {
             ftree->pv_trk_pvAssociationQuality.push_back(null);
-            ftree->pv_trk_fromPV.push_back(null);
-        }
 
         pv_SumTrackPt += trk.pt();
         pv_SumTrackPt2 += trk.pt() * trk.pt();
@@ -418,9 +385,6 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
             ftree->pv_trk_weight.push_back(null);
 
         ftree->pv_trk_isHighPurity.push_back(trk.quality(reco::TrackBase::highPurity));
-        ftree->pv_trk_algo.push_back(trk.algo());
-        ftree->pv_trk_originalAlgo.push_back(trk.originalAlgo());
-
         ftree->pv_trk_pt.push_back(trk.pt());
         ftree->pv_trk_px.push_back(trk.px());
         ftree->pv_trk_py.push_back(trk.py());
@@ -431,24 +395,26 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
 
         ftree->pv_trk_d0.push_back(trk.dxy() * micron);
         ftree->pv_trk_dz.push_back(trk.dz() * micron);
+        ftree->pv_trk_d0Err.push_back(trk.d0Error() * micron);
+        ftree->pv_trk_dzErr.push_back(trk.dzError() * micron);
         ftree->pv_trk_d0_pv.push_back(trk.dxy(vtxPosition) * micron);
         ftree->pv_trk_dz_pv.push_back(trk.dz(vtxPosition) * micron);
         ftree->pv_trk_d0_bs.push_back(trk.dxy(beamspotHandle->position()) * micron);
         ftree->pv_trk_d0_bs_zpca.push_back(trk.dxy(*beamspotHandle) * micron);
         ftree->pv_trk_d0_bs_zpv.push_back(trk.dxy(beamspotHandle->position(vtxPosition.z())) * micron);
         ftree->pv_trk_dz_bs.push_back(trk.dz(beamspotHandle->position()) * micron);
-        ftree->pv_trk_d0Err.push_back(trk.d0Error() * micron);
-        ftree->pv_trk_dzErr.push_back(trk.dzError() * micron);
 
         // Remove the track from the PV track collection
         reco::TrackCollection newPVTkCollection;
         newPVTkCollection.assign(initPVTkCollection.begin(), initPVTkCollection.begin() + iTrk);
         newPVTkCollection.insert(newPVTkCollection.end(), initPVTkCollection.begin() + iTrk + 1, initPVTkCollection.end());
 
+        // Refit unbiased PV
         std::vector<TransientVertex> refitted_tPVs_unbiased = revertex->makeVertices(newPVTkCollection, *beamspotHandle, iSetup);
 
         ftree->pv_trk_pvN.push_back(refitted_tPVs_unbiased.size());
 
+        // Unbiased variables
         if (!refitted_tPVs_unbiased.empty())
         {
             reco::Vertex refitted_PV_front_unbiased = reco::Vertex(refitted_tPVs_unbiased.front());
@@ -531,6 +497,11 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
     ftree->pv_yError = refitted_PV_front.yError() * micron;
     ftree->pv_zError = refitted_PV_front.zError() * micron;
 
+    //--------------------------------------------------//
+    // PV resolution
+    //--------------------------------------------------//
+
+    // split PV tracks
     reco::TrackCollection vtxTkCollection1;
     reco::TrackCollection vtxTkCollection2;
 

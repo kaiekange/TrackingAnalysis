@@ -86,11 +86,8 @@ public:
     Float_t pv_zError;
 
     std::vector<Int_t> pv_trk_pvAssociationQuality;
-    std::vector<Int_t> pv_trk_fromPV;
     std::vector<Float_t> pv_trk_weight;
     std::vector<Bool_t> pv_trk_isHighPurity;
-    std::vector<Int_t> pv_trk_algo;
-    std::vector<Int_t> pv_trk_originalAlgo;
     std::vector<Int_t> pv_trk_pvN;
 
     std::vector<Bool_t> pv_trk_pvunbiased_IsValid;
@@ -122,14 +119,14 @@ public:
 
     std::vector<Float_t> pv_trk_d0;
     std::vector<Float_t> pv_trk_dz;
+    std::vector<Float_t> pv_trk_d0Err;
+    std::vector<Float_t> pv_trk_dzErr;
     std::vector<Float_t> pv_trk_d0_pv;
     std::vector<Float_t> pv_trk_dz_pv;
     std::vector<Float_t> pv_trk_d0_bs;
     std::vector<Float_t> pv_trk_d0_bs_zpca;
     std::vector<Float_t> pv_trk_d0_bs_zpv;
     std::vector<Float_t> pv_trk_dz_bs;
-    std::vector<Float_t> pv_trk_d0Err;
-    std::vector<Float_t> pv_trk_dzErr;
 
 };
 

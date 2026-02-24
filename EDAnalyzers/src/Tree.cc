@@ -41,11 +41,8 @@ void ResTree::Init()
     pv_zError = null;
 
     pv_trk_pvAssociationQuality.clear();
-    pv_trk_fromPV.clear();
     pv_trk_weight.clear();
     pv_trk_isHighPurity.clear();
-    pv_trk_algo.clear();
-    pv_trk_originalAlgo.clear();
     pv_trk_pvN.clear();
 
     pv_trk_pvunbiased_IsValid.clear();
@@ -77,14 +74,14 @@ void ResTree::Init()
 
     pv_trk_d0.clear();
     pv_trk_dz.clear();
+    pv_trk_d0Err.clear();
+    pv_trk_dzErr.clear();
     pv_trk_d0_pv.clear();
     pv_trk_dz_pv.clear();
     pv_trk_d0_bs.clear();
     pv_trk_d0_bs_zpca.clear();
     pv_trk_d0_bs_zpv.clear();
     pv_trk_dz_bs.clear();
-    pv_trk_d0Err.clear();
-    pv_trk_dzErr.clear();
 
     pv_IsValid_p1 = false;
     pv_IsFake_p1 = false;
@@ -156,11 +153,8 @@ void ResTree::CreateBranches(Bool_t runOnData)
     tree->Branch("pv_zError", &pv_zError);
 
     tree->Branch("pv_trk_pvAssociationQuality", &pv_trk_pvAssociationQuality);
-    tree->Branch("pv_trk_fromPV", &pv_trk_fromPV);
     tree->Branch("pv_trk_weight", &pv_trk_weight);
     tree->Branch("pv_trk_isHighPurity", &pv_trk_isHighPurity);
-    tree->Branch("pv_trk_algo", &pv_trk_algo);
-    tree->Branch("pv_trk_originalAlgo", &pv_trk_originalAlgo);
     tree->Branch("pv_trk_pvN", &pv_trk_pvN);
 
     tree->Branch("pv_trk_pvunbiased_IsValid", &pv_trk_pvunbiased_IsValid);
@@ -192,14 +186,14 @@ void ResTree::CreateBranches(Bool_t runOnData)
 
     tree->Branch("pv_trk_d0", &pv_trk_d0);
     tree->Branch("pv_trk_dz", &pv_trk_dz);
+    tree->Branch("pv_trk_d0Err", &pv_trk_d0Err);
+    tree->Branch("pv_trk_dzErr", &pv_trk_dzErr);
     tree->Branch("pv_trk_d0_pv", &pv_trk_d0_pv);
     tree->Branch("pv_trk_dz_pv", &pv_trk_dz_pv);
     tree->Branch("pv_trk_d0_bs", &pv_trk_d0_bs);
     tree->Branch("pv_trk_d0_bs_zpca", &pv_trk_d0_bs_zpca);
     tree->Branch("pv_trk_d0_bs_zpv", &pv_trk_d0_bs_zpv);
     tree->Branch("pv_trk_dz_bs", &pv_trk_dz_bs);
-    tree->Branch("pv_trk_d0Err", &pv_trk_d0Err);
-    tree->Branch("pv_trk_dzErr", &pv_trk_dzErr);
 
     tree->Branch("pv_IsValid_p1", &pv_IsValid_p1);
     tree->Branch("pv_IsFake_p1", &pv_IsFake_p1);

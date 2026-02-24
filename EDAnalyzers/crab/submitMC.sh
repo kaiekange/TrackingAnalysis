@@ -5,38 +5,31 @@ source /cvmfs/cms.cern.ch/crab3/crab.sh
 SAMPLETYPE="ZeroBias"
 # SAMPLETYPE="JetHT"
 
-##2022 preEE
-# datasetlist="DatasetList/mc_2022_ZeroBias_preEE.txt"
+# YEAR="2022"
 # GLOBALTAG="132X_mcRun3_2022_realistic_v3"
-# datasetlist="DatasetList/mc_2022_JetHT_preEE.txt"
 # GLOBALTAG="130X_mcRun3_2022_realistic_v5"
 
-##2022 postEE
-# datasetlist="DatasetList/mc_2022_ZeroBias_postEE.txt"
-# GLOBALTAG="132X_mcRun3_2022_realistic_postEE_v4"
-# datasetlist="DatasetList/mc_2022_JetHT_postEE.txt"
+YEAR="2022EE"
+GLOBALTAG="132X_mcRun3_2022_realistic_postEE_v4"
 # GLOBALTAG="130X_mcRun3_2022_realistic_postEE_v6"
 
-##2023 preBPix
-# datasetlist="DatasetList/mc_2023_ZeroBias_preBPix.txt"
-# datasetlist="DatasetList/mc_2023_JetHT_preBPix.txt"
+# YEAR="2023"
 # GLOBALTAG="130X_mcRun3_2023_realistic_v14"
 
-##2023 postBPix
-# datasetlist="DatasetList/mc_2023_ZeroBias_postBPix.txt"
-# datasetlist="DatasetList/mc_2023_JetHT_postBPix.txt"
+# YEAR="2023BPix"
 # GLOBALTAG="130X_mcRun3_2023_realistic_postBPix_v2"
 
-##2024
-datasetlist="DatasetList/mc_2024_ZeroBias.txt"
-# datasetlist="DatasetList/mc_2024_JetHT.txt"
-GLOBALTAG="150X_mcRun3_2024_realistic_v2"
+# YEAR="2024"
+# GLOBALTAG="150X_mcRun3_2024_realistic_v2"
 
-configtemplate="crabConfigTemplate.py"
-ver="Track-v20260113"
+datasetlist="DatasetList/mc_${YEAR}_${SAMPLETYPE}.txt"
+
+configtemplate="crabConfigTemplateMC.py"
+ver="Track-v20260210"
 prodv="/store/group/phys_tracking/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
 pver="0"
-EVENTSCALE=10
+EVENTSCALE=1
+EVENTMODULO=0
 
 datasets=()
 while read -r name; do
@@ -46,7 +39,7 @@ while read -r name; do
   	datasets+=("$name")
 done < "$datasetlist"
 
-for i in ${!datasets[@]}; do
+for i in "${!datasets[@]}"; do
 
     dataset=${datasets[i]}
 
@@ -63,27 +56,23 @@ for i in ${!datasets[@]}; do
 
     INPUTDATASET=${dataset}
     OUTLFN="${prodv}"
-    
-    # for EVENTMODULO in 0 1 2 3 4; do
-	for EVENTMODULO in 0; do
-      
-		rm -f crabConfig.py*
 
-		REQUESTNAME="${content}_${era_pro}_${format}_S${EVENTSCALE}M${EVENTMODULO}_ver${pver}"
-		OUTPUTDATASETTAG="${era_pro}_${format}_S${EVENTSCALE}M${EVENTMODULO}"
+	rm -f crabConfig.py*
 
-		cat ${configtemplate} | sed "s|REQUESTNAME|${REQUESTNAME}|g" \
-			| sed "s|INPUTDATASET|${INPUTDATASET}|g" \
-			| sed "s|OUTPUTDATASETTAG|${OUTPUTDATASETTAG}|g" \
-			| sed "s|OUTLFN|${OUTLFN}|g" \
-			| sed "s|GLOBALTAG|${GLOBALTAG}|g" \
-			| sed "s|EVENTSCALE|${EVENTSCALE}|g" \
-			| sed "s|EVENTMODULO|${EVENTMODULO}|g" \
-			| sed "s|SAMPLETYPE|${SAMPLETYPE}|g" \
-			> "crabConfig.py"
+	REQUESTNAME="${content}_${era_pro}_${format}_S${EVENTSCALE}M${EVENTMODULO}_ver${pver}"
+	OUTPUTDATASETTAG="${era_pro}_${format}_S${EVENTSCALE}M${EVENTMODULO}"
 
-		crab submit -c crabConfig.py --dryrun
-		# crab submit -c crabConfig.py
-    done 
+	cat ${configtemplate} | sed "s|REQUESTNAME|${REQUESTNAME}|g" \
+		| sed "s|INPUTDATASET|${INPUTDATASET}|g" \
+		| sed "s|OUTPUTDATASETTAG|${OUTPUTDATASETTAG}|g" \
+		| sed "s|OUTLFN|${OUTLFN}|g" \
+		| sed "s|GLOBALTAG|${GLOBALTAG}|g" \
+		| sed "s|EVENTSCALE|${EVENTSCALE}|g" \
+		| sed "s|EVENTMODULO|${EVENTMODULO}|g" \
+		| sed "s|SAMPLETYPE|${SAMPLETYPE}|g" \
+		> "crabConfig.py"
+
+	# crab submit -c crabConfig.py --dryrun
+	crab submit -c crabConfig.py
 
 done

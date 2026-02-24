@@ -7,21 +7,32 @@ SAMPLETYPE="ZeroBias"
 
 # YEAR="2022"
 # GLOBALTAG="124X_dataRun3_v15"
-# datasetlist="DatasetList/data_${YEAR}_${SAMPLETYPE}.txt"
+# LUMIMASK="JSON/Cert_Collisions2022_355100_362760_Golden.json"
+
+YEAR="2022EE"
+GLOBALTAG="124X_dataRun3_v15"
+LUMIMASK="JSON/Cert_Collisions2022_355100_362760_Golden.json"
 
 # YEAR="2023"
 # GLOBALTAG="130X_dataRun3_PromptAnalysis_v1"
-# datasetlist="DatasetList/data_${YEAR}_${SAMPLETYPE}.txt"
+# LUMIMASK="JSON/Cert_Collisions2023_366442_370790_Golden.json"
 
-YEAR="2024"
-GLOBALTAG="150X_dataRun3_v2"
+# YEAR="2023BPix"
+# GLOBALTAG="130X_dataRun3_PromptAnalysis_v1"
+# LUMIMASK="JSON/Cert_Collisions2023_366442_370790_Golden.json"
+
+# YEAR="2024"
+# GLOBALTAG="150X_dataRun3_v2"
+# LUMIMASK="JSON/Cert_Collisions2024_378981_386951_Golden.json"
+
 datasetlist="DatasetList/data_${YEAR}_${SAMPLETYPE}.txt"
 
 configtemplate="crabConfigTemplateData.py"
-ver="Track-v20251202"
+ver="Track-v20260210"
 prodv="/store/group/phys_tracking/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
 pver="0"
-EVENTSCALE=10
+EVENTSCALE=1
+EVENTMODULO=0
 
 datasets=()
 while read -r name; do
@@ -43,7 +54,6 @@ for i in "${!datasets[@]}"; do
 	INPUTDATASET=${dataset}
 	OUTLFN="${prodv}"
 
-    EVENTMODULO=0
 	rm -f crabConfig.py*
 
     REQUESTNAME="${content}_${era_pro}_${format}_S${EVENTSCALE}M${EVENTMODULO}_ver${pver}"
@@ -57,9 +67,10 @@ for i in "${!datasets[@]}"; do
         | sed "s|EVENTSCALE|${EVENTSCALE}|g" \
         | sed "s|EVENTMODULO|${EVENTMODULO}|g" \
         | sed "s|SAMPLETYPE|${SAMPLETYPE}|g" \
+        | sed "s|LUMIMASK|${LUMIMASK}|g" \
         > "crabConfig.py"
 
-    crab submit -c crabConfig.py --dryrun
-    # crab submit -c crabConfig.py
+    # crab submit -c crabConfig.py --dryrun
+    crab submit -c crabConfig.py
 
 done
