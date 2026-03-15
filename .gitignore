@@ -25,11 +25,13 @@
 *.app
 *.dwo
 *.root
+**/kakang.cc
 EDAnalyzers/condor/condor_logs
 EDAnalyzers/condor/InputList
 EDAnalyzers/crab/LUMI
 EDAnalyzers/crab/Status
 EDAnalyzers/crab/DatasetList
+EDAnalyzers/crab/JSON
 EDAnalyzers/crab/crab_*
 EDAnalyzers/crab/*.txt
 EDAnalyzers/crab/oldjobs

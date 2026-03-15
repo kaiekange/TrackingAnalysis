@@ -1,13 +1,24 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <cmath>
+
 #include <TFile.h>
-#include <TTree.h>
+#include <TChain.h>
 #include <TString.h>
-#include <TMath.h>
 #include <TH1.h>
-#include <algorithm>
+#include <TMath.h>
+
+#include <RooRealVar.h>
+#include <RooGaussian.h>
+#include <RooAddPdf.h>
+#include <RooDataHist.h>
+#include <RooPlot.h>
+#include <RooFitResult.h>
+#include <RooFormulaVar.h>
+
 #include <nlohmann/json.hpp>
+
 #include "../../functions/tdrStyle.cc"
 #include "../../functions/CMS_lumi.cc"
 #include "../../functions/draw_funcs.cc"
@@ -15,34 +26,97 @@
 const TString datatype_text = "Unbiased collision events";
 const TString storage_dir = "/eos/home-k/kakang/IPres/analysis/ZeroBias";
 
-const Int_t nbins = 200;
+// 抽样：每 sample_mod 个事件取 1 个；=1 表示不用抽样
+const Int_t sample_mod = 1; // 视数据量调整，比如 5 或 10
 
+const Int_t nbins = 200;
+const Float_t nsigma = 8.0;
+const Float_t sqrt_2 = sqrt(2);
+
+// 组合 ID：和你原来 fill_to_fit 调用一一对应
+enum CombId
+{
+    PV_X = 0,
+    PV_Y,
+    PV_Z,
+    PULL_X,
+    PULL_Y,
+    PULL_Z,
+    NCOMB
+};
+
+// 字符串后缀，用于 JSON key 和图像路径
+const char *COMB_SUFFIX[NCOMB] = {
+    "pvx",
+    "pvy",
+    "pvz",
+    "pullx",
+    "pully",
+    "pullz"};
+
+// 简单统计结构：加权 mean / sigma
+struct Stat
+{
+    Float_t sw = 0.0;   // sum w
+    Float_t swx = 0.0;  // sum w*x
+    Float_t swx2 = 0.0; // sum w*x^2
+
+    void Fill(Float_t x, Float_t w)
+    {
+        sw += w;
+        swx += w * x;
+        swx2 += w * x * x;
+    }
+
+    Bool_t Valid() const { return sw > 0.0; }
+
+    Float_t Mean() const
+    {
+        return sw > 0.0 ? swx / sw : 0.0;
+    }
+
+    Float_t Sigma() const
+    {
+        if (sw <= 0.0)
+            return 0.0;
+        Float_t m = swx / sw;
+        Float_t v = swx2 / sw - m * m;
+        return v > 0.0 ? std::sqrt(v) : 0.0;
+    }
+};
+
+// 单个直方图配置：标题和图像路径
+struct HistInfo
+{
+    TString title;
+    TString dataFigPath;
+    TString mcFigPath;
+};
+
+// 三高斯拟合 + 68% 区间解分辨率（基本保留你的实现）
 Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath, Float_t tolerance = 1e-4)
 {
     setTDRStyle();
-    TString period_title = period;
-    period_title.ReplaceAll("_", " ");
-    lumi_sqrtS = "13.6 TeV, " + period_title;
+    lumi_sqrtS = "13.6 TeV, " + period;
 
     RooRealVar pv_var("pv_var", "pv_var", hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax());
     pv_var.setBins(hist->GetNbinsX());
 
-    double hist_mean = hist->GetMean();
-    double hist_rms = hist->GetRMS();
+    Float_t hist_mean = hist->GetMean();
+    Float_t hist_rms = hist->GetRMS();
 
     // 均值
     RooRealVar mu("mu", "mu", hist_mean, hist_mean - hist_rms, hist_mean + hist_rms);
 
     // 核心宽度
-    RooRealVar sigma("sigma", "sigma", 0.5*hist_rms, 0.1*hist_rms, hist_rms);
+    RooRealVar sigma("sigma", "sigma", 0.5 * hist_rms, 0.1 * hist_rms, hist_rms);
 
     // 对称的尾部参数
-    RooRealVar alpha("alpha", "alpha", 2.0, 0.5, 5.0);  // 尾部切换点
-    RooRealVar n("n", "n", 2.0, 0.5, 10.0);              // 尾部幂律指数
+    RooRealVar alpha("alpha", "alpha", 2.0, 0.5, 5.0); // 尾部切换点
+    RooRealVar n("n", "n", 2.0, 0.5, 10.0);            // 尾部幂律指数
 
     // 创建对称的Double Crystal Ball
-    RooCrystalBall model("model", "Double Crystal Ball", pv_var, mu, sigma, 
-                    alpha, n, alpha, n);  // 左右使用相同的alpha和n保证对称
+    RooCrystalBall model("model", "Double Crystal Ball", pv_var, mu, sigma, alpha, n, alpha, n); // 左右使用相同的alpha和n保证对称
 
     RooDataHist hdatahist("hdatahist", "", pv_var, hist);
     RooFitResult *fitResult = model.fitTo(hdatahist, RooFit::Save(true));
@@ -53,30 +127,59 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
     Float_t mean = mu.getVal();
     Float_t low = 0.0;
     Float_t high = pv_var_max - mean;
+    // while (high - low > tolerance)
+    // {
+    //     Float_t mid = 0.5 * (low + high);
+    //     pv_var.setRange("intRange", mean - mid, mean + mid);
+    //     RooAbsReal *integral = model.createIntegral(pv_var, RooFit::NormSet(pv_var), RooFit::Range("intRange"));
+    //     Float_t prob = integral->getVal();
+    //     if (prob < 0.68)
+    //         low = mid;
+    //     else
+    //         high = mid;
+    //     delete integral;
+    // }
+    pv_var.setRange("normRange", mean - 1e6, mean + 1e6);
+    RooAbsReal *denom = model.createIntegral(pv_var, RooFit::Range("normRange"));
     while (high - low > tolerance)
     {
         Float_t mid = 0.5 * (low + high);
         pv_var.setRange("intRange", mean - mid, mean + mid);
-        RooAbsReal *integral = model.createIntegral(pv_var, RooFit::NormSet(pv_var), RooFit::Range("intRange"));
-        Float_t prob = integral->getVal();
+        RooAbsReal *num  = model.createIntegral(pv_var, RooFit::Range("intRange"));
+        Float_t prob = num->getVal() / denom->getVal();
         if (prob < 0.68)
             low = mid;
         else
             high = mid;
-        delete integral;
+        delete num;
     }
+    delete denom;
     Float_t reso = 0.5 * (low + high);
 
     TCanvas *canvas = new TCanvas("canvas", "canvas", 800, 600);
     canvas_setup(canvas);
     canvas->SetBottomMargin(0.15);
     canvas->SetRightMargin(0.05);
+    canvas->SetLogy(0);
     canvas->SetFillColor(0);
     canvas->SetFrameFillColor(0);
+
     RooPlot *frame = pv_var.frame();
 
-    hdatahist.plotOn(frame, RooFit::Name(sampletype), RooFit::MarkerColor(kBlack), RooFit::MarkerSize(1.1), RooFit::Binning(hist->GetNbinsX()), RooFit::DrawOption("ep"));
-    model.plotOn(frame, RooFit::Name("model"), RooFit::Components("model"), RooFit::LineStyle(9), RooFit::LineColor(kRed), RooFit::LineWidth(2.0), RooFit::DrawOption("L"));
+    hdatahist.plotOn(frame,
+                     RooFit::Name(sampletype),
+                     RooFit::MarkerColor(kBlack),
+                     RooFit::MarkerSize(1.1),
+                     RooFit::Binning(hist->GetNbinsX()),
+                     RooFit::DrawOption("ep"));
+    model.plotOn(frame,
+                 RooFit::Name("model"),
+                 RooFit::Components("model"),
+                 RooFit::LineStyle(9),
+                 RooFit::LineColor(kRed),
+                 RooFit::LineWidth(2.0),
+                 RooFit::DrawOption("L"));
+
     frame->Draw("");
     frame->GetYaxis()->SetTitle(hist->GetYaxis()->GetTitle());
     frame->GetXaxis()->SetTitle(hist->GetXaxis()->GetTitle());
@@ -84,6 +187,7 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
     frame->GetXaxis()->SetNdivisions(810);
     frame->SetMinimum(0);
     frame->SetMaximum(frame->GetMaximum() * 1.3);
+
     write_text(0.6, 0.88, datatype_text);
     write_text(0.6, 0.8, hist->GetTitle());
     write_text(0.6, 0.7, sampletype + " fit results:");
@@ -92,168 +196,377 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
 
     canvas->Update();
     canvas->SaveAs(figpath + ".png");
-
     delete canvas;
 
     return reso;
 }
 
-std::pair<Float_t, Float_t> fill_to_fit(TTree *datatree, TTree *mctree, TString var_, TString title_, TCut cut_, TString period, TString datafigpath, TString mcfigpath, Float_t lowbound, Float_t highbound, Int_t idx)
+// 统一的 track 处理：对每个满足条件的组合调用 action(combId, d0, dz, weight)
+template <typename F>
+void process_tree_tracks(TChain *tree,
+                         Bool_t isData,
+                         Long64_t nEntries,
+                         Int_t idx,
+                         const std::vector<Float_t> &pv_SumTrackPt2_sqrt_edges,
+                         const std::vector<Float_t> &PU_weights,
+                         Float_t &pv_SumTrackPt2,
+                         Float_t &pv_x_p1,
+                         Float_t &pv_y_p1,
+                         Float_t &pv_z_p1,
+                         Float_t &pv_x_p2,
+                         Float_t &pv_y_p2,
+                         Float_t &pv_z_p2,
+                         Float_t &pv_xError_p1,
+                         Float_t &pv_yError_p1,
+                         Float_t &pv_zError_p1,
+                         Float_t &pv_xError_p2,
+                         Float_t &pv_yError_p2,
+                         Float_t &pv_zError_p2,
+                         Int_t &NumTrueInts,
+                         F &&action)
 {
-    TString htmp_name = Form("hist_tmp_%d", idx);
-    TString hdata_name = Form("datahist_%d", idx);
-    TString hmc_name = Form("mchist_%d", idx);
 
-    TH1F *hist_tmp = new TH1F(htmp_name, "", 200, lowbound, highbound);
-    datatree->Project(htmp_name, var_, cut_);
-    Float_t hist_mean = hist_tmp->GetMean();
-    Float_t hist_stddev = hist_tmp->GetStdDev();
-    delete hist_tmp;
+    // 预先算好与 idx 相关的一些区间
+    const Float_t pv_SumTrackPt2_sqrt_lo = pv_SumTrackPt2_sqrt_edges[idx];
+    const Float_t pv_SumTrackPt2_sqrt_hi = pv_SumTrackPt2_sqrt_edges[idx + 1];
 
-    std::cout << hist_mean << " " << hist_stddev << std::endl;
+    for (Long64_t ie = 0; ie < nEntries; ++ie)
+    {
+        // if (sample_mod > 1 && (ie % sample_mod) != 0) continue;
 
-    TH1F *datahist = new TH1F(hdata_name, title_, nbins, hist_mean - 8 * hist_stddev, hist_mean + 8 * hist_stddev);
-    datatree->Project(hdata_name, var_, cut_);
+        tree->GetEntry(ie);
 
-    TH1F *mchist = new TH1F(hmc_name, title_, nbins, hist_mean - 8 * hist_stddev, hist_mean + 8 * hist_stddev);
-    mctree->Project(hmc_name, var_, Form("PU_factor *(%s)", cut_.GetTitle()));
+        Float_t w = 1.0;
+        if (!isData)
+        {
+            if ( (NumTrueInts < 1) || (NumTrueInts>PU_weights.size()) )
+                w = 0.0;
+            else
+                w = PU_weights[NumTrueInts - 1];
+        }
 
-    Float_t datareso = fit_res(datahist, period, "Data", datafigpath);
-    Float_t mcreso = fit_res(mchist, period, "Simulation", mcfigpath);
+        // bin 定义（与你原来一致）
+        Float_t pv_SumTrackPt2_sqrt = std::sqrt(pv_SumTrackPt2);
+        Bool_t in_pv_SumTrackPt2_sqrtbin = (pv_SumTrackPt2_sqrt > pv_SumTrackPt2_sqrt_lo && pv_SumTrackPt2_sqrt < pv_SumTrackPt2_sqrt_hi);
+        Bool_t pvx_nonull = (pv_x_p1 != -777 && pv_x_p2 != -777 && pv_xError_p1 != -777 && pv_xError_p2 != -777);
+        Bool_t pvy_nonull = (pv_y_p1 != -777 && pv_y_p2 != -777 && pv_yError_p1 != -777 && pv_yError_p2 != -777);
+        Bool_t pvz_nonull = (pv_z_p1 != -777 && pv_z_p2 != -777 && pv_zError_p1 != -777 && pv_zError_p2 != -777);
 
-    delete datahist;
-    delete mchist;
-
-    return {datareso, mcreso};
+        if (in_pv_SumTrackPt2_sqrtbin && pvx_nonull)
+        {
+            action(PV_X, (pv_x_p1 - pv_x_p2) / sqrt_2, w);
+            action(PULL_X, (pv_x_p1 - pv_x_p2) / sqrt(pv_xError_p1 * pv_xError_p1 + pv_xError_p2 * pv_xError_p2), w);
+        }
+        if (in_pv_SumTrackPt2_sqrtbin && pvy_nonull)
+        {
+            action(PV_Y, (pv_y_p1 - pv_y_p2) / sqrt_2, w);
+            action(PULL_Y, (pv_y_p1 - pv_y_p2) / sqrt(pv_yError_p1 * pv_yError_p1 + pv_yError_p2 * pv_yError_p2), w);
+        }
+        if (in_pv_SumTrackPt2_sqrtbin && pvz_nonull)
+        {
+            action(PV_Z, (pv_z_p1 - pv_z_p2) / sqrt_2, w);
+            action(PULL_Z, (pv_z_p1 - pv_z_p2) / sqrt(pv_zError_p1 * pv_zError_p1 + pv_zError_p2 * pv_zError_p2), w);
+        }
+    }
 }
 
 Int_t pv_res(TString period, Int_t idx)
 {
+    // 输出目录
     TString figdir = storage_dir + "/figures/" + period + "/pv_res/";
 
-    TFile *datafile = TFile::Open(storage_dir + "/tuples/" + period + "/data.root");
-    TTree *datatree = (TTree *)datafile->Get("mytree");
+    // 打开 data / MC 文件
+    std::ifstream tuplelist_file("/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/analysis/macros/ZeroBias/tuplelist.json");
+    nlohmann::json tuplelist;
+    tuplelist_file >> tuplelist;
+    tuplelist_file.close();
 
-    TFile *mcfile = TFile::Open(storage_dir + "/tuples/" + period + "/mc_corr_mask.root");
-    TTree *mctree = (TTree *)mcfile->Get("mytree");
+    TChain* datatree = new TChain("residuals/tree");
+    for (auto& entry : tuplelist[period.Data()]["data"]) {
+        std::string path = entry["path"];
+        TString datapath = TString(path) + "/*.root";
+        datatree->Add(datapath);
+    }
+    TChain* mctree = new TChain("residuals/tree");
+    for (auto& entry : tuplelist[period.Data()]["mc"]) {
+        std::string path = entry["path"];
+        TString mcpath = TString(path) + "/*.root";
+        mctree->Add(mcpath);
+    }
 
+    Float_t pv_SumTrackPt2;
+    Float_t pv_x_p1;
+    Float_t pv_y_p1;
+    Float_t pv_z_p1;
+    Float_t pv_x_p2;
+    Float_t pv_y_p2;
+    Float_t pv_z_p2;
+    Float_t pv_xError_p1;
+    Float_t pv_yError_p1;
+    Float_t pv_zError_p1;
+    Float_t pv_xError_p2;
+    Float_t pv_yError_p2;
+    Float_t pv_zError_p2;
+    Int_t NumTrueInts;
+
+    datatree->SetBranchAddress("pv_SumTrackPt2", &pv_SumTrackPt2);
+    datatree->SetBranchAddress("pv_x_p1", &pv_x_p1);
+    datatree->SetBranchAddress("pv_y_p1", &pv_y_p1);
+    datatree->SetBranchAddress("pv_z_p1", &pv_z_p1);
+    datatree->SetBranchAddress("pv_x_p2", &pv_x_p2);
+    datatree->SetBranchAddress("pv_y_p2", &pv_y_p2);
+    datatree->SetBranchAddress("pv_z_p2", &pv_z_p2);
+    datatree->SetBranchAddress("pv_xError_p1", &pv_xError_p1);
+    datatree->SetBranchAddress("pv_yError_p1", &pv_yError_p1);
+    datatree->SetBranchAddress("pv_zError_p1", &pv_zError_p1);
+    datatree->SetBranchAddress("pv_xError_p2", &pv_xError_p2);
+    datatree->SetBranchAddress("pv_yError_p2", &pv_yError_p2);
+    datatree->SetBranchAddress("pv_zError_p2", &pv_zError_p2);
+
+    mctree->SetBranchAddress("pv_SumTrackPt2", &pv_SumTrackPt2);
+    mctree->SetBranchAddress("pv_x_p1", &pv_x_p1);
+    mctree->SetBranchAddress("pv_y_p1", &pv_y_p1);
+    mctree->SetBranchAddress("pv_z_p1", &pv_z_p1);
+    mctree->SetBranchAddress("pv_x_p2", &pv_x_p2);
+    mctree->SetBranchAddress("pv_y_p2", &pv_y_p2);
+    mctree->SetBranchAddress("pv_z_p2", &pv_z_p2);
+    mctree->SetBranchAddress("pv_xError_p1", &pv_xError_p1);
+    mctree->SetBranchAddress("pv_yError_p1", &pv_yError_p1);
+    mctree->SetBranchAddress("pv_zError_p1", &pv_zError_p1);
+    mctree->SetBranchAddress("pv_xError_p2", &pv_xError_p2);
+    mctree->SetBranchAddress("pv_yError_p2", &pv_yError_p2);
+    mctree->SetBranchAddress("pv_zError_p2", &pv_zError_p2);
+    mctree->SetBranchAddress("NumTrueInts", &NumTrueInts);
+
+    // 读 binning.json
     // std::ifstream infile(storage_dir + "/json/" + period + "/binning.json");
     std::ifstream infile(storage_dir + "/json/binning.json");
     nlohmann::json binning;
     infile >> binning;
     infile.close();
 
-    Int_t idx_lo = idx;
-    Int_t idx_hi = idx+1;
-    // Int_t idx_lo = 2 * idx;
-    // Int_t idx_hi = 2 * (idx + 1);
-
     std::vector<Float_t> pv_SumTrackPt2_sqrt_edges = binning["pv_SumTrackPt2_sqrt"].get<std::vector<Float_t>>();
 
-    TString ptcut_title = Form("%.2f<#sqrt{#sum#it{p_{T}}^{2}}<%.2f GeV", pv_SumTrackPt2_sqrt_edges[idx_lo], pv_SumTrackPt2_sqrt_edges[idx_hi]);
-    TCut ptcut = Form("sqrt(pv_SumTrackPt2) > %f && sqrt(pv_SumTrackPt2) < %f", pv_SumTrackPt2_sqrt_edges[idx_lo], pv_SumTrackPt2_sqrt_edges[idx_hi]);
-    TCut xnull_cut = "pv_x_p1 != -777 && pv_x_p2 != -777";
-    TCut ynull_cut = "pv_y_p1 != -777 && pv_y_p2 != -777";
-    TCut znull_cut = "pv_z_p1 != -777 && pv_z_p2 != -777";
+    std::ifstream pileup_weightfile(storage_dir + "/pileup/" + period + "/pileup_ratio.json");
+    nlohmann::json pu_weights;
+    pileup_weightfile >> pu_weights;
+    pileup_weightfile.close();
 
-    auto result_reso_pvx = fill_to_fit(
-        datatree,
-        mctree,
-        "(pv_x_p1 - pv_x_p2)/sqrt(2)",
-        ptcut_title + ";(#it{x}_{1}-#it{x}_{2})/#sqrt{2} [#mum];# PV",
-        ptcut + xnull_cut,
-        period,
-        figdir + Form("pvx_fit/data_pt_%d", idx),
-        figdir + Form("pvx_fit/mc_pt_%d", idx),
-        -300,
-        300,
-        idx);
+    std::vector<Float_t> PU_weights;
+    PU_weights.resize(pu_weights.size());
+    for (const auto &item : pu_weights)
+    {
+        Int_t bin = item["bin"];
+        PU_weights[bin - 1] = item["content"];
+    }
 
-    auto result_reso_pvy = fill_to_fit(
-        datatree,
-        mctree,
-        "(pv_y_p1 - pv_y_p2)/sqrt(2)",
-        ptcut_title + ";(#it{y}_{1}-#it{y}_{2})/#sqrt{2} [#mum];# PV",
-        ptcut + ynull_cut,
-        period,
-        figdir + Form("pvy_fit/data_pt_%d", idx),
-        figdir + Form("pvy_fit/mc_pt_%d", idx),
-        -300,
-        300,
-        idx);
+    TString ptcut_title = Form("%.2f<#sqrt{#sum#it{p_{T}}^{2}}<%.2f GeV", pv_SumTrackPt2_sqrt_edges[idx], pv_SumTrackPt2_sqrt_edges[idx + 1]);
 
-    auto result_reso_pvz = fill_to_fit(
-        datatree,
-        mctree,
-        "(pv_z_p1 - pv_z_p2)/sqrt(2)",
-        ptcut_title + ";(#it{z}_{1}-#it{z}_{2})/#sqrt{2} [mm];# PV",
-        ptcut + znull_cut,
-        period,
-        figdir + Form("pvz_fit/data_pt_%d", idx),
-        figdir + Form("pvz_fit/mc_pt_%d", idx),
-        -300,
-        300,
-        idx);
+    // 准备 HistInfo（标题 & 图像路径）—— d0
+    HistInfo histinfo[NCOMB];
+    histinfo[PV_X].title = ptcut_title + ";(#it{x}_{1}-#it{x}_{2})/#sqrt{2} [#mum];# PV";
+    histinfo[PV_X].dataFigPath = figdir + Form("pvx_fit/data_pt_%d", idx);
+    histinfo[PV_X].mcFigPath = figdir + Form("pvx_fit/mc_pt_%d", idx);
 
-    auto result_reso_pullx = fill_to_fit(
-        datatree,
-        mctree,
-        "(pv_x_p1 - pv_x_p2)/sqrt(pow(pv_xError_p1,2)+pow(pv_xError_p2,2))",
-        ptcut_title + ";(#it{x}_{1}-#it{x}_{2})/#sqrt{#Delta#it{x}_{1}^{2}+#Delta#it{x}_{2}^{2}};# PV",
-        ptcut + xnull_cut,
-        period,
-        figdir + Form("pullx_fit/data_pt_%d", idx),
-        figdir + Form("pullx_fit/mc_pt_%d", idx),
-        -10,
-        10,
-        idx);
+    histinfo[PV_Y].title = ptcut_title + ";(#it{y}_{1}-#it{y}_{2})/#sqrt{2} [#mum];# PV";
+    histinfo[PV_Y].dataFigPath = figdir + Form("pvy_fit/data_pt_%d", idx);
+    histinfo[PV_Y].mcFigPath = figdir + Form("pvy_fit/mc_pt_%d", idx);
 
-    auto result_reso_pully = fill_to_fit(
-        datatree,
-        mctree,
-        "(pv_y_p1 - pv_y_p2)/sqrt(pow(pv_yError_p1,2)+pow(pv_yError_p2,2))",
-        ptcut_title + ";(#it{y}_{1}-#it{y}_{2})/#sqrt{#Delta#it{y}_{1}^{2}+#Delta#it{y}_{2}^{2}};# PV",
-        ptcut + ynull_cut,
-        period,
-        figdir + Form("pully_fit/data_pt_%d", idx),
-        figdir + Form("pully_fit/mc_pt_%d", idx),
-        -10,
-        10,
-        idx);
+    histinfo[PV_Z].title = ptcut_title + ";(#it{z}_{1}-#it{z}_{2})/#sqrt{2} [#mum];# PV";
+    histinfo[PV_Z].dataFigPath = figdir + Form("pvz_fit/data_pt_%d", idx);
+    histinfo[PV_Z].mcFigPath = figdir + Form("pvz_fit/mc_pt_%d", idx);
 
-    auto result_reso_pullz = fill_to_fit(
-        datatree,
-        mctree,
-        "(pv_z_p1 - pv_z_p2)/sqrt(pow(pv_zError_p1,2)+pow(pv_zError_p2,2))",
-        ptcut_title + ";(#it{z}_{1}-#it{z}_{2})/#sqrt{#Delta#it{z}_{1}^{2}+#Delta#it{z}_{2}^{2}};# PV",
-        ptcut + znull_cut,
-        period,
-        figdir + Form("pullz_fit/data_pt_%d", idx),
-        figdir + Form("pullz_fit/mc_pt_%d", idx),
-        -10,
-        10,
-        idx);
+    histinfo[PULL_X].title = ptcut_title + ";(#it{x}_{1}-#it{x}_{2})/#sqrt{#Delta#it{x}_{1}^{2}+#Delta#it{x}_{2}^{2}};# PV";
+    histinfo[PULL_X].dataFigPath = figdir + Form("pullx_fit/data_pt_%d", idx);
+    histinfo[PULL_X].mcFigPath = figdir + Form("pullx_fit/mc_pt_%d", idx);
 
+    histinfo[PULL_Y].title = ptcut_title + ";(#it{y}_{1}-#it{y}_{2})/#sqrt{#Delta#it{y}_{1}^{2}+#Delta#it{y}_{2}^{2}};# PV";
+    histinfo[PULL_Y].dataFigPath = figdir + Form("pully_fit/data_pt_%d", idx);
+    histinfo[PULL_Y].mcFigPath = figdir + Form("pully_fit/mc_pt_%d", idx);
+
+    histinfo[PULL_Z].title = ptcut_title + ";(#it{z}_{1}-#it{z}_{2})/#sqrt{#Delta#it{z}_{1}^{2}+#Delta#it{z}_{2}^{2}};# PV";
+    histinfo[PULL_Z].dataFigPath = figdir + Form("pullz_fit/data_pt_%d", idx);
+    histinfo[PULL_Z].mcFigPath = figdir + Form("pullz_fit/mc_pt_%d", idx);
+
+    Float_t init_min[NCOMB];
+    Float_t init_max[NCOMB];
+
+    init_min[PV_X] = -300;
+    init_max[PV_X] = 300;
+
+    init_min[PV_Y] = -300;
+    init_max[PV_Y] = 300;
+
+    init_min[PV_Z] = -300;
+    init_max[PV_Z] = 300;
+
+    init_min[PULL_X] = -10;
+    init_max[PULL_X] = 10;
+
+    init_min[PULL_Y] = -10;
+    init_max[PULL_Y] = 10;
+
+    init_min[PULL_Z] = -10;
+    init_max[PULL_Z] = 10;
+
+    // 第 1 遍：在 data 上统计 mean / sigma
+    Stat stats_data[NCOMB];
+
+    auto stat_action_data = [&](Int_t cid, Float_t var, Float_t w)
+    {
+        if (var >= init_min[cid] && var <= init_max[cid])
+            stats_data[cid].Fill(var, w);
+    };
+
+    Long64_t nData = datatree->GetEntries();
+    process_tree_tracks(datatree,
+                        true,
+                        nData,
+                        idx,
+                        pv_SumTrackPt2_sqrt_edges,
+                        PU_weights,
+                        pv_SumTrackPt2,
+                        pv_x_p1,
+                        pv_y_p1,
+                        pv_z_p1,
+                        pv_x_p2,
+                        pv_y_p2,
+                        pv_z_p2,
+                        pv_xError_p1,
+                        pv_yError_p1,
+                        pv_zError_p1,
+                        pv_xError_p2,
+                        pv_yError_p2,
+                        pv_zError_p2,
+                        NumTrueInts,
+                        stat_action_data);
+
+    // 根据 data 的 mean / sigma 建 data / MC 直方图（同一范围，以便比较）
+    TH1F *h_data[NCOMB] = {nullptr};
+    TH1F *h_mc[NCOMB] = {nullptr};
+
+    for (Int_t cid = 0; cid < NCOMB; ++cid)
+    {
+        if (!stats_data[cid].Valid())
+            continue;
+
+        Float_t mean = stats_data[cid].Mean();
+        Float_t sigma = stats_data[cid].Sigma();
+
+        if (sigma <= 0.0)
+        {
+            mean = 0.5 * (init_min[cid] + init_max[cid]);
+            sigma = (init_max[cid] - init_min[cid]) / (2 * nsigma);
+        }
+
+        Float_t varmin = mean - nsigma * sigma;
+        Float_t varmax = mean + nsigma * sigma;
+
+        TString name_data = Form("h_data_%d_%d", idx, cid);
+        TString name_mc = Form("h_mc_%d_%d", idx, cid);
+
+        h_data[cid] = new TH1F(name_data, histinfo[cid].title, nbins, varmin, varmax);
+        h_mc[cid] = new TH1F(name_mc, histinfo[cid].title, nbins, varmin, varmax);
+
+        h_data[cid]->Sumw2();
+        h_mc[cid]->Sumw2();
+    }
+
+    // 第 2 遍：填 data 直方图
+    auto fill_action_data = [&](Int_t cid, Float_t var, Float_t w)
+    {
+        if (h_data[cid])
+            h_data[cid]->Fill(var, w);
+    };
+    process_tree_tracks(datatree,
+                        true,
+                        nData,
+                        idx,
+                        pv_SumTrackPt2_sqrt_edges,
+                        PU_weights,
+                        pv_SumTrackPt2,
+                        pv_x_p1,
+                        pv_y_p1,
+                        pv_z_p1,
+                        pv_x_p2,
+                        pv_y_p2,
+                        pv_z_p2,
+                        pv_xError_p1,
+                        pv_yError_p1,
+                        pv_zError_p1,
+                        pv_xError_p2,
+                        pv_yError_p2,
+                        pv_zError_p2,
+                        NumTrueInts,
+                        fill_action_data);
+
+    // 第 2 遍：填 MC 直方图（注意：范围仍来自 data）
+    Long64_t nMC = mctree->GetEntries();
+    auto fill_action_mc = [&](Int_t cid, Float_t var, Float_t w)
+    {
+        if (h_mc[cid])
+            h_mc[cid]->Fill(var, w);
+    };
+    process_tree_tracks(mctree,
+                        false,
+                        nMC,
+                        idx,
+                        pv_SumTrackPt2_sqrt_edges,
+                        PU_weights,
+                        pv_SumTrackPt2,
+                        pv_x_p1,
+                        pv_y_p1,
+                        pv_z_p1,
+                        pv_x_p2,
+                        pv_y_p2,
+                        pv_z_p2,
+                        pv_xError_p1,
+                        pv_yError_p1,
+                        pv_zError_p1,
+                        pv_xError_p2,
+                        pv_yError_p2,
+                        pv_zError_p2,
+                        NumTrueInts,
+                        fill_action_mc);
+
+    // RooFit 拟合并写 JSON
     nlohmann::json resojson;
-    resojson["sumpt2_sqrt"] = (pv_SumTrackPt2_sqrt_edges[idx_lo] + pv_SumTrackPt2_sqrt_edges[idx_hi]) / 2;
-    resojson["reso_data_pvx"] = result_reso_pvx.first;
-    resojson["reso_data_pvy"] = result_reso_pvy.first;
-    resojson["reso_data_pvz"] = result_reso_pvz.first;
-    resojson["reso_data_pullx"] = result_reso_pullx.first;
-    resojson["reso_data_pully"] = result_reso_pully.first;
-    resojson["reso_data_pullz"] = result_reso_pullz.first;
-    resojson["reso_mc_pvx"] = result_reso_pvx.second;
-    resojson["reso_mc_pvy"] = result_reso_pvy.second;
-    resojson["reso_mc_pvz"] = result_reso_pvz.second;
-    resojson["reso_mc_pullx"] = result_reso_pullx.second;
-    resojson["reso_mc_pully"] = result_reso_pully.second;
-    resojson["reso_mc_pullz"] = result_reso_pullz.second;
+
+    resojson["pv_SumTrackPt2_sqrt"] = (pv_SumTrackPt2_sqrt_edges[idx] + pv_SumTrackPt2_sqrt_edges[idx + 1]) / 2.0;
+
+    // 存结果数组
+    Float_t reso_data[NCOMB] = {0.0};
+    Float_t reso_mc[NCOMB] = {0.0};
+
+    for (Int_t cid = 0; cid < NCOMB; ++cid)
+    {
+        if (h_data[cid] && h_data[cid]->GetEntries() > 0)
+            reso_data[cid] = fit_res(h_data[cid], period, "Data",
+                                     histinfo[cid].dataFigPath, 0.1);
+        if (h_mc[cid] && h_mc[cid]->GetEntries() > 0)
+            reso_mc[cid] = fit_res(h_mc[cid], period, "Simulation",
+                                   histinfo[cid].mcFigPath, 0.1);
+
+        // 写 JSON key（保持和你原来的命名一致）
+        TString suffix = COMB_SUFFIX[cid];
+
+        resojson[Form("reso_data_%s", suffix.Data())] = reso_data[cid];
+        resojson[Form("reso_mc_%s", suffix.Data())] = reso_mc[cid];
+    }
+
+    // 输出 JSON
     std::ofstream outFile(storage_dir + "/json/" + period + Form("/pv_res/fit_%d.json", idx));
     outFile << resojson.dump(4);
     outFile.close();
 
-    datafile->Close();
-    mcfile->Close();
+    // 清理
+    for (Int_t cid = 0; cid < NCOMB; ++cid)
+    {
+        delete h_data[cid];
+        delete h_mc[cid];
+    }
+    delete datatree;
+    delete mctree;
 
     return 0;
 }

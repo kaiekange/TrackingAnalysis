@@ -2,16 +2,16 @@
 
 source /cvmfs/cms.cern.ch/crab3/crab.sh
 
-SAMPLETYPE="ZeroBias"
-# SAMPLETYPE="JetHT"
+# SAMPLETYPE="ZeroBias"
+SAMPLETYPE="JetHT"
 
 # YEAR="2022"
 # GLOBALTAG="124X_dataRun3_v15"
 # LUMIMASK="JSON/Cert_Collisions2022_355100_362760_Golden.json"
 
-YEAR="2022EE"
-GLOBALTAG="124X_dataRun3_v15"
-LUMIMASK="JSON/Cert_Collisions2022_355100_362760_Golden.json"
+# YEAR="2022EE"
+# GLOBALTAG="124X_dataRun3_v15"
+# LUMIMASK="JSON/Cert_Collisions2022_355100_362760_Golden.json"
 
 # YEAR="2023"
 # GLOBALTAG="130X_dataRun3_PromptAnalysis_v1"
@@ -21,17 +21,18 @@ LUMIMASK="JSON/Cert_Collisions2022_355100_362760_Golden.json"
 # GLOBALTAG="130X_dataRun3_PromptAnalysis_v1"
 # LUMIMASK="JSON/Cert_Collisions2023_366442_370790_Golden.json"
 
-# YEAR="2024"
-# GLOBALTAG="150X_dataRun3_v2"
-# LUMIMASK="JSON/Cert_Collisions2024_378981_386951_Golden.json"
+YEAR="2024"
+GLOBALTAG="150X_dataRun3_v2"
+LUMIMASK="JSON/Cert_Collisions2024_378981_386951_Golden.json"
 
 datasetlist="DatasetList/data_${YEAR}_${SAMPLETYPE}.txt"
 
 configtemplate="crabConfigTemplateData.py"
 ver="Track-v20260210"
-prodv="/store/group/phys_tracking/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
+# prodv="/store/group/phys_tracking/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
+prodv="/store/user/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
 pver="0"
-EVENTSCALE=1
+EVENTSCALE=30
 EVENTMODULO=0
 
 datasets=()

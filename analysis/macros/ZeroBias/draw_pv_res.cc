@@ -12,16 +12,14 @@
 
 const TString datatype_text = "Unbiased collision events";
 const TString storage_dir = "/eos/home-k/kakang/IPres/analysis/ZeroBias";
-const Int_t nbins = 100;
+const Int_t nbins = 50;
 
 Int_t draw_pv_res(TString period){
 
     TString figdir = storage_dir + "/figures/" + period + "/pv_res/";
 
     setTDRStyle();
-    TString period_title = period;
-    period_title.ReplaceAll("_", " ");
-    lumi_sqrtS = "13.6 TeV, " + period_title;
+    lumi_sqrtS = "13.6 TeV, " + period;
 
     Float_t reso_data_pullx[nbins];
     Float_t reso_data_pully[nbins];
@@ -52,7 +50,7 @@ Int_t draw_pv_res(TString period){
         std::ifstream infile(storage_dir + "/json/" + period + Form("/pv_res/fit_%d.json",i));
         infile >> results;
 
-        sumpt2_sqrt[i] = results["sumpt2_sqrt"];
+        sumpt2_sqrt[i] = results["pv_SumTrackPt2_sqrt"];
         reso_data_pullx[i] = results["reso_data_pullx"];
         reso_data_pully[i] = results["reso_data_pully"];
         reso_data_pullz[i] = results["reso_data_pullz"];

@@ -17,9 +17,9 @@ const TString datatype_text = "Unbiased collision events";
 
 int PU_show(){
 
-    TString era = "2022_preEE";
+    TString era = "2022";
 
-    lumi_sqrtS = "13.6 TeV, 2022 preEE";
+    lumi_sqrtS = "13.6 TeV, 2022";
 
     setTDRStyle();
 
@@ -27,10 +27,10 @@ int PU_show(){
 
     if(gSystem->AccessPathName(figdir)) gSystem->MakeDirectory(figdir);
 
-    TFile *histfile = TFile::Open("/eos/home-k/kakang/IPres/analysis/ZeroBias/tuples/"+era+"/pileupHistogram.root");
+    TFile *histfile = TFile::Open("/eos/home-k/kakang/IPres/analysis/ZeroBias/pileup/"+era+"/pileupHistogram.root");
     TH1F *h_pileup = (TH1F*)histfile->Get("pileup");
-    TFile *mcfile = TFile::Open("/eos/home-k/kakang/IPres/analysis/ZeroBias/tuples/"+era+"/mc_corr_mask.root");
-    TTree *mctree = (TTree*)mcfile->Get("mytree");
+    TChain *mctree = new TChain("residuals/tree");
+    mctree->Add("/eos/cms/store/group/phys_tracking/kakang/Run3TrackingAnalysis/Ntuple/Track-v20260210/SingleNeutrino_E-10_gun/Run3Summer22_MINIAODSIM_S1M0/260210_143715/0000/*.root");
 
     h_pileup->Scale(1./h_pileup->Integral());
     // h_pileup->SetLineColor(kBlack);
@@ -40,9 +40,15 @@ int PU_show(){
     h_pileup->SetMarkerStyle(20);
 
     TH1F *h_mc = new TH1F("h_mc", "", 99, 0, 99);
-    // mctree->Project("h_mc", "NumTrueInts");
-    mctree->Project("h_mc", "NumTrueInts", "PU_factor");
+    mctree->Project("h_mc", "NumTrueInts");
+    // mctree->Project("h_mc", "NumTrueInts", "PU_factor");
     h_mc->Scale(1./h_mc->Integral());
+    std::cout << h_mc->GetBinContent(0) << ", " << h_mc->GetBinContent(1) << ", " << h_mc->GetBinContent(2) << ", " << h_mc->GetBinContent(3) << ", " << h_mc->GetBinContent(4) << std::endl;
+
+    TH1F * h_ratio = (TH1F*)h_pileup->Clone("h_ratio");
+    h_ratio->Divide(h_mc);
+    std::cout << h_ratio->GetBinContent(0) << ", " << h_ratio->GetBinContent(1) << ", " << h_ratio->GetBinContent(2) << ", " << h_ratio->GetBinContent(3) << ", " << h_ratio->GetBinContent(4) << std::endl;
+
     h_mc->SetFillColorAlpha(kOrange-9, 0.3);
     h_mc->SetFillStyle(1001);
     h_mc->SetLineColor(0);
@@ -77,7 +83,7 @@ int PU_show(){
     canvas->Update();
     canvas->RedrawAxis();
     // canvas->SaveAs(figdir+"ev_nPV.png");
-    canvas->SaveAs(figdir+"ev_nPV_corr.png");
+    // canvas->SaveAs(figdir+"ev_nPV_corr.png");
     // delete h_pileup;
     // delete h_mc;
 
