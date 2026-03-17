@@ -26,12 +26,12 @@ notify_user = kai.kang@cern.ch
 notification = error
 max_retries = 1
 should_transfer_files = NO
-queue 250
+queue 1
 """
     subprocess.run(["condor_submit"], input=submit_description.encode())
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python ip_res.py <period>  # e.g. 2022preEE or 2022postEE")
+        print("Usage: python ip_res.py <period>  # e.g. 2022 or 2022EE")
         sys.exit(1)
     sys.exit(submit_jobs(sys.argv[1]))

@@ -24,16 +24,17 @@
 #include "../../functions/draw_funcs.cc"
 
 const TString datatype_text = "High-q^{2} multi-jet events";
-const TString storage_dir   = "/eos/home-k/kakang/IPres/analysis/JetHT";
+const TString storage_dir = "/eos/home-k/kakang/IPres/analysis/JetHT";
 
 // 抽样：每 sample_mod 个事件取 1 个；=1 表示不用抽样
-const int sample_mod = 1;  // 视数据量调整，比如 5 或 10
+const int sample_mod = 1; // 视数据量调整，比如 5 或 10
 
 const int nbins = 200;
 const double nsigma = 8.0;
 
 // 组合 ID：和你原来 fill_to_fit 调用一一对应
-enum CombId {
+enum CombId
+{
     PT_LOETA = 0,
     PT_HIETA,
     PT_ULETA,
@@ -50,7 +51,7 @@ enum CombId {
 };
 
 // 字符串后缀，用于 JSON key 和图像路径
-const char* COMB_SUFFIX[NCOMB] = {
+const char *COMB_SUFFIX[NCOMB] = {
     "pt_loeta",
     "pt_hieta",
     "pt_uleta",
@@ -62,29 +63,33 @@ const char* COMB_SUFFIX[NCOMB] = {
     "phi_lopt",
     "phi_hipt",
     "phi_ulpt",
-    "phi_allpt"
-};
+    "phi_allpt"};
 
 // 简单统计结构：加权 mean / sigma
-struct Stat {
-    double sw   = 0.0;  // sum w
-    double swx  = 0.0;  // sum w*x
-    double swx2 = 0.0;  // sum w*x^2
+struct Stat
+{
+    double sw = 0.0;   // sum w
+    double swx = 0.0;  // sum w*x
+    double swx2 = 0.0; // sum w*x^2
 
-    void Fill(double x, double w) {
-        sw   += w;
-        swx  += w * x;
+    void Fill(double x, double w)
+    {
+        sw += w;
+        swx += w * x;
         swx2 += w * x * x;
     }
 
     bool Valid() const { return sw > 0.0; }
 
-    double Mean() const {
+    double Mean() const
+    {
         return sw > 0.0 ? swx / sw : 0.0;
     }
 
-    double Sigma() const {
-        if (sw <= 0.0) return 0.0;
+    double Sigma() const
+    {
+        if (sw <= 0.0)
+            return 0.0;
         double m = swx / sw;
         double v = swx2 / sw - m * m;
         return v > 0.0 ? std::sqrt(v) : 0.0;
@@ -92,7 +97,8 @@ struct Stat {
 };
 
 // 单个直方图配置：标题和图像路径
-struct HistInfo {
+struct HistInfo
+{
     TString title;
     TString dataFigPath;
     TString mcFigPath;
@@ -116,15 +122,15 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
     RooRealVar mu("mu", "mu", hist_mean, hist_mean - hist_rms, hist_mean + hist_rms);
 
     // 核心宽度
-    RooRealVar sigma("sigma", "sigma", 0.5*hist_rms, 0.1*hist_rms, hist_rms);
+    RooRealVar sigma("sigma", "sigma", 0.5 * hist_rms, 0.1 * hist_rms, hist_rms);
 
     // 对称的尾部参数
-    RooRealVar alpha("alpha", "alpha", 2.0, 0.5, 5.0);  // 尾部切换点
-    RooRealVar n("n", "n", 2.0, 0.5, 10.0);              // 尾部幂律指数
+    RooRealVar alpha("alpha", "alpha", 2.0, 0.5, 5.0); // 尾部切换点
+    RooRealVar n("n", "n", 2.0, 0.5, 10.0);            // 尾部幂律指数
 
     // 创建对称的Double Crystal Ball
-    RooCrystalBall model("model", "Double Crystal Ball", ip_var, mu, sigma, 
-                    alpha, n, alpha, n);  // 左右使用相同的alpha和n保证对称
+    RooCrystalBall model("model", "Double Crystal Ball", ip_var, mu, sigma,
+                         alpha, n, alpha, n); // 左右使用相同的alpha和n保证对称
 
     RooDataHist hdatahist("hdatahist", "", ip_var, hist);
     RooFitResult *fitResult = model.fitTo(hdatahist, RooFit::Save(true));
@@ -133,7 +139,7 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
 
     Float_t ip_var_max = ip_var.getMax();
     Float_t mean = mu.getVal();
-    Float_t low  = 0.0;
+    Float_t low = 0.0;
     Float_t high = ip_var_max - mean;
 
     while (high - low > tolerance)
@@ -168,12 +174,12 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
                      RooFit::Binning(hist->GetNbinsX()),
                      RooFit::DrawOption("ep"));
     model.plotOn(frame,
-                    RooFit::Name("model"),
-                    RooFit::Components("model"),
-                    RooFit::LineStyle(9),
-                    RooFit::LineColor(kRed),
-                    RooFit::LineWidth(2.0),
-                    RooFit::DrawOption("L"));
+                 RooFit::Name("model"),
+                 RooFit::Components("model"),
+                 RooFit::LineStyle(9),
+                 RooFit::LineColor(kRed),
+                 RooFit::LineWidth(2.0),
+                 RooFit::DrawOption("L"));
 
     frame->Draw("");
     frame->GetYaxis()->SetTitle(hist->GetYaxis()->GetTitle());
@@ -184,10 +190,9 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
     frame->SetMaximum(frame->GetMaximum() * 1.3);
 
     write_text(0.6, 0.88, datatype_text);
-    write_text(0.6, 0.8,  hist->GetTitle());
-    write_text(0.6, 0.7,  sampletype + " fit results:");
-    write_text(0.6, 0.65, Form("reso = %.*f",
-                               std::max(0, 2 - (Int_t)floor(log10(reso))), reso));
+    write_text(0.6, 0.8, hist->GetTitle());
+    write_text(0.6, 0.7, sampletype + " fit results:");
+    write_text(0.6, 0.65, Form("reso = %.*f", std::max(0, 2 - (Int_t)floor(log10(reso))), reso));
     CMS_lumi(canvas);
 
     canvas->Update();
@@ -208,35 +213,35 @@ void process_tree_tracks(TTree *tree,
                          const std::vector<Float_t> &pv_trk_phi_edges,
                          F &&action)
 {
-    Int_t idx_lo = 2*idx;
-    Int_t idx_hi = 2*(idx+1);
+    Int_t idx_lo = 2 * idx;
+    Int_t idx_hi = 2 * (idx + 1);
     // 共享的分支指针（外面会 SetBranchAddress 一次即可）
-    static std::vector<Float_t> *pv_trk_pt  = nullptr;
+    static std::vector<Float_t> *pv_trk_pt = nullptr;
     static std::vector<Float_t> *pv_trk_eta = nullptr;
     static std::vector<Float_t> *pv_trk_phi = nullptr;
-    static std::vector<Float_t> *pv_trk_d0  = nullptr;
-    static std::vector<Float_t> *pv_trk_dz  = nullptr;
+    static std::vector<Float_t> *pv_trk_d0 = nullptr;
+    static std::vector<Float_t> *pv_trk_dz = nullptr;
     static Double_t Xsec_weight = 1.0;
     static Double_t PS_weight = 1.0;
     static Int_t TRG_mask = 1;
     static Float_t PU_factor = 1.0;
 
-    tree->SetBranchAddress("pv_trk_pt",  &pv_trk_pt);
+    tree->SetBranchAddress("pv_trk_pt", &pv_trk_pt);
     tree->SetBranchAddress("pv_trk_eta", &pv_trk_eta);
     tree->SetBranchAddress("pv_trk_phi", &pv_trk_phi);
     tree->SetBranchAddress("pv_trk_d0_pvunbiased", &pv_trk_d0);
     tree->SetBranchAddress("pv_trk_dz_pvunbiased", &pv_trk_dz);
-    if(!isData){
+    if (!isData)
+    {
         tree->SetBranchAddress("Xsec_weight", &Xsec_weight);
         tree->SetBranchAddress("PS_weight", &PS_weight);
         tree->SetBranchAddress("TRG_mask", &TRG_mask);
         tree->SetBranchAddress("PU_factor", &PU_factor);
     }
 
-
     // 预先算好与 idx 相关的一些区间
-    const float pt_lo  = pv_trk_pt_edges[idx_lo];
-    const float pt_hi  = pv_trk_pt_edges[idx_hi];
+    const float pt_lo = pv_trk_pt_edges[idx_lo];
+    const float pt_hi = pv_trk_pt_edges[idx_hi];
     const float eta_lo = pv_trk_eta_edges[idx_lo];
     const float eta_hi = pv_trk_eta_edges[idx_hi];
     const float phi_lo = pv_trk_phi_edges[idx_lo];
@@ -251,21 +256,24 @@ void process_tree_tracks(TTree *tree,
         const size_t nTrk = pv_trk_pt->size();
         for (size_t it = 0; it < nTrk; ++it)
         {
-            float pt  = pv_trk_pt->at(it);
+            float pt = pv_trk_pt->at(it);
             float eta = pv_trk_eta->at(it);
             float phi = pv_trk_phi->at(it);
-            float d0  = pv_trk_d0->at(it);
-            float dz  = pv_trk_dz->at(it);
+            float d0 = pv_trk_d0->at(it);
+            float dz = pv_trk_dz->at(it);
             float w = 1.0;
-            if(!isData) {
-                if(TRG_mask == 0) w = 0;
-                else w = Xsec_weight * PS_weight * PU_factor;
+            if (!isData)
+            {
+                if (TRG_mask == 0)
+                    w = 0;
+                else
+                    w = Xsec_weight * PS_weight * PU_factor;
             }
 
             const float aeta = std::fabs(eta);
 
             // bin 定义（与你原来一致）
-            bool in_ptbin  = (pt  > pt_lo  && pt  < pt_hi);
+            bool in_ptbin = (pt > pt_lo && pt < pt_hi);
             bool in_etabin = (eta > eta_lo && eta < eta_hi);
             bool in_phibin = (phi > phi_lo && phi < phi_hi);
 
@@ -274,36 +282,48 @@ void process_tree_tracks(TTree *tree,
             bool uleta = (aeta > 2.5 && aeta < 3.0);
             bool alleta = (aeta < 10.0);
 
-            bool lopt  = (pt > 0.1 && pt < 1.0);
-            bool hipt  = (pt > 1.0 && pt < 3.0);
-            bool ulpt  = (pt > 3.0 && pt < 10.0);
+            bool lopt = (pt > 0.1 && pt < 1.0);
+            bool hipt = (pt > 1.0 && pt < 3.0);
+            bool ulpt = (pt > 3.0 && pt < 10.0);
             bool allpt = (pt > 0);
 
             // pt × eta
-            if (in_ptbin && loeta)  action(PT_LOETA,  d0, dz, w);
-            if (in_ptbin && hieta)  action(PT_HIETA,  d0, dz, w);
-            if (in_ptbin && uleta)  action(PT_ULETA,  d0, dz, w);
-            if (in_ptbin && alleta) action(PT_ALLETA, d0, dz, w);
+            if (in_ptbin && loeta)
+                action(PT_LOETA, d0, dz, w);
+            if (in_ptbin && hieta)
+                action(PT_HIETA, d0, dz, w);
+            if (in_ptbin && uleta)
+                action(PT_ULETA, d0, dz, w);
+            if (in_ptbin && alleta)
+                action(PT_ALLETA, d0, dz, w);
 
             // eta × pt
-            if (in_etabin && lopt)  action(ETA_LOPT,  d0, dz, w);
-            if (in_etabin && hipt)  action(ETA_HIPT,  d0, dz, w);
-            if (in_etabin && ulpt)  action(ETA_ULPT,  d0, dz, w);
-            if (in_etabin && allpt) action(ETA_ALLPT, d0, dz, w);
+            if (in_etabin && lopt)
+                action(ETA_LOPT, d0, dz, w);
+            if (in_etabin && hipt)
+                action(ETA_HIPT, d0, dz, w);
+            if (in_etabin && ulpt)
+                action(ETA_ULPT, d0, dz, w);
+            if (in_etabin && allpt)
+                action(ETA_ALLPT, d0, dz, w);
 
             // phi × pt
-            if (in_phibin && lopt)  action(PHI_LOPT,  d0, dz, w);
-            if (in_phibin && hipt)  action(PHI_HIPT,  d0, dz, w);
-            if (in_phibin && ulpt)  action(PHI_ULPT,  d0, dz, w);
-            if (in_phibin && allpt) action(PHI_ALLPT, d0, dz, w);
+            if (in_phibin && lopt)
+                action(PHI_LOPT, d0, dz, w);
+            if (in_phibin && hipt)
+                action(PHI_HIPT, d0, dz, w);
+            if (in_phibin && ulpt)
+                action(PHI_ULPT, d0, dz, w);
+            if (in_phibin && allpt)
+                action(PHI_ALLPT, d0, dz, w);
         }
     }
 }
 
 Int_t ip_res2(TString period, Int_t idx)
 {
-    Int_t idx_lo = 2*idx;
-    Int_t idx_hi = 2*(idx+1);
+    Int_t idx_lo = 2 * idx;
+    Int_t idx_hi = 2 * (idx + 1);
     // 输出目录
     TString figdir = storage_dir + "/figures/" + period + "/ip_res/";
 
@@ -311,8 +331,8 @@ Int_t ip_res2(TString period, Int_t idx)
     TFile *datafile = TFile::Open(storage_dir + "/tuples/" + period + "/data.root");
     TTree *datatree = (TTree *)datafile->Get("mytree");
 
-    TFile *mcfile   = TFile::Open(storage_dir + "/tuples/" + period + "/mc_corr_mask.root");
-    TTree *mctree   = (TTree *)mcfile->Get("mytree");
+    TFile *mcfile = TFile::Open(storage_dir + "/tuples/" + period + "/mc_corr_mask.root");
+    TTree *mctree = (TTree *)mcfile->Get("mytree");
 
     // 读 binning.json
     // std::ifstream infile(storage_dir + "/json/" + period + "/binning.json");
@@ -321,128 +341,128 @@ Int_t ip_res2(TString period, Int_t idx)
     infile >> binning;
     infile.close();
 
-    std::vector<Float_t> pv_trk_pt_edges  = binning["pv_trk_pt"].get<std::vector<Float_t>>();
+    std::vector<Float_t> pv_trk_pt_edges = binning["pv_trk_pt"].get<std::vector<Float_t>>();
     std::vector<Float_t> pv_trk_eta_edges = binning["pv_trk_eta"].get<std::vector<Float_t>>();
     std::vector<Float_t> pv_trk_phi_edges = binning["pv_trk_phi"].get<std::vector<Float_t>>();
 
     // 文本（沿用你原来的）
-    TString ptcut_title  = Form("%.3f<#it{p_{T}}<%.3f GeV",
-                                pv_trk_pt_edges[idx_lo], pv_trk_pt_edges[idx_hi]);
+    TString ptcut_title = Form("%.3f<#it{p_{T}}<%.3f GeV",
+                               pv_trk_pt_edges[idx_lo], pv_trk_pt_edges[idx_hi]);
     TString etacut_title = Form("%.2f<#it{#eta}<%.2f",
                                 pv_trk_eta_edges[idx_lo], pv_trk_eta_edges[idx_hi]);
     TString phicut_title = Form("%.2f<#it{#phi}<%.2f",
                                 pv_trk_phi_edges[idx_lo], pv_trk_phi_edges[idx_hi]);
 
-    TString lopt_title  = "0.1<#it{p_{T}}<1 GeV";
-    TString hipt_title  = "1<#it{p_{T}}<3 GeV";
-    TString ulpt_title  = "3<#it{p_{T}}<10 GeV";
+    TString lopt_title = "0.1<#it{p_{T}}<1 GeV";
+    TString hipt_title = "1<#it{p_{T}}<3 GeV";
+    TString ulpt_title = "3<#it{p_{T}}<10 GeV";
 
-    TString loeta_title  = "|#it{#eta}|<1.3";
-    TString hieta_title  = "1.3<|#it{#eta}|<2.5";
-    TString uleta_title  = "2.5<|#it{#eta}|<3.0";
+    TString loeta_title = "|#it{#eta}|<1.3";
+    TString hieta_title = "1.3<|#it{#eta}|<2.5";
+    TString uleta_title = "2.5<|#it{#eta}|<3.0";
 
     // 准备 HistInfo（标题 & 图像路径）—— d0
     HistInfo info_d0[NCOMB];
     HistInfo info_dz[NCOMB];
 
     // pt × eta
-    info_d0[PT_LOETA].title      = "#splitline{" + ptcut_title + "}{" + loeta_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[PT_LOETA].dataFigPath= figdir + Form("ippv_xy_fit/data_pt_loeta_%d", idx);
-    info_d0[PT_LOETA].mcFigPath  = figdir + Form("ippv_xy_fit/mc_pt_loeta_%d",   idx);
+    info_d0[PT_LOETA].title = "#splitline{" + ptcut_title + "}{" + loeta_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[PT_LOETA].dataFigPath = figdir + Form("ippv_xy_fit/data_pt_loeta_%d", idx);
+    info_d0[PT_LOETA].mcFigPath = figdir + Form("ippv_xy_fit/mc_pt_loeta_%d", idx);
 
-    info_dz[PT_LOETA].title      = "#splitline{" + ptcut_title + "}{" + loeta_title + "};Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[PT_LOETA].dataFigPath= figdir + Form("ippv_z_fit/data_pt_loeta_%d", idx);
-    info_dz[PT_LOETA].mcFigPath  = figdir + Form("ippv_z_fit/mc_pt_loeta_%d",   idx);
+    info_dz[PT_LOETA].title = "#splitline{" + ptcut_title + "}{" + loeta_title + "};Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[PT_LOETA].dataFigPath = figdir + Form("ippv_z_fit/data_pt_loeta_%d", idx);
+    info_dz[PT_LOETA].mcFigPath = figdir + Form("ippv_z_fit/mc_pt_loeta_%d", idx);
 
-    info_d0[PT_HIETA].title      = "#splitline{" + ptcut_title + "}{" + hieta_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[PT_HIETA].dataFigPath= figdir + Form("ippv_xy_fit/data_pt_hieta_%d", idx);
-    info_d0[PT_HIETA].mcFigPath  = figdir + Form("ippv_xy_fit/mc_pt_hieta_%d",   idx);
+    info_d0[PT_HIETA].title = "#splitline{" + ptcut_title + "}{" + hieta_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[PT_HIETA].dataFigPath = figdir + Form("ippv_xy_fit/data_pt_hieta_%d", idx);
+    info_d0[PT_HIETA].mcFigPath = figdir + Form("ippv_xy_fit/mc_pt_hieta_%d", idx);
 
-    info_dz[PT_HIETA].title      = "#splitline{" + ptcut_title + "}{" + hieta_title + "};Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[PT_HIETA].dataFigPath= figdir + Form("ippv_z_fit/data_pt_hieta_%d", idx);
-    info_dz[PT_HIETA].mcFigPath  = figdir + Form("ippv_z_fit/mc_pt_hieta_%d",   idx);
+    info_dz[PT_HIETA].title = "#splitline{" + ptcut_title + "}{" + hieta_title + "};Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[PT_HIETA].dataFigPath = figdir + Form("ippv_z_fit/data_pt_hieta_%d", idx);
+    info_dz[PT_HIETA].mcFigPath = figdir + Form("ippv_z_fit/mc_pt_hieta_%d", idx);
 
-    info_d0[PT_ULETA].title      = "#splitline{" + ptcut_title + "}{" + uleta_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[PT_ULETA].dataFigPath= figdir + Form("ippv_xy_fit/data_pt_uleta_%d", idx);
-    info_d0[PT_ULETA].mcFigPath  = figdir + Form("ippv_xy_fit/mc_pt_uleta_%d",   idx);
+    info_d0[PT_ULETA].title = "#splitline{" + ptcut_title + "}{" + uleta_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[PT_ULETA].dataFigPath = figdir + Form("ippv_xy_fit/data_pt_uleta_%d", idx);
+    info_d0[PT_ULETA].mcFigPath = figdir + Form("ippv_xy_fit/mc_pt_uleta_%d", idx);
 
-    info_dz[PT_ULETA].title      = "#splitline{" + ptcut_title + "}{" + uleta_title + "};Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[PT_ULETA].dataFigPath= figdir + Form("ippv_z_fit/data_pt_uleta_%d", idx);
-    info_dz[PT_ULETA].mcFigPath  = figdir + Form("ippv_z_fit/mc_pt_uleta_%d",   idx);
+    info_dz[PT_ULETA].title = "#splitline{" + ptcut_title + "}{" + uleta_title + "};Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[PT_ULETA].dataFigPath = figdir + Form("ippv_z_fit/data_pt_uleta_%d", idx);
+    info_dz[PT_ULETA].mcFigPath = figdir + Form("ippv_z_fit/mc_pt_uleta_%d", idx);
 
-    info_d0[PT_ALLETA].title      = ptcut_title + ";Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[PT_ALLETA].dataFigPath= figdir + Form("ippv_xy_fit/data_pt_alleta_%d", idx);
-    info_d0[PT_ALLETA].mcFigPath  = figdir + Form("ippv_xy_fit/mc_pt_alleta_%d",   idx);
+    info_d0[PT_ALLETA].title = ptcut_title + ";Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[PT_ALLETA].dataFigPath = figdir + Form("ippv_xy_fit/data_pt_alleta_%d", idx);
+    info_d0[PT_ALLETA].mcFigPath = figdir + Form("ippv_xy_fit/mc_pt_alleta_%d", idx);
 
-    info_dz[PT_ALLETA].title      = ptcut_title + ";Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[PT_ALLETA].dataFigPath= figdir + Form("ippv_z_fit/data_pt_alleta_%d", idx);
-    info_dz[PT_ALLETA].mcFigPath  = figdir + Form("ippv_z_fit/mc_pt_alleta_%d",   idx);
+    info_dz[PT_ALLETA].title = ptcut_title + ";Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[PT_ALLETA].dataFigPath = figdir + Form("ippv_z_fit/data_pt_alleta_%d", idx);
+    info_dz[PT_ALLETA].mcFigPath = figdir + Form("ippv_z_fit/mc_pt_alleta_%d", idx);
 
     // eta × pt
-    info_d0[ETA_LOPT].title      = "#splitline{" + etacut_title + "}{" + lopt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[ETA_LOPT].dataFigPath= figdir + Form("ippv_xy_fit/data_eta_lopt_%d", idx);
-    info_d0[ETA_LOPT].mcFigPath  = figdir + Form("ippv_xy_fit/mc_eta_lopt_%d",   idx);
+    info_d0[ETA_LOPT].title = "#splitline{" + etacut_title + "}{" + lopt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[ETA_LOPT].dataFigPath = figdir + Form("ippv_xy_fit/data_eta_lopt_%d", idx);
+    info_d0[ETA_LOPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_eta_lopt_%d", idx);
 
-    info_dz[ETA_LOPT].title      = "#splitline{" + etacut_title + "}{" + lopt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[ETA_LOPT].dataFigPath= figdir + Form("ippv_z_fit/data_eta_lopt_%d", idx);
-    info_dz[ETA_LOPT].mcFigPath  = figdir + Form("ippv_z_fit/mc_eta_lopt_%d",   idx);
+    info_dz[ETA_LOPT].title = "#splitline{" + etacut_title + "}{" + lopt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[ETA_LOPT].dataFigPath = figdir + Form("ippv_z_fit/data_eta_lopt_%d", idx);
+    info_dz[ETA_LOPT].mcFigPath = figdir + Form("ippv_z_fit/mc_eta_lopt_%d", idx);
 
-    info_d0[ETA_HIPT].title      = "#splitline{" + etacut_title + "}{" + hipt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[ETA_HIPT].dataFigPath= figdir + Form("ippv_xy_fit/data_eta_hipt_%d", idx);
-    info_d0[ETA_HIPT].mcFigPath  = figdir + Form("ippv_xy_fit/mc_eta_hipt_%d",   idx);
+    info_d0[ETA_HIPT].title = "#splitline{" + etacut_title + "}{" + hipt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[ETA_HIPT].dataFigPath = figdir + Form("ippv_xy_fit/data_eta_hipt_%d", idx);
+    info_d0[ETA_HIPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_eta_hipt_%d", idx);
 
-    info_dz[ETA_HIPT].title      = "#splitline{" + etacut_title + "}{" + hipt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[ETA_HIPT].dataFigPath= figdir + Form("ippv_z_fit/data_eta_hipt_%d", idx);
-    info_dz[ETA_HIPT].mcFigPath  = figdir + Form("ippv_z_fit/mc_eta_hipt_%d",   idx);
+    info_dz[ETA_HIPT].title = "#splitline{" + etacut_title + "}{" + hipt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[ETA_HIPT].dataFigPath = figdir + Form("ippv_z_fit/data_eta_hipt_%d", idx);
+    info_dz[ETA_HIPT].mcFigPath = figdir + Form("ippv_z_fit/mc_eta_hipt_%d", idx);
 
-    info_d0[ETA_ULPT].title      = "#splitline{" + etacut_title + "}{" + ulpt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[ETA_ULPT].dataFigPath= figdir + Form("ippv_xy_fit/data_eta_ulpt_%d", idx);
-    info_d0[ETA_ULPT].mcFigPath  = figdir + Form("ippv_xy_fit/mc_eta_ulpt_%d",   idx);
+    info_d0[ETA_ULPT].title = "#splitline{" + etacut_title + "}{" + ulpt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[ETA_ULPT].dataFigPath = figdir + Form("ippv_xy_fit/data_eta_ulpt_%d", idx);
+    info_d0[ETA_ULPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_eta_ulpt_%d", idx);
 
-    info_dz[ETA_ULPT].title      = "#splitline{" + etacut_title + "}{" + ulpt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[ETA_ULPT].dataFigPath= figdir + Form("ippv_z_fit/data_eta_ulpt_%d", idx);
-    info_dz[ETA_ULPT].mcFigPath  = figdir + Form("ippv_z_fit/mc_eta_ulpt_%d",   idx);
+    info_dz[ETA_ULPT].title = "#splitline{" + etacut_title + "}{" + ulpt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[ETA_ULPT].dataFigPath = figdir + Form("ippv_z_fit/data_eta_ulpt_%d", idx);
+    info_dz[ETA_ULPT].mcFigPath = figdir + Form("ippv_z_fit/mc_eta_ulpt_%d", idx);
 
-    info_d0[ETA_ALLPT].title      = etacut_title + ";Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[ETA_ALLPT].dataFigPath= figdir + Form("ippv_xy_fit/data_eta_allpt_%d", idx);
-    info_d0[ETA_ALLPT].mcFigPath  = figdir + Form("ippv_xy_fit/mc_eta_allpt_%d",   idx);
+    info_d0[ETA_ALLPT].title = etacut_title + ";Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[ETA_ALLPT].dataFigPath = figdir + Form("ippv_xy_fit/data_eta_allpt_%d", idx);
+    info_d0[ETA_ALLPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_eta_allpt_%d", idx);
 
-    info_dz[ETA_ALLPT].title      = etacut_title + ";Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[ETA_ALLPT].dataFigPath= figdir + Form("ippv_z_fit/data_eta_allpt_%d", idx);
-    info_dz[ETA_ALLPT].mcFigPath  = figdir + Form("ippv_z_fit/mc_eta_allpt_%d",   idx);
+    info_dz[ETA_ALLPT].title = etacut_title + ";Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[ETA_ALLPT].dataFigPath = figdir + Form("ippv_z_fit/data_eta_allpt_%d", idx);
+    info_dz[ETA_ALLPT].mcFigPath = figdir + Form("ippv_z_fit/mc_eta_allpt_%d", idx);
 
     // phi × pt
-    info_d0[PHI_LOPT].title      = "#splitline{" + phicut_title + "}{" + lopt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[PHI_LOPT].dataFigPath= figdir + Form("ippv_xy_fit/data_phi_lopt_%d", idx);
-    info_d0[PHI_LOPT].mcFigPath  = figdir + Form("ippv_xy_fit/mc_phi_lopt_%d",   idx);
+    info_d0[PHI_LOPT].title = "#splitline{" + phicut_title + "}{" + lopt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[PHI_LOPT].dataFigPath = figdir + Form("ippv_xy_fit/data_phi_lopt_%d", idx);
+    info_d0[PHI_LOPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_phi_lopt_%d", idx);
 
-    info_dz[PHI_LOPT].title      = "#splitline{" + phicut_title + "}{" + lopt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[PHI_LOPT].dataFigPath= figdir + Form("ippv_z_fit/data_phi_lopt_%d", idx);
-    info_dz[PHI_LOPT].mcFigPath  = figdir + Form("ippv_z_fit/mc_phi_lopt_%d",   idx);
+    info_dz[PHI_LOPT].title = "#splitline{" + phicut_title + "}{" + lopt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[PHI_LOPT].dataFigPath = figdir + Form("ippv_z_fit/data_phi_lopt_%d", idx);
+    info_dz[PHI_LOPT].mcFigPath = figdir + Form("ippv_z_fit/mc_phi_lopt_%d", idx);
 
-    info_d0[PHI_HIPT].title      = "#splitline{" + phicut_title + "}{" + hipt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[PHI_HIPT].dataFigPath= figdir + Form("ippv_xy_fit/data_phi_hipt_%d", idx);
-    info_d0[PHI_HIPT].mcFigPath  = figdir + Form("ippv_xy_fit/mc_phi_hipt_%d",   idx);
+    info_d0[PHI_HIPT].title = "#splitline{" + phicut_title + "}{" + hipt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[PHI_HIPT].dataFigPath = figdir + Form("ippv_xy_fit/data_phi_hipt_%d", idx);
+    info_d0[PHI_HIPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_phi_hipt_%d", idx);
 
-    info_dz[PHI_HIPT].title      = "#splitline{" + phicut_title + "}{" + hipt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[PHI_HIPT].dataFigPath= figdir + Form("ippv_z_fit/data_phi_hipt_%d", idx);
-    info_dz[PHI_HIPT].mcFigPath  = figdir + Form("ippv_z_fit/mc_phi_hipt_%d",   idx);
+    info_dz[PHI_HIPT].title = "#splitline{" + phicut_title + "}{" + hipt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[PHI_HIPT].dataFigPath = figdir + Form("ippv_z_fit/data_phi_hipt_%d", idx);
+    info_dz[PHI_HIPT].mcFigPath = figdir + Form("ippv_z_fit/mc_phi_hipt_%d", idx);
 
-    info_d0[PHI_ULPT].title      = "#splitline{" + phicut_title + "}{" + ulpt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[PHI_ULPT].dataFigPath= figdir + Form("ippv_xy_fit/data_phi_ulpt_%d", idx);
-    info_d0[PHI_ULPT].mcFigPath  = figdir + Form("ippv_xy_fit/mc_phi_ulpt_%d",   idx);
+    info_d0[PHI_ULPT].title = "#splitline{" + phicut_title + "}{" + ulpt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[PHI_ULPT].dataFigPath = figdir + Form("ippv_xy_fit/data_phi_ulpt_%d", idx);
+    info_d0[PHI_ULPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_phi_ulpt_%d", idx);
 
-    info_dz[PHI_ULPT].title      = "#splitline{" + phicut_title + "}{" + ulpt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[PHI_ULPT].dataFigPath= figdir + Form("ippv_z_fit/data_phi_ulpt_%d", idx);
-    info_dz[PHI_ULPT].mcFigPath  = figdir + Form("ippv_z_fit/mc_phi_ulpt_%d",   idx);
+    info_dz[PHI_ULPT].title = "#splitline{" + phicut_title + "}{" + ulpt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[PHI_ULPT].dataFigPath = figdir + Form("ippv_z_fit/data_phi_ulpt_%d", idx);
+    info_dz[PHI_ULPT].mcFigPath = figdir + Form("ippv_z_fit/mc_phi_ulpt_%d", idx);
 
-    info_d0[PHI_ALLPT].title      = phicut_title + ";Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[PHI_ALLPT].dataFigPath= figdir + Form("ippv_xy_fit/data_phi_allpt_%d", idx);
-    info_d0[PHI_ALLPT].mcFigPath  = figdir + Form("ippv_xy_fit/mc_phi_allpt_%d",   idx);
+    info_d0[PHI_ALLPT].title = phicut_title + ";Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[PHI_ALLPT].dataFigPath = figdir + Form("ippv_xy_fit/data_phi_allpt_%d", idx);
+    info_d0[PHI_ALLPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_phi_allpt_%d", idx);
 
-    info_dz[PHI_ALLPT].title      = phicut_title + ";Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[PHI_ALLPT].dataFigPath= figdir + Form("ippv_z_fit/data_phi_allpt_%d", idx);
-    info_dz[PHI_ALLPT].mcFigPath  = figdir + Form("ippv_z_fit/mc_phi_allpt_%d",   idx);
+    info_dz[PHI_ALLPT].title = phicut_title + ";Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[PHI_ALLPT].dataFigPath = figdir + Form("ippv_z_fit/data_phi_allpt_%d", idx);
+    info_dz[PHI_ALLPT].mcFigPath = figdir + Form("ippv_z_fit/mc_phi_allpt_%d", idx);
 
     // 初始裁剪范围（照搬你原来的 lowbound/highbound）
     double init_d0_min[NCOMB];
@@ -451,49 +471,74 @@ Int_t ip_res2(TString period, Int_t idx)
     double init_dz_max[NCOMB];
 
     // pt × eta
-    init_d0_min[PT_LOETA] = -2000; init_d0_max[PT_LOETA] = 2000;
-    init_dz_min[PT_LOETA] = -2000; init_dz_max[PT_LOETA] = 2000;
+    init_d0_min[PT_LOETA] = -2000;
+    init_d0_max[PT_LOETA] = 2000;
+    init_dz_min[PT_LOETA] = -2000;
+    init_dz_max[PT_LOETA] = 2000;
 
-    init_d0_min[PT_HIETA] = -4000; init_d0_max[PT_HIETA] = 4000;
-    init_dz_min[PT_HIETA] = -10000; init_dz_max[PT_HIETA] = 10000;
+    init_d0_min[PT_HIETA] = -4000;
+    init_d0_max[PT_HIETA] = 4000;
+    init_dz_min[PT_HIETA] = -10000;
+    init_dz_max[PT_HIETA] = 10000;
 
-    init_d0_min[PT_ULETA] = -6000; init_d0_max[PT_ULETA] = 6000;
-    init_dz_min[PT_ULETA] = -10000; init_dz_max[PT_ULETA] = 10000;
+    init_d0_min[PT_ULETA] = -6000;
+    init_d0_max[PT_ULETA] = 6000;
+    init_dz_min[PT_ULETA] = -10000;
+    init_dz_max[PT_ULETA] = 10000;
 
-    init_d0_min[PT_ALLETA] = -4000; init_d0_max[PT_ALLETA] = 4000;
-    init_dz_min[PT_ALLETA] = -10000; init_dz_max[PT_ALLETA] = 10000;
+    init_d0_min[PT_ALLETA] = -4000;
+    init_d0_max[PT_ALLETA] = 4000;
+    init_dz_min[PT_ALLETA] = -10000;
+    init_dz_max[PT_ALLETA] = 10000;
 
     // eta × pt
-    init_d0_min[ETA_LOPT] = -2000;  init_d0_max[ETA_LOPT] = 2000;
-    init_dz_min[ETA_LOPT] = -8000; init_dz_max[ETA_LOPT] = 8000;
+    init_d0_min[ETA_LOPT] = -2000;
+    init_d0_max[ETA_LOPT] = 2000;
+    init_dz_min[ETA_LOPT] = -8000;
+    init_dz_max[ETA_LOPT] = 8000;
 
-    init_d0_min[ETA_HIPT] = -1000; init_d0_max[ETA_HIPT] = 1000;
-    init_dz_min[ETA_HIPT] = -4000; init_dz_max[ETA_HIPT] = 4000;
+    init_d0_min[ETA_HIPT] = -1000;
+    init_d0_max[ETA_HIPT] = 1000;
+    init_dz_min[ETA_HIPT] = -4000;
+    init_dz_max[ETA_HIPT] = 4000;
 
-    init_d0_min[ETA_ULPT] = -400; init_d0_max[ETA_ULPT] = 400;
-    init_dz_min[ETA_ULPT] = -2000; init_dz_max[ETA_ULPT] = 2000;
+    init_d0_min[ETA_ULPT] = -400;
+    init_d0_max[ETA_ULPT] = 400;
+    init_dz_min[ETA_ULPT] = -2000;
+    init_dz_max[ETA_ULPT] = 2000;
 
-    init_d0_min[ETA_ALLPT] = -2000; init_d0_max[ETA_ALLPT] = 2000;
-    init_dz_min[ETA_ALLPT] = -5000; init_dz_max[ETA_ALLPT] = 5000;
+    init_d0_min[ETA_ALLPT] = -2000;
+    init_d0_max[ETA_ALLPT] = 2000;
+    init_dz_min[ETA_ALLPT] = -5000;
+    init_dz_max[ETA_ALLPT] = 5000;
 
     // phi × pt
-    init_d0_min[PHI_LOPT] = -2000; init_d0_max[PHI_LOPT] = 2000;
-    init_dz_min[PHI_LOPT] = -3000; init_dz_max[PHI_LOPT] = 3000;
+    init_d0_min[PHI_LOPT] = -2000;
+    init_d0_max[PHI_LOPT] = 2000;
+    init_dz_min[PHI_LOPT] = -3000;
+    init_dz_max[PHI_LOPT] = 3000;
 
-    init_d0_min[PHI_HIPT] = -500; init_d0_max[PHI_HIPT] = 500;
-    init_dz_min[PHI_HIPT] = -1500; init_dz_max[PHI_HIPT] = 1500;
+    init_d0_min[PHI_HIPT] = -500;
+    init_d0_max[PHI_HIPT] = 500;
+    init_dz_min[PHI_HIPT] = -1500;
+    init_dz_max[PHI_HIPT] = 1500;
 
-    init_d0_min[PHI_ULPT] = -400; init_d0_max[PHI_ULPT] = 400;
-    init_dz_min[PHI_ULPT] = -600; init_dz_max[PHI_ULPT] = 600;
+    init_d0_min[PHI_ULPT] = -400;
+    init_d0_max[PHI_ULPT] = 400;
+    init_dz_min[PHI_ULPT] = -600;
+    init_dz_max[PHI_ULPT] = 600;
 
-    init_d0_min[PHI_ALLPT] = -1500; init_d0_max[PHI_ALLPT] = 1500;
-    init_dz_min[PHI_ALLPT] = -2000; init_dz_max[PHI_ALLPT] = 2000;
+    init_d0_min[PHI_ALLPT] = -1500;
+    init_d0_max[PHI_ALLPT] = 1500;
+    init_dz_min[PHI_ALLPT] = -2000;
+    init_dz_max[PHI_ALLPT] = 2000;
 
     // 第 1 遍：在 data 上统计 mean / sigma
     Stat stats_d0_data[NCOMB];
     Stat stats_dz_data[NCOMB];
 
-    auto stat_action_data = [&](int cid, double d0, double dz, double w) {
+    auto stat_action_data = [&](int cid, double d0, double dz, double w)
+    {
         if (d0 >= init_d0_min[cid] && d0 <= init_d0_max[cid])
             stats_d0_data[cid].Fill(d0, w);
         if (dz >= init_dz_min[cid] && dz <= init_dz_max[cid])
@@ -507,27 +552,28 @@ Int_t ip_res2(TString period, Int_t idx)
 
     // 根据 data 的 mean / sigma 建 data / MC 直方图（同一范围，以便比较）
     TH1F *h_d0_data[NCOMB] = {nullptr};
-    TH1F *h_d0_mc[NCOMB]   = {nullptr};
+    TH1F *h_d0_mc[NCOMB] = {nullptr};
     TH1F *h_dz_data[NCOMB] = {nullptr};
-    TH1F *h_dz_mc[NCOMB]   = {nullptr};
-
+    TH1F *h_dz_mc[NCOMB] = {nullptr};
 
     for (int cid = 0; cid < NCOMB; ++cid)
     {
         if (!stats_d0_data[cid].Valid() || !stats_dz_data[cid].Valid())
             continue;
 
-        double mean_d0  = stats_d0_data[cid].Mean();
+        double mean_d0 = stats_d0_data[cid].Mean();
         double sigma_d0 = stats_d0_data[cid].Sigma();
-        double mean_dz  = stats_dz_data[cid].Mean();
+        double mean_dz = stats_dz_data[cid].Mean();
         double sigma_dz = stats_dz_data[cid].Sigma();
 
-        if (sigma_d0 <= 0.0) {
-            mean_d0  = 0.5 * (init_d0_min[cid] + init_d0_max[cid]);
+        if (sigma_d0 <= 0.0)
+        {
+            mean_d0 = 0.5 * (init_d0_min[cid] + init_d0_max[cid]);
             sigma_d0 = (init_d0_max[cid] - init_d0_min[cid]) / (2 * nsigma);
         }
-        if (sigma_dz <= 0.0) {
-            mean_dz  = 0.5 * (init_dz_min[cid] + init_dz_max[cid]);
+        if (sigma_dz <= 0.0)
+        {
+            mean_dz = 0.5 * (init_dz_min[cid] + init_dz_max[cid]);
             sigma_dz = (init_dz_max[cid] - init_dz_min[cid]) / (2 * nsigma);
         }
 
@@ -537,14 +583,14 @@ Int_t ip_res2(TString period, Int_t idx)
         double dz_max = mean_dz + nsigma * sigma_dz;
 
         TString name_d0_data = Form("h_d0_data_%d_%d", idx, cid);
-        TString name_d0_mc   = Form("h_d0_mc_%d_%d",   idx, cid);
+        TString name_d0_mc = Form("h_d0_mc_%d_%d", idx, cid);
         TString name_dz_data = Form("h_dz_data_%d_%d", idx, cid);
-        TString name_dz_mc   = Form("h_dz_mc_%d_%d",   idx, cid);
+        TString name_dz_mc = Form("h_dz_mc_%d_%d", idx, cid);
 
         h_d0_data[cid] = new TH1F(name_d0_data, info_d0[cid].title, nbins, d0_min, d0_max);
-        h_d0_mc[cid]   = new TH1F(name_d0_mc,   info_d0[cid].title, nbins, d0_min, d0_max);
+        h_d0_mc[cid] = new TH1F(name_d0_mc, info_d0[cid].title, nbins, d0_min, d0_max);
         h_dz_data[cid] = new TH1F(name_dz_data, info_dz[cid].title, nbins, dz_min, dz_max);
-        h_dz_mc[cid]   = new TH1F(name_dz_mc,   info_dz[cid].title, nbins, dz_min, dz_max);
+        h_dz_mc[cid] = new TH1F(name_dz_mc, info_dz[cid].title, nbins, dz_min, dz_max);
 
         h_d0_data[cid]->Sumw2();
         h_d0_mc[cid]->Sumw2();
@@ -553,9 +599,12 @@ Int_t ip_res2(TString period, Int_t idx)
     }
 
     // 第 2 遍：填 data 直方图
-    auto fill_action_data = [&](int cid, double d0, double dz, double w) {
-        if (h_d0_data[cid]) h_d0_data[cid]->Fill(d0, w);
-        if (h_dz_data[cid]) h_dz_data[cid]->Fill(dz, w);
+    auto fill_action_data = [&](int cid, double d0, double dz, double w)
+    {
+        if (h_d0_data[cid])
+            h_d0_data[cid]->Fill(d0, w);
+        if (h_dz_data[cid])
+            h_dz_data[cid]->Fill(dz, w);
     };
     process_tree_tracks(datatree, true, nData, idx,
                         pv_trk_pt_edges, pv_trk_eta_edges, pv_trk_phi_edges,
@@ -563,9 +612,12 @@ Int_t ip_res2(TString period, Int_t idx)
 
     // 第 2 遍：填 MC 直方图（注意：范围仍来自 data）
     Long64_t nMC = mctree->GetEntries();
-    auto fill_action_mc = [&](int cid, double d0, double dz, double w) {
-        if (h_d0_mc[cid]) h_d0_mc[cid]->Fill(d0, w);
-        if (h_dz_mc[cid]) h_dz_mc[cid]->Fill(dz, w);
+    auto fill_action_mc = [&](int cid, double d0, double dz, double w)
+    {
+        if (h_d0_mc[cid])
+            h_d0_mc[cid]->Fill(d0, w);
+        if (h_dz_mc[cid])
+            h_dz_mc[cid]->Fill(dz, w);
     };
     process_tree_tracks(mctree, false, nMC, idx,
                         pv_trk_pt_edges, pv_trk_eta_edges, pv_trk_phi_edges,
@@ -574,15 +626,15 @@ Int_t ip_res2(TString period, Int_t idx)
     // RooFit 拟合并写 JSON
     nlohmann::json resojson;
 
-    resojson["pt"]  = (pv_trk_pt_edges[idx_lo]  + pv_trk_pt_edges[idx_hi])  / 2.0;
+    resojson["pt"] = (pv_trk_pt_edges[idx_lo] + pv_trk_pt_edges[idx_hi]) / 2.0;
     resojson["eta"] = (pv_trk_eta_edges[idx_lo] + pv_trk_eta_edges[idx_hi]) / 2.0;
     resojson["phi"] = (pv_trk_phi_edges[idx_lo] + pv_trk_phi_edges[idx_hi]) / 2.0;
 
     // 存结果数组
     double reso_data_d0[NCOMB] = {0.0};
     double reso_data_dz[NCOMB] = {0.0};
-    double reso_mc_d0[NCOMB]   = {0.0};
-    double reso_mc_dz[NCOMB]   = {0.0};
+    double reso_mc_d0[NCOMB] = {0.0};
+    double reso_mc_dz[NCOMB] = {0.0};
 
     for (int cid = 0; cid < NCOMB; ++cid)
     {
@@ -605,8 +657,8 @@ Int_t ip_res2(TString period, Int_t idx)
 
         resojson[Form("reso_data_d0_%s", suffix.Data())] = reso_data_d0[cid];
         resojson[Form("reso_data_dz_%s", suffix.Data())] = reso_data_dz[cid];
-        resojson[Form("reso_mc_d0_%s",  suffix.Data())] = reso_mc_d0[cid];
-        resojson[Form("reso_mc_dz_%s",  suffix.Data())] = reso_mc_dz[cid];
+        resojson[Form("reso_mc_d0_%s", suffix.Data())] = reso_mc_d0[cid];
+        resojson[Form("reso_mc_dz_%s", suffix.Data())] = reso_mc_dz[cid];
     }
 
     // 输出 JSON
@@ -615,7 +667,8 @@ Int_t ip_res2(TString period, Int_t idx)
     outFile.close();
 
     // 清理
-    for (int cid = 0; cid < NCOMB; ++cid) {
+    for (int cid = 0; cid < NCOMB; ++cid)
+    {
         delete h_d0_data[cid];
         delete h_d0_mc[cid];
         delete h_dz_data[cid];

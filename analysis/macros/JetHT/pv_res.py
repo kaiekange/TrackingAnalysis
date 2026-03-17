@@ -36,6 +36,6 @@ queue 50
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python pv_res.py <period>  # e.g. 2022preEE or 2022postEE")
+        print("Usage: python pv_res.py <period>  # e.g. 2022 or 2022EE")
         sys.exit(1)
     sys.exit(submit_jobs(sys.argv[1]))

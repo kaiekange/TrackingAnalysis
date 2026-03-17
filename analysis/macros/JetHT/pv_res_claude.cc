@@ -23,7 +23,7 @@
 #include "../../functions/CMS_lumi.cc"
 #include "../../functions/draw_funcs.cc"
 
-const TString datatype_text = "Unbiased collision events";
+const TString datatype_text = "High-q^{2} multi-jet events";
 const TString storage_dir = "/eos/home-k/kakang/IPres/analysis/JetHT";
 
 // 抽样：每 sample_mod 个事件取 1 个；=1 表示不用抽样
@@ -53,6 +53,32 @@ const char *COMB_SUFFIX[NCOMB] = {
     "pullx",
     "pully",
     "pullz"};
+
+// Trigger priority list (highest to lowest)
+const int N_TRIGS = 10;
+const char *TRIG_NAMES[N_TRIGS] = {
+    "HLT_PFHT1050",
+    "HLT_PFHT890",
+    "HLT_PFHT780",
+    "HLT_PFHT680",
+    "HLT_PFHT590",
+    "HLT_PFHT510",
+    "HLT_PFHT430",
+    "HLT_PFHT370",
+    "HLT_PFHT250",
+    "HLT_PFHT180"};
+
+const char *TRIG_BRANCH_NAMES[N_TRIGS] = {
+    "trig_PFHT1050_pass",
+    "trig_PFHT890_pass",
+    "trig_PFHT780_pass",
+    "trig_PFHT680_pass",
+    "trig_PFHT590_pass",
+    "trig_PFHT510_pass",
+    "trig_PFHT430_pass",
+    "trig_PFHT370_pass",
+    "trig_PFHT250_pass",
+    "trig_PFHT180_pass"};
 
 // 简单统计结构：加权 mean / sigma
 struct Stat
@@ -127,18 +153,7 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
     Float_t mean = mu.getVal();
     Float_t low = 0.0;
     Float_t high = pv_var_max - mean;
-    // while (high - low > tolerance)
-    // {
-    //     Float_t mid = 0.5 * (low + high);
-    //     pv_var.setRange("intRange", mean - mid, mean + mid);
-    //     RooAbsReal *integral = model.createIntegral(pv_var, RooFit::NormSet(pv_var), RooFit::Range("intRange"));
-    //     Float_t prob = integral->getVal();
-    //     if (prob < 0.68)
-    //         low = mid;
-    //     else
-    //         high = mid;
-    //     delete integral;
-    // }
+
     pv_var.setRange("normRange", mean - 1e6, mean + 1e6);
     RooAbsReal *denom = model.createIntegral(pv_var, RooFit::Range("normRange"));
     while (high - low > tolerance)
@@ -201,7 +216,9 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
     return reso;
 }
 
-// 统一的 track 处理：对每个满足条件的组合调用 action(combId, d0, dz, weight)
+// For data: trig_pass and ps_weights are unused (isData=true)
+// For MC:   w already includes PU*xsec; ps_weights[i] is per-trigger PS weight (0 if masked)
+//           trig_pass[i] is the exclusive trigger decision (priority-resolved)
 template <typename F>
 void process_tree_tracks(TChain *tree,
                          Bool_t isData,
@@ -223,6 +240,9 @@ void process_tree_tracks(TChain *tree,
                          Float_t &pv_yError_p2,
                          Float_t &pv_zError_p2,
                          Int_t &NumTrueInts,
+                         Bool_t *trig_pass,        // [N_TRIGS], only used for MC
+                         const double *ps_weights, // [N_TRIGS], PS weight per trigger (0 if masked), only used for MC
+                         Float_t xsec_weight,      // 1.0 for data
                          F &&action)
 {
 
@@ -239,13 +259,28 @@ void process_tree_tracks(TChain *tree,
         Float_t w = 1.0;
         if (!isData)
         {
-            if ((NumTrueInts < 1) || (NumTrueInts > PU_weights.size()))
-                w = 0.0;
+            // PU weight
+            Float_t w_pu = 1.0;
+            if ((NumTrueInts < 1) || (NumTrueInts > (Int_t)PU_weights.size()))
+                w_pu = 0.0;
             else
-                w = PU_weights[NumTrueInts - 1];
+                w_pu = PU_weights[NumTrueInts - 1];
+
+            // PS weight: find highest-priority unmasked trigger this event passes
+            // trig_pass[i] is already exclusive (priority-resolved by caller)
+            Float_t w_ps = 0.0;
+            for (int it = 0; it < N_TRIGS; ++it)
+            {
+                if (trig_pass[it])
+                {
+                    w_ps = ps_weights[it]; // 0 if masked
+                    break;
+                }
+            }
+
+            w = w_pu * xsec_weight * w_ps;
         }
 
-        // bin 定义（与你原来一致）
         Float_t pv_SumTrackPt2_sqrt = std::sqrt(pv_SumTrackPt2);
         Bool_t in_pv_SumTrackPt2_sqrtbin = (pv_SumTrackPt2_sqrt > pv_SumTrackPt2_sqrt_lo && pv_SumTrackPt2_sqrt < pv_SumTrackPt2_sqrt_hi);
         Bool_t pvx_nonull = (pv_x_p1 != -777 && pv_x_p2 != -777 && pv_xError_p1 != -777 && pv_xError_p2 != -777);
@@ -270,7 +305,7 @@ void process_tree_tracks(TChain *tree,
     }
 }
 
-Int_t pv_res(TString period, Int_t idx)
+Int_t pv_res_claude(TString period, Int_t idx)
 {
     // 输出目录
     TString figdir = storage_dir + "/figures/" + period + "/pv_res/";
@@ -281,19 +316,24 @@ Int_t pv_res(TString period, Int_t idx)
     tuplelist_file >> tuplelist;
     tuplelist_file.close();
 
+    // ---------- Read PS weight JSON ----------
+    std::ifstream ps_file("/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/analysis/macros/JetHT/triggerPS.json");
+    nlohmann::json ps_json;
+    ps_file >> ps_json;
+    ps_file.close();
+
+    // L_eff per trigger for this period
+    double L_eff[N_TRIGS];
+    for (int it = 0; it < N_TRIGS; ++it)
+        L_eff[it] = ps_json[period.Data()][TRIG_NAMES[it]].get<double>();
+
+    // ---------- Build data TChain ----------
     TChain *datatree = new TChain("residuals/tree");
     for (auto &entry : tuplelist[period.Data()]["data"])
     {
         std::string path = entry["path"];
         TString datapath = TString(path) + "/*.root";
         datatree->Add(datapath);
-    }
-    TChain *mctree = new TChain("residuals/tree");
-    for (auto &entry : tuplelist[period.Data()]["mc"])
-    {
-        std::string path = entry["path"];
-        TString mcpath = TString(path) + "/*.root";
-        mctree->Add(mcpath);
     }
 
     Float_t pv_SumTrackPt2;
@@ -310,38 +350,36 @@ Int_t pv_res(TString period, Int_t idx)
     Float_t pv_yError_p2;
     Float_t pv_zError_p2;
     Int_t NumTrueInts;
+    Bool_t trig_pass_raw[N_TRIGS];  // raw (inclusive) trigger decisions from branch
+    Bool_t trig_pass_excl[N_TRIGS]; // exclusive (priority-resolved), computed per event
 
-    datatree->SetBranchAddress("pv_SumTrackPt2", &pv_SumTrackPt2);
-    datatree->SetBranchAddress("pv_x_p1", &pv_x_p1);
-    datatree->SetBranchAddress("pv_y_p1", &pv_y_p1);
-    datatree->SetBranchAddress("pv_z_p1", &pv_z_p1);
-    datatree->SetBranchAddress("pv_x_p2", &pv_x_p2);
-    datatree->SetBranchAddress("pv_y_p2", &pv_y_p2);
-    datatree->SetBranchAddress("pv_z_p2", &pv_z_p2);
-    datatree->SetBranchAddress("pv_xError_p1", &pv_xError_p1);
-    datatree->SetBranchAddress("pv_yError_p1", &pv_yError_p1);
-    datatree->SetBranchAddress("pv_zError_p1", &pv_zError_p1);
-    datatree->SetBranchAddress("pv_xError_p2", &pv_xError_p2);
-    datatree->SetBranchAddress("pv_yError_p2", &pv_yError_p2);
-    datatree->SetBranchAddress("pv_zError_p2", &pv_zError_p2);
+    auto bind_common_branches = [&](TChain *tree)
+    {
+        tree->SetBranchAddress("pv_SumTrackPt2", &pv_SumTrackPt2);
+        tree->SetBranchAddress("pv_x_p1", &pv_x_p1);
+        tree->SetBranchAddress("pv_y_p1", &pv_y_p1);
+        tree->SetBranchAddress("pv_z_p1", &pv_z_p1);
+        tree->SetBranchAddress("pv_x_p2", &pv_x_p2);
+        tree->SetBranchAddress("pv_y_p2", &pv_y_p2);
+        tree->SetBranchAddress("pv_z_p2", &pv_z_p2);
+        tree->SetBranchAddress("pv_xError_p1", &pv_xError_p1);
+        tree->SetBranchAddress("pv_yError_p1", &pv_yError_p1);
+        tree->SetBranchAddress("pv_zError_p1", &pv_zError_p1);
+        tree->SetBranchAddress("pv_xError_p2", &pv_xError_p2);
+        tree->SetBranchAddress("pv_yError_p2", &pv_yError_p2);
+        tree->SetBranchAddress("pv_zError_p2", &pv_zError_p2);
+    };
 
-    mctree->SetBranchAddress("pv_SumTrackPt2", &pv_SumTrackPt2);
-    mctree->SetBranchAddress("pv_x_p1", &pv_x_p1);
-    mctree->SetBranchAddress("pv_y_p1", &pv_y_p1);
-    mctree->SetBranchAddress("pv_z_p1", &pv_z_p1);
-    mctree->SetBranchAddress("pv_x_p2", &pv_x_p2);
-    mctree->SetBranchAddress("pv_y_p2", &pv_y_p2);
-    mctree->SetBranchAddress("pv_z_p2", &pv_z_p2);
-    mctree->SetBranchAddress("pv_xError_p1", &pv_xError_p1);
-    mctree->SetBranchAddress("pv_yError_p1", &pv_yError_p1);
-    mctree->SetBranchAddress("pv_zError_p1", &pv_zError_p1);
-    mctree->SetBranchAddress("pv_xError_p2", &pv_xError_p2);
-    mctree->SetBranchAddress("pv_yError_p2", &pv_yError_p2);
-    mctree->SetBranchAddress("pv_zError_p2", &pv_zError_p2);
-    mctree->SetBranchAddress("NumTrueInts", &NumTrueInts);
+    auto bind_trig_branches = [&](TChain *tree)
+    {
+        for (int it = 0; it < N_TRIGS; ++it)
+            tree->SetBranchAddress(TRIG_BRANCH_NAMES[it], &trig_pass_raw[it]);
+    };
 
-    // 读 binning.json
-    // std::ifstream infile(storage_dir + "/json/" + period + "/binning.json");
+    bind_common_branches(datatree);
+    bind_trig_branches(datatree);
+
+    // ---------- Read binning & PU weights ----------
     std::ifstream infile(storage_dir + "/json/binning.json");
     nlohmann::json binning;
     infile >> binning;
@@ -362,6 +400,35 @@ Int_t pv_res(TString period, Int_t idx)
         PU_weights[bin - 1] = item["content"];
     }
 
+    // ---------- Count exclusive trigger pass events in data (for PS weight) ----------
+    // n_data_excl[it] = #events where trigger it is the highest-priority pass
+    Long64_t n_data_excl[N_TRIGS] = {0};
+    Long64_t nData = datatree->GetEntries();
+
+    for (Long64_t ie = 0; ie < nData; ++ie)
+    {
+        datatree->GetEntry(ie);
+        for (int it = 0; it < N_TRIGS; ++it)
+        {
+            if (trig_pass_raw[it])
+            {
+                n_data_excl[it]++;
+                break; // exclusive: stop at highest-priority pass
+            }
+        }
+    }
+
+    // ---------- Compute PS weights ----------
+    double ps_weights_final[N_TRIGS];
+    for (int it = 0; it < N_TRIGS; ++it)
+    {
+        if (n_data_excl[it] > 0)
+            ps_weights_final[it] = L_eff[it] / static_cast<double>(n_data_excl[it]);
+        else
+            ps_weights_final[it] = 0.0;
+    }
+
+    // ---------- Histograms ----------
     TString ptcut_title = Form("%.2f<#sqrt{#sum#it{p_{T}}^{2}}<%.2f GeV", pv_SumTrackPt2_sqrt_edges[idx], pv_SumTrackPt2_sqrt_edges[idx + 1]);
 
     // 准备 HistInfo（标题 & 图像路径）—— d0
@@ -390,26 +457,8 @@ Int_t pv_res(TString period, Int_t idx)
     histinfo[PULL_Z].dataFigPath = figdir + Form("pullz_fit/data_pt_%d", idx);
     histinfo[PULL_Z].mcFigPath = figdir + Form("pullz_fit/mc_pt_%d", idx);
 
-    Float_t init_min[NCOMB];
-    Float_t init_max[NCOMB];
-
-    init_min[PV_X] = -300;
-    init_max[PV_X] = 300;
-
-    init_min[PV_Y] = -300;
-    init_max[PV_Y] = 300;
-
-    init_min[PV_Z] = -300;
-    init_max[PV_Z] = 300;
-
-    init_min[PULL_X] = -10;
-    init_max[PULL_X] = 10;
-
-    init_min[PULL_Y] = -10;
-    init_max[PULL_Y] = 10;
-
-    init_min[PULL_Z] = -10;
-    init_max[PULL_Z] = 10;
+    Float_t init_min[NCOMB] = {-300, -300, -300, -10, -10, -10};
+    Float_t init_max[NCOMB] = {300, 300, 300, 10, 10, 10};
 
     // 第 1 遍：在 data 上统计 mean / sigma
     Stat stats_data[NCOMB];
@@ -420,7 +469,9 @@ Int_t pv_res(TString period, Int_t idx)
             stats_data[cid].Fill(var, w);
     };
 
-    Long64_t nData = datatree->GetEntries();
+    // Dummy arrays for data (not used inside process_tree_tracks when isData=true)
+    double ps_dummy[N_TRIGS] = {0};
+
     process_tree_tracks(datatree,
                         true,
                         nData,
@@ -441,6 +492,9 @@ Int_t pv_res(TString period, Int_t idx)
                         pv_yError_p2,
                         pv_zError_p2,
                         NumTrueInts,
+                        trig_pass_excl,
+                        ps_dummy,
+                        1.0,
                         stat_action_data);
 
     // 根据 data 的 mean / sigma 建 data / MC 直方图（同一范围，以便比较）
@@ -500,38 +554,143 @@ Int_t pv_res(TString period, Int_t idx)
                         pv_yError_p2,
                         pv_zError_p2,
                         NumTrueInts,
+                        trig_pass_excl,
+                        ps_dummy,
+                        1.0,
                         fill_action_data);
 
-    // 第 2 遍：填 MC 直方图（注意：范围仍来自 data）
-    Long64_t nMC = mctree->GetEntries();
-    auto fill_action_mc = [&](Int_t cid, Float_t var, Float_t w)
+    // ---------- MC: process per entry ----------
+    for (auto &mc_entry : tuplelist[period.Data()]["mc"])
     {
-        if (h_mc[cid])
-            h_mc[cid]->Fill(var, w);
-    };
-    process_tree_tracks(mctree,
-                        false,
-                        nMC,
-                        idx,
-                        pv_SumTrackPt2_sqrt_edges,
-                        PU_weights,
-                        pv_SumTrackPt2,
-                        pv_x_p1,
-                        pv_y_p1,
-                        pv_z_p1,
-                        pv_x_p2,
-                        pv_y_p2,
-                        pv_z_p2,
-                        pv_xError_p1,
-                        pv_yError_p1,
-                        pv_zError_p1,
-                        pv_xError_p2,
-                        pv_yError_p2,
-                        pv_zError_p2,
-                        NumTrueInts,
-                        fill_action_mc);
+        std::string path = mc_entry["path"];
 
-    // RooFit 拟合并写 JSON
+        double xsec = mc_entry["xsec"].get<double>();
+
+        // --- Sum nEventsProcessed_ from RunInfo tree ---
+        TChain *runinfo = new TChain("residuals/RunInfo"); // adjust tree path if needed
+        runinfo->Add(TString(path) + "/*.root");
+        ULong_t nEventsProcessed_branch;
+        runinfo->SetBranchAddress("nEventsProcessed_", &nEventsProcessed_branch);
+        Long64_t nRunEntries = runinfo->GetEntries();
+        ULong_t total_nEventsProcessed = 0;
+        for (Long64_t ir = 0; ir < nRunEntries; ++ir)
+        {
+            runinfo->GetEntry(ir);
+            total_nEventsProcessed += nEventsProcessed_branch;
+        }
+        delete runinfo;
+
+        if (total_nEventsProcessed == 0)
+            continue;
+        Float_t xsec_weight = static_cast<Float_t>(xsec / static_cast<double>(total_nEventsProcessed));
+
+        // --- Build MC event tree for this entry ---
+        TChain *mctree_entry = new TChain("residuals/tree");
+        mctree_entry->Add(TString(path) + "/*.root");
+
+        bind_common_branches(mctree_entry);
+        mctree_entry->SetBranchAddress("NumTrueInts", &NumTrueInts);
+        bind_trig_branches(mctree_entry);
+
+        Long64_t nMC_entry = mctree_entry->GetEntries();
+
+        // --- Count exclusive trigger pass events in this MC entry (for mask) ---
+        Long64_t n_mc_excl[N_TRIGS] = {0};
+        for (Long64_t ie = 0; ie < nMC_entry; ++ie)
+        {
+            mctree_entry->GetEntry(ie);
+            for (int it = 0; it < N_TRIGS; ++it)
+            {
+                if (trig_pass_raw[it])
+                {
+                    n_mc_excl[it]++;
+                    break;
+                }
+            }
+        }
+
+        // --- Compute per-entry PS weights, applying mask ---
+        // mask: n_mc_excl[it] < 0.01 * total_nEventsProcessed
+        double ps_weights_entry[N_TRIGS];
+        for (int it = 0; it < N_TRIGS; ++it)
+        {
+            if (n_mc_excl[it] < 0.01 * static_cast<double>(total_nEventsProcessed))
+                ps_weights_entry[it] = 0.0; // masked
+            else
+                ps_weights_entry[it] = ps_weights_final[it];
+        }
+
+        // --- Fill MC histograms ---
+        // Compute exclusive trigger decisions per event inside the action lambda.
+        // We pass trig_pass_excl[] which is filled just before calling process_tree_tracks
+        // by overriding the action to first resolve exclusivity.
+        // Actually: exclusivity is resolved inside process_tree_tracks via trig_pass_raw,
+        // but process_tree_tracks only sees trig_pass (already exclusive).
+        // Solution: resolve exclusivity in a wrapper lambda before calling action.
+
+        auto fill_action_mc = [&](Int_t cid, Float_t var, Float_t w)
+        {
+            if (h_mc[cid])
+                h_mc[cid]->Fill(var, w);
+        };
+
+        // We need to resolve exclusivity per event. Do it in a custom loop here
+        // rather than inside process_tree_tracks, to keep the function generic.
+        {
+            const Float_t lo = pv_SumTrackPt2_sqrt_edges[idx];
+            const Float_t hi = pv_SumTrackPt2_sqrt_edges[idx + 1];
+
+            for (Long64_t ie = 0; ie < nMC_entry; ++ie)
+            {
+                mctree_entry->GetEntry(ie);
+
+                // Resolve exclusive trigger
+                Float_t w_ps = 0.0;
+                for (int it = 0; it < N_TRIGS; ++it)
+                {
+                    if (trig_pass_raw[it])
+                    {
+                        w_ps = ps_weights_entry[it]; // 0 if masked
+                        break;
+                    }
+                }
+
+                // PU weight
+                Float_t w_pu = 0.0;
+                if (NumTrueInts >= 1 && NumTrueInts <= (Int_t)PU_weights.size())
+                    w_pu = PU_weights[NumTrueInts - 1];
+
+                Float_t w = w_pu * xsec_weight * w_ps;
+
+                Float_t pv_SumTrackPt2_sqrt = std::sqrt(pv_SumTrackPt2);
+                Bool_t in_bin = (pv_SumTrackPt2_sqrt > lo && pv_SumTrackPt2_sqrt < hi);
+
+                Bool_t pvx_nonull = (pv_x_p1 != -777 && pv_x_p2 != -777 && pv_xError_p1 != -777 && pv_xError_p2 != -777);
+                Bool_t pvy_nonull = (pv_y_p1 != -777 && pv_y_p2 != -777 && pv_yError_p1 != -777 && pv_yError_p2 != -777);
+                Bool_t pvz_nonull = (pv_z_p1 != -777 && pv_z_p2 != -777 && pv_zError_p1 != -777 && pv_zError_p2 != -777);
+
+                if (in_bin && pvx_nonull)
+                {
+                    fill_action_mc(PV_X, (pv_x_p1 - pv_x_p2) / sqrt_2, w);
+                    fill_action_mc(PULL_X, (pv_x_p1 - pv_x_p2) / sqrt(pv_xError_p1 * pv_xError_p1 + pv_xError_p2 * pv_xError_p2), w);
+                }
+                if (in_bin && pvy_nonull)
+                {
+                    fill_action_mc(PV_Y, (pv_y_p1 - pv_y_p2) / sqrt_2, w);
+                    fill_action_mc(PULL_Y, (pv_y_p1 - pv_y_p2) / sqrt(pv_yError_p1 * pv_yError_p1 + pv_yError_p2 * pv_yError_p2), w);
+                }
+                if (in_bin && pvz_nonull)
+                {
+                    fill_action_mc(PV_Z, (pv_z_p1 - pv_z_p2) / sqrt_2, w);
+                    fill_action_mc(PULL_Z, (pv_z_p1 - pv_z_p2) / sqrt(pv_zError_p1 * pv_zError_p1 + pv_zError_p2 * pv_zError_p2), w);
+                }
+            }
+        }
+
+        delete mctree_entry;
+    }
+
+    // ---------- Fit & write JSON ----------
     nlohmann::json resojson;
 
     resojson["pv_SumTrackPt2_sqrt"] = (pv_SumTrackPt2_sqrt_edges[idx] + pv_SumTrackPt2_sqrt_edges[idx + 1]) / 2.0;
@@ -566,7 +725,6 @@ Int_t pv_res(TString period, Int_t idx)
         delete h_mc[cid];
     }
     delete datatree;
-    delete mctree;
 
     return 0;
 }
