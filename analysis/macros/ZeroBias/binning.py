@@ -3,7 +3,8 @@ import ROOT
 from ROOT import RDataFrame, RDF
 import json
 import numpy as np
-import os;
+import os
+
 
 def get_quantile_edges_from_hist(hist, nbins, low, high):
     probs = np.linspace(0.0, 1.0, nbins + 1, dtype="float64")
@@ -12,6 +13,7 @@ def get_quantile_edges_from_hist(hist, nbins, low, high):
     qs[0] = low
     qs[-1] = high
     return qs.tolist()
+
 
 def binning() -> int:
 

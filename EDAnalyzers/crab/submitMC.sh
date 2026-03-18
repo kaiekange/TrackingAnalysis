@@ -9,9 +9,9 @@ SAMPLETYPE="JetHT"
 # GLOBALTAG="132X_mcRun3_2022_realistic_v3"
 # GLOBALTAG="130X_mcRun3_2022_realistic_v5"
 
-YEAR="2022EE"
+# YEAR="2022EE"
 # GLOBALTAG="132X_mcRun3_2022_realistic_postEE_v4"
-GLOBALTAG="130X_mcRun3_2022_realistic_postEE_v6"
+# GLOBALTAG="130X_mcRun3_2022_realistic_postEE_v6"
 
 # YEAR="2023"
 # GLOBALTAG="130X_mcRun3_2023_realistic_v14"
@@ -19,8 +19,8 @@ GLOBALTAG="130X_mcRun3_2022_realistic_postEE_v6"
 # YEAR="2023BPix"
 # GLOBALTAG="130X_mcRun3_2023_realistic_postBPix_v2"
 
-# YEAR="2024"
-# GLOBALTAG="150X_mcRun3_2024_realistic_v2"
+YEAR="2024"
+GLOBALTAG="150X_mcRun3_2024_realistic_v2"
 
 datasetlist="DatasetList/mc_${YEAR}_${SAMPLETYPE}.txt"
 
@@ -29,7 +29,7 @@ ver="Track-v20260210"
 # prodv="/store/group/phys_tracking/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
 prodv="/store/user/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
 pver="0"
-EVENTSCALE=30
+EVENTSCALE=100
 EVENTMODULO=0
 
 datasets=()

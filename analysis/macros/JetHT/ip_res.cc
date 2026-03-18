@@ -1,307 +1,752 @@
 #include <vector>
+#include <map>
+#include <string>
 #include <iostream>
+#include <fstream>
+#include <cmath>
+
 #include <TFile.h>
-#include <TTree.h>
+#include <TChain.h>
 #include <TString.h>
-#include <TMath.h>
 #include <TH1.h>
-#include <algorithm>
+#include <TMath.h>
+
+#include <RooRealVar.h>
+#include <RooGaussian.h>
+#include <RooAddPdf.h>
+#include <RooDataHist.h>
+#include <RooPlot.h>
+#include <RooFitResult.h>
+#include <RooFormulaVar.h>
+
 #include <nlohmann/json.hpp>
 
-const TString datatype_text = "High-q^{2} multi-jet events";
+#include "../../functions/tdrStyle.cc"
+#include "../../functions/CMS_lumi.cc"
+#include "../../functions/draw_funcs.cc"
 
-#include "../../functions/fit_res.cc"
+const TString datatype_text = "High-#it{q}^{2} multi-jet events";
+const TString storage_dir = "/eos/home-k/kakang/IPres/analysis/JetHT";
 
-int ip_res(int iera, int idx) {
+const Int_t sample_mod = 1;
 
-    ROOT::EnableImplicitMT();
+const Int_t nbins = 200;
+const Float_t nsigma = 8.0;
+const Float_t sqrt_2 = sqrt(2);
 
-    TString eras[] = {"preEE", "postEE"};
+enum CombId
+{
+    PT_LOETA = 0,
+    PT_HIETA,
+    PT_ULETA,
+    PT_ALLETA,
+    ETA_LOPT,
+    ETA_HIPT,
+    ETA_ULPT,
+    ETA_ALLPT,
+    PHI_LOPT,
+    PHI_HIPT,
+    PHI_ULPT,
+    PHI_ALLPT,
+    NCOMB
+};
 
-    TString era = eras[iera];
+const char *COMB_SUFFIX[NCOMB] = {
+    "pt_loeta",
+    "pt_hieta",
+    "pt_uleta",
+    "pt_alleta",
+    "eta_lopt",
+    "eta_hipt",
+    "eta_ulpt",
+    "eta_allpt",
+    "phi_lopt",
+    "phi_hipt",
+    "phi_ulpt",
+    "phi_allpt"};
 
-    TString figdir = "/pnfs/iihe/cms/store/user/kakang/IPres/analysis/figures/JetHT_"+era+"/ip_res/";
+const int N_TRIGS = 10;
+const char *TRIG_NAMES[N_TRIGS] = {
+    "HLT_PFHT1050",
+    "HLT_PFHT890",
+    "HLT_PFHT780",
+    "HLT_PFHT680",
+    "HLT_PFHT590",
+    "HLT_PFHT510",
+    "HLT_PFHT430",
+    "HLT_PFHT370",
+    "HLT_PFHT250",
+    "HLT_PFHT180"};
 
-    TFile *datafile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_data_"+era+".root");
-    TTree *datatree = (TTree*)datafile->Get("mytree");
-    TFile *mcfile = TFile::Open("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/tuples/JetHT/all_skimmed_2022_mc_"+era+"_corr.root");
-    TTree *mctree = (TTree*)mcfile->Get("mytree");
+const char *TRIG_BRANCH_NAMES[N_TRIGS] = {
+    "trig_PFHT1050_pass",
+    "trig_PFHT890_pass",
+    "trig_PFHT780_pass",
+    "trig_PFHT680_pass",
+    "trig_PFHT590_pass",
+    "trig_PFHT510_pass",
+    "trig_PFHT430_pass",
+    "trig_PFHT370_pass",
+    "trig_PFHT250_pass",
+    "trig_PFHT180_pass"};
 
-    std::ifstream infile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+"/binning_ip_res.json");
+struct Stat
+{
+    Int_t n = 0;
+    Float_t sum = 0.0;
+    Float_t sum2 = 0.0;
+
+    void Fill(Float_t x)
+    {
+        n++;
+        sum += x;
+        sum2 += x * x;
+    }
+
+    Bool_t Valid() const { return n > 0; }
+
+    Float_t Mean() const
+    {
+        return n > 0 ? sum / Float_t(n) : 0.0;
+    }
+
+    Float_t Sigma() const
+    {
+        if (n <= 0)
+            return 0.0;
+        Float_t m = sum / Float_t(n);
+        Float_t v = sum2 / Float_t(n) - m * m;
+        return v > 0.0 ? std::sqrt(v) : 0.0;
+    }
+};
+
+struct HistInfo
+{
+    TString title;
+    TString dataFigPath;
+    TString mcFigPath;
+};
+
+Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath, Float_t tolerance = 1e-4)
+{
+    Int_t filledBins = 0;
+    for (Int_t i = 1; i <= hist->GetNbinsX(); i++)
+    {
+        if (hist->GetBinContent(i) > 0)
+            filledBins++;
+    }
+    if ((Double_t)filledBins / hist->GetNbinsX() < 0.1)
+        return 0.;
+
+    setTDRStyle();
+    lumi_sqrtS = "13.6 TeV, " + period;
+
+    RooRealVar ip_var("ip_var", "ip_var", hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax());
+    ip_var.setBins(hist->GetNbinsX());
+
+    Float_t hist_mean = hist->GetMean();
+    Float_t hist_rms = hist->GetRMS();
+
+    RooRealVar mu("mu", "mu", hist_mean, hist_mean - hist_rms, hist_mean + hist_rms);
+    RooRealVar sigma("sigma", "sigma", 0.5 * hist_rms, 0.1 * hist_rms, hist_rms);
+    RooRealVar alpha("alpha", "alpha", 2.0, 0.5, 5.0);
+    RooRealVar n("n", "n", 2.0, 0.5, 10.0);
+    RooCrystalBall model("model", "Double Crystal Ball", ip_var, mu, sigma, alpha, n, alpha, n);
+
+    RooDataHist hdatahist("hdatahist", "", ip_var, hist);
+    RooFitResult *fitResult = model.fitTo(hdatahist, RooFit::Save(true));
+    fitResult->Print();
+    delete fitResult;
+
+    Float_t ip_var_max = ip_var.getMax();
+    Float_t mean = mu.getVal();
+    Float_t low = 0.0;
+    Float_t high = ip_var_max - mean;
+
+    ip_var.setRange("normRange", mean - 1e6, mean + 1e6);
+    RooAbsReal *denom = model.createIntegral(ip_var, RooFit::Range("normRange"));
+    while (high - low > tolerance)
+    {
+        Float_t mid = 0.5 * (low + high);
+        ip_var.setRange("intRange", mean - mid, mean + mid);
+        RooAbsReal *num = model.createIntegral(ip_var, RooFit::Range("intRange"));
+        Float_t prob = num->getVal() / denom->getVal();
+        if (prob < 0.68)
+            low = mid;
+        else
+            high = mid;
+        delete num;
+    }
+    delete denom;
+    Float_t reso = 0.5 * (low + high);
+
+    TCanvas *canvas = new TCanvas("canvas", "canvas", 800, 600);
+    canvas_setup(canvas);
+    canvas->SetBottomMargin(0.15);
+    canvas->SetRightMargin(0.05);
+    canvas->SetLogy(0);
+    canvas->SetFillColor(0);
+    canvas->SetFrameFillColor(0);
+
+    RooPlot *frame = ip_var.frame();
+    hdatahist.plotOn(frame,
+                     RooFit::Name(sampletype),
+                     RooFit::MarkerColor(kBlack),
+                     RooFit::MarkerSize(1.1),
+                     RooFit::Binning(hist->GetNbinsX()),
+                     RooFit::DrawOption("ep"));
+    model.plotOn(frame,
+                 RooFit::Name("model"),
+                 RooFit::Components("model"),
+                 RooFit::LineStyle(9),
+                 RooFit::LineColor(kRed),
+                 RooFit::LineWidth(2.0),
+                 RooFit::DrawOption("L"));
+
+    frame->Draw("");
+    frame->GetYaxis()->SetTitle(hist->GetYaxis()->GetTitle());
+    frame->GetXaxis()->SetTitle(hist->GetXaxis()->GetTitle());
+    frame->GetYaxis()->SetNdivisions(810);
+    frame->GetXaxis()->SetNdivisions(810);
+    frame->SetMinimum(0);
+    frame->SetMaximum(frame->GetMaximum() * 1.3);
+
+    write_text(0.6, 0.88, datatype_text);
+    write_text(0.6, 0.8, hist->GetTitle());
+    write_text(0.6, 0.7, sampletype + " fit results:");
+    write_text(0.6, 0.65, Form("reso = %.*f", std::max(0, 2 - (Int_t)floor(log10(reso))), reso));
+    CMS_lumi(canvas);
+
+    canvas->Update();
+    canvas->SaveAs(figpath + ".png");
+    delete canvas;
+
+    return reso;
+}
+
+template <typename F>
+void process_tree_tracks(TChain *tree,
+                         Long64_t nEntries,
+                         Int_t idx,
+                         const std::vector<Float_t> &pv_trk_pt_edges,
+                         const std::vector<Float_t> &pv_trk_pt_uleta_edges,
+                         const std::vector<Float_t> &pv_trk_eta_edges,
+                         const std::vector<Float_t> &pv_trk_phi_edges,
+                         const std::vector<Float_t> &pv_trk_pt,
+                         const std::vector<Float_t> &pv_trk_eta,
+                         const std::vector<Float_t> &pv_trk_phi,
+                         const std::vector<Float_t> &pv_trk_d0,
+                         const std::vector<Float_t> &pv_trk_dz,
+                         F &&action)
+{
+    const Float_t pt_lo = pv_trk_pt_edges[idx];
+    const Float_t pt_hi = pv_trk_pt_edges[idx + 1];
+    const Float_t pt_uleta_lo = pv_trk_pt_uleta_edges[idx];
+    const Float_t pt_uleta_hi = pv_trk_pt_uleta_edges[idx + 1];
+    const Float_t eta_lo = pv_trk_eta_edges[idx];
+    const Float_t eta_hi = pv_trk_eta_edges[idx + 1];
+    const Float_t phi_lo = pv_trk_phi_edges[idx];
+    const Float_t phi_hi = pv_trk_phi_edges[idx + 1];
+
+    for (Long64_t ie = 0; ie < nEntries; ++ie)
+    {
+        tree->GetEntry(ie);
+
+        const size_t nTrk = pv_trk_pt.size();
+        for (size_t it = 0; it < nTrk; ++it)
+        {
+            Float_t pt = pv_trk_pt[it];
+            Float_t eta = pv_trk_eta[it];
+            Float_t phi = pv_trk_phi[it];
+            Float_t d0 = pv_trk_d0[it];
+            Float_t dz = pv_trk_dz[it];
+
+            const Float_t aeta = std::fabs(eta);
+
+            Bool_t in_ptbin = (pt > pt_lo && pt < pt_hi);
+            Bool_t in_ptuletabin = (pt > pt_uleta_lo && pt < pt_uleta_hi);
+            Bool_t in_etabin = (eta > eta_lo && eta < eta_hi);
+            Bool_t in_phibin = (phi > phi_lo && phi < phi_hi);
+
+            Bool_t loeta = (aeta < 1.3);
+            Bool_t hieta = (aeta > 1.3 && aeta < 2.5);
+            Bool_t uleta = (aeta > 2.5 && aeta < 3.0);
+            Bool_t alleta = (aeta < 10.0);
+
+            Bool_t lopt = (pt > 0.1 && pt < 1.0);
+            Bool_t hipt = (pt > 1.0 && pt < 3.0);
+            Bool_t ulpt = (pt > 3.0 && pt < 10.0);
+            Bool_t allpt = (pt > 0);
+
+            // pt × eta
+            if (in_ptbin && loeta)
+                action(PT_LOETA, d0, dz);
+            if (in_ptbin && hieta)
+                action(PT_HIETA, d0, dz);
+            if (in_ptuletabin && uleta)
+                action(PT_ULETA, d0, dz);
+            if (in_ptbin && alleta)
+                action(PT_ALLETA, d0, dz);
+
+            // eta × pt
+            if (in_etabin && lopt)
+                action(ETA_LOPT, d0, dz);
+            if (in_etabin && hipt)
+                action(ETA_HIPT, d0, dz);
+            if (in_etabin && ulpt)
+                action(ETA_ULPT, d0, dz);
+            if (in_etabin && allpt)
+                action(ETA_ALLPT, d0, dz);
+
+            // phi × pt
+            if (in_phibin && lopt)
+                action(PHI_LOPT, d0, dz);
+            if (in_phibin && hipt)
+                action(PHI_HIPT, d0, dz);
+            if (in_phibin && ulpt)
+                action(PHI_ULPT, d0, dz);
+            if (in_phibin && allpt)
+                action(PHI_ALLPT, d0, dz);
+        }
+    }
+}
+
+Int_t ip_res(TString period, Int_t idx)
+{
+    TString figdir = storage_dir + "/figures/" + period + "/ip_res/";
+
+    // ---------- Read JSONs ----------
+    std::ifstream tuplelist_file("/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/analysis/macros/JetHT/tuplelist.json");
+    nlohmann::json tuplelist;
+    tuplelist_file >> tuplelist;
+    tuplelist_file.close();
+
+    std::ifstream infile(storage_dir + "/json/binning.json");
     nlohmann::json binning;
     infile >> binning;
+    infile.close();
 
-    std::vector<float> pv_trk_pt_edges = binning["pv_trk_pt"].get<std::vector<float>>();
-    std::vector<float> pv_trk_eta_edges = binning["pv_trk_eta"].get<std::vector<float>>();
-    std::vector<float> pv_trk_phi_edges = binning["pv_trk_phi"].get<std::vector<float>>();
+    std::ifstream pileup_weightfile(storage_dir + "/pileup/" + period + "/pileup_ratio.json");
+    nlohmann::json pu_weights_json;
+    pileup_weightfile >> pu_weights_json;
+    pileup_weightfile.close();
 
-    TString ptcut_title = Form("%.3f<#it{p_{T}}<%.3f GeV", pv_trk_pt_edges[idx], pv_trk_pt_edges[idx+1]);
-    TString etacut_title = Form("%.2f<#it{#eta}<%.2f", pv_trk_eta_edges[idx], pv_trk_eta_edges[idx+1]);
-    TString phicut_title = Form("%.2f<#it{#phi}<%.2f", pv_trk_phi_edges[idx], pv_trk_phi_edges[idx+1]);
-    TCut ptcut = Form("pv_trk_pt > %f && pv_trk_pt < %f", pv_trk_pt_edges[idx], pv_trk_pt_edges[idx+1]);
-    TCut etacut = Form("pv_trk_eta > %f && pv_trk_eta < %f", pv_trk_eta_edges[idx], pv_trk_eta_edges[idx+1]);
-    TCut phicut = Form("pv_trk_phi > %f && pv_trk_phi < %f", pv_trk_phi_edges[idx], pv_trk_phi_edges[idx+1]);
+    std::ifstream xsec_file(storage_dir + "/pileup/" + period + "/xsec_weight.json");
+    nlohmann::json xsec_json;
+    xsec_file >> xsec_json;
+    xsec_file.close();
 
-    TH1F *h_d0_pt_loeta_tmp = new TH1F("h_d0_pt_loeta_tmp", "", 200, -1500, 1500);
-    TH1F *h_dz_pt_loeta_tmp = new TH1F("h_dz_pt_loeta_tmp", "", 200, -2000, 2000);
-    TH1F *h_d0_pt_hieta_tmp = new TH1F("h_d0_pt_hieta_tmp", "", 200, -3000, 3000);
-    TH1F *h_dz_pt_hieta_tmp = new TH1F("h_dz_pt_hieta_tmp", "", 200, -8000, 8000);
-    TH1F *h_d0_pt_eta_tmp = new TH1F("h_d0_pt_eta_tmp", "", 200, -3000, 3000);
-    TH1F *h_dz_pt_eta_tmp = new TH1F("h_dz_pt_eta_tmp", "", 200, -8000, 8000);
+    std::ifstream ps_file(storage_dir + "/pileup/" + period + "/PS_weight.json");
+    nlohmann::json ps_json;
+    ps_file >> ps_json;
+    ps_file.close();
 
-    TH1F *h_d0_eta_lopt_tmp = new TH1F("h_d0_eta_lopt_tmp", "", 200, -2000, 2000);
-    TH1F *h_dz_eta_lopt_tmp = new TH1F("h_dz_eta_lopt_tmp", "", 200, -8000, 8000);
-    TH1F *h_d0_eta_hipt_tmp = new TH1F("h_d0_eta_hipt_tmp", "", 200, -800, 800);
-    TH1F *h_dz_eta_hipt_tmp = new TH1F("h_dz_eta_hipt_tmp", "", 200, -3000, 3000);
-    TH1F *h_d0_eta_ulpt_tmp = new TH1F("h_d0_eta_ulpt_tmp", "", 200, -300, 300);
-    TH1F *h_dz_eta_ulpt_tmp = new TH1F("h_dz_eta_ulpt_tmp", "", 200, -1500, 1500);
+    std::ifstream mask_file(storage_dir + "/pileup/" + period + "/trigger_mask.json");
+    nlohmann::json mask_json;
+    mask_file >> mask_json;
+    mask_file.close();
 
-    TH1F *h_d0_phi_lopt_tmp = new TH1F("h_d0_phi_lopt_tmp", "", 200, -2000, 2000);
-    TH1F *h_dz_phi_lopt_tmp = new TH1F("h_dz_phi_lopt_tmp", "", 200, -8000, 8000);
-    TH1F *h_d0_phi_hipt_tmp = new TH1F("h_d0_phi_hipt_tmp", "", 200, -800, 800);
-    TH1F *h_dz_phi_hipt_tmp = new TH1F("h_dz_phi_hipt_tmp", "", 200, -3000, 3000);
-    TH1F *h_d0_phi_ulpt_tmp = new TH1F("h_d0_phi_ulpt_tmp", "", 200, -300, 300);
-    TH1F *h_dz_phi_ulpt_tmp = new TH1F("h_dz_phi_ulpt_tmp", "", 200, -1500, 1500);
+    // ---------- Build lookup tables ----------
+    std::vector<Float_t> pv_trk_pt_edges = binning["pv_trk_pt"].get<std::vector<Float_t>>();
+    std::vector<Float_t> pv_trk_pt_uleta_edges = binning["pv_trk_pt_uleta"].get<std::vector<Float_t>>();
+    std::vector<Float_t> pv_trk_eta_edges = binning["pv_trk_eta"].get<std::vector<Float_t>>();
+    std::vector<Float_t> pv_trk_phi_edges = binning["pv_trk_phi"].get<std::vector<Float_t>>();
 
-    datatree->Project("h_d0_pt_loeta_tmp", "pv_trk_d0_pvunbiased", ptcut+"abs(pv_trk_eta) < 1.4");
-    datatree->Project("h_dz_pt_loeta_tmp", "pv_trk_dz_pvunbiased", ptcut+"abs(pv_trk_eta) < 1.4");
-    datatree->Project("h_d0_pt_hieta_tmp", "pv_trk_d0_pvunbiased", ptcut+"abs(pv_trk_eta) > 1.4"+"abs(pv_trk_eta) < 3");
-    datatree->Project("h_dz_pt_hieta_tmp", "pv_trk_dz_pvunbiased", ptcut+"abs(pv_trk_eta) > 1.4"+"abs(pv_trk_eta) < 3");
-    datatree->Project("h_d0_pt_eta_tmp", "pv_trk_d0_pvunbiased", ptcut+"abs(pv_trk_eta) < 3");
-    datatree->Project("h_dz_pt_eta_tmp", "pv_trk_dz_pvunbiased", ptcut+"abs(pv_trk_eta) < 3");
+    std::vector<Float_t> PU_weights(pu_weights_json.size());
+    for (const auto &item : pu_weights_json)
+    {
+        Int_t bin = item["bin"];
+        PU_weights[bin - 1] = item["content"].get<Float_t>();
+    }
 
-    datatree->Project("h_d0_eta_lopt_tmp", "pv_trk_d0_pvunbiased", etacut+"pv_trk_pt>0.1 && pv_trk_pt<1");
-    datatree->Project("h_dz_eta_lopt_tmp", "pv_trk_dz_pvunbiased", etacut+"pv_trk_pt>0.1 && pv_trk_pt<1");
-    datatree->Project("h_d0_eta_hipt_tmp", "pv_trk_d0_pvunbiased", etacut+"pv_trk_pt>1 && pv_trk_pt<3");
-    datatree->Project("h_dz_eta_hipt_tmp", "pv_trk_dz_pvunbiased", etacut+"pv_trk_pt>1 && pv_trk_pt<3");
-    datatree->Project("h_d0_eta_ulpt_tmp", "pv_trk_d0_pvunbiased", etacut+"pv_trk_pt>3 && pv_trk_pt<10");
-    datatree->Project("h_dz_eta_ulpt_tmp", "pv_trk_dz_pvunbiased", etacut+"pv_trk_pt>3 && pv_trk_pt<10");
+    std::map<std::string, Float_t> xsec_weight_map;
+    for (const auto &item : xsec_json)
+        xsec_weight_map[item["dataset"].get<std::string>()] = item["xsec_weight"].get<Float_t>();
 
-    datatree->Project("h_d0_phi_lopt_tmp", "pv_trk_d0_pvunbiased", phicut+"pv_trk_pt>0.1 && pv_trk_pt<1");
-    datatree->Project("h_dz_phi_lopt_tmp", "pv_trk_dz_pvunbiased", phicut+"pv_trk_pt>0.1 && pv_trk_pt<1");
-    datatree->Project("h_d0_phi_hipt_tmp", "pv_trk_d0_pvunbiased", phicut+"pv_trk_pt>1 && pv_trk_pt<3");
-    datatree->Project("h_dz_phi_hipt_tmp", "pv_trk_dz_pvunbiased", phicut+"pv_trk_pt>1 && pv_trk_pt<3");
-    datatree->Project("h_d0_phi_ulpt_tmp", "pv_trk_d0_pvunbiased", phicut+"pv_trk_pt>3 && pv_trk_pt<10");
-    datatree->Project("h_dz_phi_ulpt_tmp", "pv_trk_dz_pvunbiased", phicut+"pv_trk_pt>3 && pv_trk_pt<10");
+    Float_t ps_weights_final[N_TRIGS];
+    for (Int_t it = 0; it < N_TRIGS; ++it)
+        ps_weights_final[it] = ps_json[it]["PS_weight"].get<Float_t>();
 
-    float d0_pt_loeta_mean = h_d0_pt_loeta_tmp->GetMean();
-    float dz_pt_loeta_mean = h_dz_pt_loeta_tmp->GetMean();
-    float d0_pt_hieta_mean = h_d0_pt_hieta_tmp->GetMean();
-    float dz_pt_hieta_mean = h_dz_pt_hieta_tmp->GetMean();
-    float d0_pt_eta_mean = h_d0_pt_eta_tmp->GetMean();
-    float dz_pt_eta_mean = h_dz_pt_eta_tmp->GetMean();
+    // ---------- Branch variables ----------
+    std::vector<Float_t> *pv_trk_pt = nullptr;
+    std::vector<Float_t> *pv_trk_eta = nullptr;
+    std::vector<Float_t> *pv_trk_phi = nullptr;
+    std::vector<Float_t> *pv_trk_d0 = nullptr;
+    std::vector<Float_t> *pv_trk_dz = nullptr;
+    Int_t NumTrueInts;
+    Bool_t trig_pass_raw[N_TRIGS];
 
-    float d0_eta_lopt_mean = h_d0_eta_lopt_tmp->GetMean();
-    float dz_eta_lopt_mean = h_dz_eta_lopt_tmp->GetMean();
-    float d0_eta_hipt_mean = h_d0_eta_hipt_tmp->GetMean();
-    float dz_eta_hipt_mean = h_dz_eta_hipt_tmp->GetMean();
-    float d0_eta_ulpt_mean = h_d0_eta_ulpt_tmp->GetMean();
-    float dz_eta_ulpt_mean = h_dz_eta_ulpt_tmp->GetMean();
+    auto bind_common_branches = [&](TChain *tree)
+    {
+        tree->SetBranchAddress("pv_trk_pt", &pv_trk_pt);
+        tree->SetBranchAddress("pv_trk_eta", &pv_trk_eta);
+        tree->SetBranchAddress("pv_trk_phi", &pv_trk_phi);
+        tree->SetBranchAddress("pv_trk_d0_pvunbiased", &pv_trk_d0);
+        tree->SetBranchAddress("pv_trk_dz_pvunbiased", &pv_trk_dz);
+    };
 
-    float d0_phi_lopt_mean = h_d0_phi_lopt_tmp->GetMean();
-    float dz_phi_lopt_mean = h_dz_phi_lopt_tmp->GetMean();
-    float d0_phi_hipt_mean = h_d0_phi_hipt_tmp->GetMean();
-    float dz_phi_hipt_mean = h_dz_phi_hipt_tmp->GetMean();
-    float d0_phi_ulpt_mean = h_d0_phi_ulpt_tmp->GetMean();
-    float dz_phi_ulpt_mean = h_dz_phi_ulpt_tmp->GetMean();
+    auto bind_trig_branches = [&](TChain *tree)
+    {
+        for (int it = 0; it < N_TRIGS; ++it)
+            tree->SetBranchAddress(TRIG_BRANCH_NAMES[it], &trig_pass_raw[it]);
+    };
 
-    float d0_pt_loeta_stddev = h_d0_pt_loeta_tmp->GetStdDev();
-    float dz_pt_loeta_stddev = h_dz_pt_loeta_tmp->GetStdDev();
-    float d0_pt_hieta_stddev = h_d0_pt_hieta_tmp->GetStdDev();
-    float dz_pt_hieta_stddev = h_dz_pt_hieta_tmp->GetStdDev();
-    float d0_pt_eta_stddev = h_d0_pt_eta_tmp->GetStdDev();
-    float dz_pt_eta_stddev = h_dz_pt_eta_tmp->GetStdDev();
+    // ---------- Build data TChain ----------
+    TChain *datatree = new TChain("residuals/tree");
+    for (auto &entry : tuplelist[period.Data()]["data"])
+    {
+        std::string path = entry["path"];
+        if (!path.empty())
+            datatree->Add(TString(path) + "/*.root");
+    }
+    bind_common_branches(datatree);
+    Long64_t nData = datatree->GetEntries();
 
-    float d0_eta_lopt_stddev = h_d0_eta_lopt_tmp->GetStdDev();
-    float dz_eta_lopt_stddev = h_dz_eta_lopt_tmp->GetStdDev();
-    float d0_eta_hipt_stddev = h_d0_eta_hipt_tmp->GetStdDev();
-    float dz_eta_hipt_stddev = h_dz_eta_hipt_tmp->GetStdDev();
-    float d0_eta_ulpt_stddev = h_d0_eta_ulpt_tmp->GetStdDev();
-    float dz_eta_ulpt_stddev = h_dz_eta_ulpt_tmp->GetStdDev();
+    // ---------- Histogram info ----------
+    TString ptcut_title = Form("%.3f<#it{p_{T}}<%.3f GeV", pv_trk_pt_edges[idx], pv_trk_pt_edges[idx + 1]);
+    TString ptcut_uleta_title = Form("%.3f<#it{p_{T}}<%.3f GeV", pv_trk_pt_uleta_edges[idx], pv_trk_pt_uleta_edges[idx + 1]);
+    TString etacut_title = Form("%.2f<#it{#eta}<%.2f", pv_trk_eta_edges[idx], pv_trk_eta_edges[idx + 1]);
+    TString phicut_title = Form("%.2f<#it{#phi}<%.2f", pv_trk_phi_edges[idx], pv_trk_phi_edges[idx + 1]);
 
-    float d0_phi_lopt_stddev = h_d0_phi_lopt_tmp->GetStdDev();
-    float dz_phi_lopt_stddev = h_dz_phi_lopt_tmp->GetStdDev();
-    float d0_phi_hipt_stddev = h_d0_phi_hipt_tmp->GetStdDev();
-    float dz_phi_hipt_stddev = h_dz_phi_hipt_tmp->GetStdDev();
-    float d0_phi_ulpt_stddev = h_d0_phi_ulpt_tmp->GetStdDev();
-    float dz_phi_ulpt_stddev = h_dz_phi_ulpt_tmp->GetStdDev();
+    TString lopt_title = "0.1<#it{p_{T}}<1 GeV";
+    TString hipt_title = "1<#it{p_{T}}<3 GeV";
+    TString ulpt_title = "3<#it{p_{T}}<10 GeV";
 
-    delete h_d0_pt_loeta_tmp;
-    delete h_dz_pt_loeta_tmp;
-    delete h_d0_pt_hieta_tmp;
-    delete h_dz_pt_hieta_tmp;
-    delete h_d0_pt_eta_tmp;
-    delete h_dz_pt_eta_tmp;
+    TString loeta_title = "|#it{#eta}|<1.3";
+    TString hieta_title = "1.3<|#it{#eta}|<2.5";
+    TString uleta_title = "2.5<|#it{#eta}|<3.0";
 
-    delete h_d0_eta_lopt_tmp;
-    delete h_dz_eta_lopt_tmp;
-    delete h_d0_eta_hipt_tmp;
-    delete h_dz_eta_hipt_tmp;
-    delete h_d0_eta_ulpt_tmp;
-    delete h_dz_eta_ulpt_tmp;
+    HistInfo info_d0[NCOMB];
+    HistInfo info_dz[NCOMB];
 
-    delete h_d0_phi_lopt_tmp;
-    delete h_dz_phi_lopt_tmp;
-    delete h_d0_phi_hipt_tmp;
-    delete h_dz_phi_hipt_tmp;
-    delete h_d0_phi_ulpt_tmp;
-    delete h_dz_phi_ulpt_tmp;
+    info_d0[PT_LOETA].title = "#splitline{" + ptcut_title + "}{" + loeta_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[PT_LOETA].dataFigPath = figdir + Form("ippv_xy_fit/data_pt_loeta_%d", idx);
+    info_d0[PT_LOETA].mcFigPath = figdir + Form("ippv_xy_fit/mc_pt_loeta_%d", idx);
+    info_dz[PT_LOETA].title = "#splitline{" + ptcut_title + "}{" + loeta_title + "};Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[PT_LOETA].dataFigPath = figdir + Form("ippv_z_fit/data_pt_loeta_%d", idx);
+    info_dz[PT_LOETA].mcFigPath = figdir + Form("ippv_z_fit/mc_pt_loeta_%d", idx);
 
-    TH1F *h_data_d0_pt_loeta = new TH1F("h_data_d0_pt_loeta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<1.4};Track IP #it{d_{xy}} [#mum];# tracks", 200, d0_pt_loeta_mean-8*d0_pt_loeta_stddev, d0_pt_loeta_mean+8*d0_pt_loeta_stddev);
-    TH1F *h_data_dz_pt_loeta = new TH1F("h_data_dz_pt_loeta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<1.4};Track IP #it{d_{z}} [mm];# tracks", 200, dz_pt_loeta_mean-8*dz_pt_loeta_stddev, dz_pt_loeta_mean+8*dz_pt_loeta_stddev);
-    TH1F *h_data_d0_pt_hieta = new TH1F("h_data_d0_pt_hieta", "#splitline{"+ptcut_title+"}{1.4<|#it{#eta}|<3.0};Track IP #it{d_{xy}} [#mum];# tracks", 200, d0_pt_hieta_mean-8*d0_pt_hieta_stddev, d0_pt_hieta_mean+8*d0_pt_hieta_stddev);
-    TH1F *h_data_dz_pt_hieta = new TH1F("h_data_dz_pt_hieta", "#splitline{"+ptcut_title+"}{1.4<|#it{#eta}|<3.0};Track IP #it{d_{z}} [mm];# tracks", 200, dz_pt_hieta_mean-8*dz_pt_hieta_stddev, dz_pt_hieta_mean+8*dz_pt_hieta_stddev);
-    TH1F *h_data_d0_pt_eta = new TH1F("h_data_d0_pt_eta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<3.0};Track IP #it{d_{xy}} [#mum];# tracks", 200, d0_pt_eta_mean-8*d0_pt_eta_stddev, d0_pt_eta_mean+8*d0_pt_eta_stddev);
-    TH1F *h_data_dz_pt_eta = new TH1F("h_data_dz_pt_eta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<3.0};Track IP #it{d_{z}} [mm];# tracks", 200, dz_pt_eta_mean-8*dz_pt_eta_stddev, dz_pt_eta_mean+8*dz_pt_eta_stddev);
+    info_d0[PT_HIETA].title = "#splitline{" + ptcut_title + "}{" + hieta_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[PT_HIETA].dataFigPath = figdir + Form("ippv_xy_fit/data_pt_hieta_%d", idx);
+    info_d0[PT_HIETA].mcFigPath = figdir + Form("ippv_xy_fit/mc_pt_hieta_%d", idx);
+    info_dz[PT_HIETA].title = "#splitline{" + ptcut_title + "}{" + hieta_title + "};Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[PT_HIETA].dataFigPath = figdir + Form("ippv_z_fit/data_pt_hieta_%d", idx);
+    info_dz[PT_HIETA].mcFigPath = figdir + Form("ippv_z_fit/mc_pt_hieta_%d", idx);
 
-    TH1F *h_data_d0_eta_lopt = new TH1F("h_data_d0_eta_lopt", "#splitline{"+etacut_title+"}{0.1<#it{p_{T}}<1 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 200, d0_eta_lopt_mean-8*d0_eta_lopt_stddev, d0_eta_lopt_mean+8*d0_eta_lopt_stddev);
-    TH1F *h_data_dz_eta_lopt = new TH1F("h_data_dz_eta_lopt", "#splitline{"+etacut_title+"}{0.1<#it{p_{T}}<1 GeV};Track IP #it{d_{z}} [mm];# tracks", 200, dz_eta_lopt_mean-8*dz_eta_lopt_stddev, dz_eta_lopt_mean+8*dz_eta_lopt_stddev);
-    TH1F *h_data_d0_eta_hipt = new TH1F("h_data_d0_eta_hipt", "#splitline{"+etacut_title+"}{1<#it{p_{T}}<3 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 200, d0_eta_hipt_mean-8*d0_eta_hipt_stddev, d0_eta_hipt_mean+8*d0_eta_hipt_stddev);
-    TH1F *h_data_dz_eta_hipt = new TH1F("h_data_dz_eta_hipt", "#splitline{"+etacut_title+"}{1<#it{p_{T}}<3 GeV};Track IP #it{d_{z}} [mm];# tracks", 200, dz_eta_hipt_mean-8*dz_eta_hipt_stddev, dz_eta_hipt_mean+8*dz_eta_hipt_stddev);
-    TH1F *h_data_d0_eta_ulpt = new TH1F("h_data_d0_eta_ulpt", "#splitline{"+etacut_title+"}{3<#it{p_{T}}<10 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 200, d0_eta_ulpt_mean-8*d0_eta_ulpt_stddev, d0_eta_ulpt_mean+8*d0_eta_ulpt_stddev);
-    TH1F *h_data_dz_eta_ulpt = new TH1F("h_data_dz_eta_ulpt", "#splitline{"+etacut_title+"}{3<#it{p_{T}}<10 GeV};Track IP #it{d_{z}} [mm];# tracks", 200, dz_eta_ulpt_mean-8*dz_eta_ulpt_stddev, dz_eta_ulpt_mean+8*dz_eta_ulpt_stddev);
+    info_d0[PT_ULETA].title = "#splitline{" + ptcut_uleta_title + "}{" + uleta_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[PT_ULETA].dataFigPath = figdir + Form("ippv_xy_fit/data_pt_uleta_%d", idx);
+    info_d0[PT_ULETA].mcFigPath = figdir + Form("ippv_xy_fit/mc_pt_uleta_%d", idx);
+    info_dz[PT_ULETA].title = "#splitline{" + ptcut_uleta_title + "}{" + uleta_title + "};Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[PT_ULETA].dataFigPath = figdir + Form("ippv_z_fit/data_pt_uleta_%d", idx);
+    info_dz[PT_ULETA].mcFigPath = figdir + Form("ippv_z_fit/mc_pt_uleta_%d", idx);
 
-    TH1F *h_data_d0_phi_lopt = new TH1F("h_data_d0_phi_lopt", "#splitline{"+phicut_title+"}{0.1<#it{p_{T}}<1 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 200, d0_phi_lopt_mean-8*d0_phi_lopt_stddev, d0_phi_lopt_mean+8*d0_phi_lopt_stddev);
-    TH1F *h_data_dz_phi_lopt = new TH1F("h_data_dz_phi_lopt", "#splitline{"+phicut_title+"}{0.1<#it{p_{T}}<1 GeV};Track IP #it{d_{z}} [mm];# tracks", 200, dz_phi_lopt_mean-8*dz_phi_lopt_stddev, dz_phi_lopt_mean+8*dz_phi_lopt_stddev);
-    TH1F *h_data_d0_phi_hipt = new TH1F("h_data_d0_phi_hipt", "#splitline{"+phicut_title+"}{1<#it{p_{T}}<3 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 200, d0_phi_hipt_mean-8*d0_phi_hipt_stddev, d0_phi_hipt_mean+8*d0_phi_hipt_stddev);
-    TH1F *h_data_dz_phi_hipt = new TH1F("h_data_dz_phi_hipt", "#splitline{"+phicut_title+"}{1<#it{p_{T}}<3 GeV};Track IP #it{d_{z}} [mm];# tracks", 200, dz_phi_hipt_mean-8*dz_phi_hipt_stddev, dz_phi_hipt_mean+8*dz_phi_hipt_stddev);
-    TH1F *h_data_d0_phi_ulpt = new TH1F("h_data_d0_phi_ulpt", "#splitline{"+phicut_title+"}{3<#it{p_{T}}<10 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 200, d0_phi_ulpt_mean-8*d0_phi_ulpt_stddev, d0_phi_ulpt_mean+8*d0_phi_ulpt_stddev);
-    TH1F *h_data_dz_phi_ulpt = new TH1F("h_data_dz_phi_ulpt", "#splitline{"+phicut_title+"}{3<#it{p_{T}}<10 GeV};Track IP #it{d_{z}} [mm];# tracks", 200, dz_phi_ulpt_mean-8*dz_phi_ulpt_stddev, dz_phi_ulpt_mean+8*dz_phi_ulpt_stddev);
+    info_d0[PT_ALLETA].title = ptcut_title + ";Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[PT_ALLETA].dataFigPath = figdir + Form("ippv_xy_fit/data_pt_alleta_%d", idx);
+    info_d0[PT_ALLETA].mcFigPath = figdir + Form("ippv_xy_fit/mc_pt_alleta_%d", idx);
+    info_dz[PT_ALLETA].title = ptcut_title + ";Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[PT_ALLETA].dataFigPath = figdir + Form("ippv_z_fit/data_pt_alleta_%d", idx);
+    info_dz[PT_ALLETA].mcFigPath = figdir + Form("ippv_z_fit/mc_pt_alleta_%d", idx);
 
-    datatree->Project("h_data_d0_pt_loeta", "pv_trk_d0_pvunbiased", ptcut+"abs(pv_trk_eta) < 1.4");
-    datatree->Project("h_data_dz_pt_loeta", "pv_trk_dz_pvunbiased", ptcut+"abs(pv_trk_eta) < 1.4");
-    datatree->Project("h_data_d0_pt_hieta", "pv_trk_d0_pvunbiased", ptcut+"abs(pv_trk_eta) > 1.4"+"abs(pv_trk_eta) < 3");
-    datatree->Project("h_data_dz_pt_hieta", "pv_trk_dz_pvunbiased", ptcut+"abs(pv_trk_eta) > 1.4"+"abs(pv_trk_eta) < 3");
-    datatree->Project("h_data_d0_pt_eta", "pv_trk_d0_pvunbiased", ptcut+"abs(pv_trk_eta) < 3");
-    datatree->Project("h_data_dz_pt_eta", "pv_trk_dz_pvunbiased", ptcut+"abs(pv_trk_eta) < 3");
+    info_d0[ETA_LOPT].title = "#splitline{" + etacut_title + "}{" + lopt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[ETA_LOPT].dataFigPath = figdir + Form("ippv_xy_fit/data_eta_lopt_%d", idx);
+    info_d0[ETA_LOPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_eta_lopt_%d", idx);
+    info_dz[ETA_LOPT].title = "#splitline{" + etacut_title + "}{" + lopt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[ETA_LOPT].dataFigPath = figdir + Form("ippv_z_fit/data_eta_lopt_%d", idx);
+    info_dz[ETA_LOPT].mcFigPath = figdir + Form("ippv_z_fit/mc_eta_lopt_%d", idx);
 
-    datatree->Project("h_data_d0_eta_lopt", "pv_trk_d0_pvunbiased", etacut+"pv_trk_pt>0.1 && pv_trk_pt<1");
-    datatree->Project("h_data_dz_eta_lopt", "pv_trk_dz_pvunbiased", etacut+"pv_trk_pt>0.1 && pv_trk_pt<1");
-    datatree->Project("h_data_d0_eta_hipt", "pv_trk_d0_pvunbiased", etacut+"pv_trk_pt>1 && pv_trk_pt<3");
-    datatree->Project("h_data_dz_eta_hipt", "pv_trk_dz_pvunbiased", etacut+"pv_trk_pt>1 && pv_trk_pt<3");
-    datatree->Project("h_data_d0_eta_ulpt", "pv_trk_d0_pvunbiased", etacut+"pv_trk_pt>3 && pv_trk_pt<10");
-    datatree->Project("h_data_dz_eta_ulpt", "pv_trk_dz_pvunbiased", etacut+"pv_trk_pt>3 && pv_trk_pt<10");
+    info_d0[ETA_HIPT].title = "#splitline{" + etacut_title + "}{" + hipt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[ETA_HIPT].dataFigPath = figdir + Form("ippv_xy_fit/data_eta_hipt_%d", idx);
+    info_d0[ETA_HIPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_eta_hipt_%d", idx);
+    info_dz[ETA_HIPT].title = "#splitline{" + etacut_title + "}{" + hipt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[ETA_HIPT].dataFigPath = figdir + Form("ippv_z_fit/data_eta_hipt_%d", idx);
+    info_dz[ETA_HIPT].mcFigPath = figdir + Form("ippv_z_fit/mc_eta_hipt_%d", idx);
 
-    datatree->Project("h_data_d0_phi_lopt", "pv_trk_d0_pvunbiased", phicut+"pv_trk_pt>0.1 && pv_trk_pt<1");
-    datatree->Project("h_data_dz_phi_lopt", "pv_trk_dz_pvunbiased", phicut+"pv_trk_pt>0.1 && pv_trk_pt<1");
-    datatree->Project("h_data_d0_phi_hipt", "pv_trk_d0_pvunbiased", phicut+"pv_trk_pt>1 && pv_trk_pt<3");
-    datatree->Project("h_data_dz_phi_hipt", "pv_trk_dz_pvunbiased", phicut+"pv_trk_pt>1 && pv_trk_pt<3");
-    datatree->Project("h_data_d0_phi_ulpt", "pv_trk_d0_pvunbiased", phicut+"pv_trk_pt>3 && pv_trk_pt<10");
-    datatree->Project("h_data_dz_phi_ulpt", "pv_trk_dz_pvunbiased", phicut+"pv_trk_pt>3 && pv_trk_pt<10");
+    info_d0[ETA_ULPT].title = "#splitline{" + etacut_title + "}{" + ulpt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[ETA_ULPT].dataFigPath = figdir + Form("ippv_xy_fit/data_eta_ulpt_%d", idx);
+    info_d0[ETA_ULPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_eta_ulpt_%d", idx);
+    info_dz[ETA_ULPT].title = "#splitline{" + etacut_title + "}{" + ulpt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[ETA_ULPT].dataFigPath = figdir + Form("ippv_z_fit/data_eta_ulpt_%d", idx);
+    info_dz[ETA_ULPT].mcFigPath = figdir + Form("ippv_z_fit/mc_eta_ulpt_%d", idx);
 
-    TH1F *h_mc_d0_pt_loeta = new TH1F("h_mc_d0_pt_loeta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<1.4};Track IP #it{d_{xy}} [#mum];# tracks", 100, d0_pt_loeta_mean-8*d0_pt_loeta_stddev, d0_pt_loeta_mean+8*d0_pt_loeta_stddev);
-    TH1F *h_mc_dz_pt_loeta = new TH1F("h_mc_dz_pt_loeta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<1.4};Track IP #it{d_{z}} [mm];# tracks", 100, dz_pt_loeta_mean-8*dz_pt_loeta_stddev, dz_pt_loeta_mean+8*dz_pt_loeta_stddev);
-    TH1F *h_mc_d0_pt_hieta = new TH1F("h_mc_d0_pt_hieta", "#splitline{"+ptcut_title+"}{1.4<|#it{#eta}|<3.0};Track IP #it{d_{xy}} [#mum];# tracks", 100, d0_pt_hieta_mean-8*d0_pt_hieta_stddev, d0_pt_hieta_mean+8*d0_pt_hieta_stddev);
-    TH1F *h_mc_dz_pt_hieta = new TH1F("h_mc_dz_pt_hieta", "#splitline{"+ptcut_title+"}{1.4<|#it{#eta}|<3.0};Track IP #it{d_{z}} [mm];# tracks", 100, dz_pt_hieta_mean-8*dz_pt_hieta_stddev, dz_pt_hieta_mean+8*dz_pt_hieta_stddev);
-    TH1F *h_mc_d0_pt_eta = new TH1F("h_mc_d0_pt_eta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<3.0};Track IP #it{d_{xy}} [#mum];# tracks", 100, d0_pt_eta_mean-8*d0_pt_eta_stddev, d0_pt_eta_mean+8*d0_pt_eta_stddev);
-    TH1F *h_mc_dz_pt_eta = new TH1F("h_mc_dz_pt_eta", "#splitline{"+ptcut_title+"}{|#it{#eta}|<3.0};Track IP #it{d_{z}} [mm];# tracks", 100, dz_pt_eta_mean-8*dz_pt_eta_stddev, dz_pt_eta_mean+8*dz_pt_eta_stddev);
+    info_d0[ETA_ALLPT].title = etacut_title + ";Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[ETA_ALLPT].dataFigPath = figdir + Form("ippv_xy_fit/data_eta_allpt_%d", idx);
+    info_d0[ETA_ALLPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_eta_allpt_%d", idx);
+    info_dz[ETA_ALLPT].title = etacut_title + ";Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[ETA_ALLPT].dataFigPath = figdir + Form("ippv_z_fit/data_eta_allpt_%d", idx);
+    info_dz[ETA_ALLPT].mcFigPath = figdir + Form("ippv_z_fit/mc_eta_allpt_%d", idx);
 
-    TH1F *h_mc_d0_eta_lopt = new TH1F("h_mc_d0_eta_lopt", "#splitline{"+etacut_title+"}{0.1<#it{p_{T}}<1 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 100, d0_eta_lopt_mean-8*d0_eta_lopt_stddev, d0_eta_lopt_mean+8*d0_eta_lopt_stddev);
-    TH1F *h_mc_dz_eta_lopt = new TH1F("h_mc_dz_eta_lopt", "#splitline{"+etacut_title+"}{0.1<#it{p_{T}}<1 GeV};Track IP #it{d_{z}} [mm];# tracks", 100, dz_eta_lopt_mean-8*dz_eta_lopt_stddev, dz_eta_lopt_mean+8*dz_eta_lopt_stddev);
-    TH1F *h_mc_d0_eta_hipt = new TH1F("h_mc_d0_eta_hipt", "#splitline{"+etacut_title+"}{1<#it{p_{T}}<3 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 100, d0_eta_hipt_mean-8*d0_eta_hipt_stddev, d0_eta_hipt_mean+8*d0_eta_hipt_stddev);
-    TH1F *h_mc_dz_eta_hipt = new TH1F("h_mc_dz_eta_hipt", "#splitline{"+etacut_title+"}{1<#it{p_{T}}<3 GeV};Track IP #it{d_{z}} [mm];# tracks", 100, dz_eta_hipt_mean-8*dz_eta_hipt_stddev, dz_eta_hipt_mean+8*dz_eta_hipt_stddev);
-    TH1F *h_mc_d0_eta_ulpt = new TH1F("h_mc_d0_eta_ulpt", "#splitline{"+etacut_title+"}{3<#it{p_{T}}<10 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 100, d0_eta_ulpt_mean-8*d0_eta_ulpt_stddev, d0_eta_ulpt_mean+8*d0_eta_ulpt_stddev);
-    TH1F *h_mc_dz_eta_ulpt = new TH1F("h_mc_dz_eta_ulpt", "#splitline{"+etacut_title+"}{3<#it{p_{T}}<10 GeV};Track IP #it{d_{z}} [mm];# tracks", 100, dz_eta_ulpt_mean-8*dz_eta_ulpt_stddev, dz_eta_ulpt_mean+8*dz_eta_ulpt_stddev);
+    info_d0[PHI_LOPT].title = "#splitline{" + phicut_title + "}{" + lopt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[PHI_LOPT].dataFigPath = figdir + Form("ippv_xy_fit/data_phi_lopt_%d", idx);
+    info_d0[PHI_LOPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_phi_lopt_%d", idx);
+    info_dz[PHI_LOPT].title = "#splitline{" + phicut_title + "}{" + lopt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[PHI_LOPT].dataFigPath = figdir + Form("ippv_z_fit/data_phi_lopt_%d", idx);
+    info_dz[PHI_LOPT].mcFigPath = figdir + Form("ippv_z_fit/mc_phi_lopt_%d", idx);
 
-    TH1F *h_mc_d0_phi_lopt = new TH1F("h_mc_d0_phi_lopt", "#splitline{"+phicut_title+"}{0.1<#it{p_{T}}<1 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 100, d0_phi_lopt_mean-8*d0_phi_lopt_stddev, d0_phi_lopt_mean+8*d0_phi_lopt_stddev);
-    TH1F *h_mc_dz_phi_lopt = new TH1F("h_mc_dz_phi_lopt", "#splitline{"+phicut_title+"}{0.1<#it{p_{T}}<1 GeV};Track IP #it{d_{z}} [mm];# tracks", 100, dz_phi_lopt_mean-8*dz_phi_lopt_stddev, dz_phi_lopt_mean+8*dz_phi_lopt_stddev);
-    TH1F *h_mc_d0_phi_hipt = new TH1F("h_mc_d0_phi_hipt", "#splitline{"+phicut_title+"}{1<#it{p_{T}}<3 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 100, d0_phi_hipt_mean-8*d0_phi_hipt_stddev, d0_phi_hipt_mean+8*d0_phi_hipt_stddev);
-    TH1F *h_mc_dz_phi_hipt = new TH1F("h_mc_dz_phi_hipt", "#splitline{"+phicut_title+"}{1<#it{p_{T}}<3 GeV};Track IP #it{d_{z}} [mm];# tracks", 100, dz_phi_hipt_mean-8*dz_phi_hipt_stddev, dz_phi_hipt_mean+8*dz_phi_hipt_stddev);
-    TH1F *h_mc_d0_phi_ulpt = new TH1F("h_mc_d0_phi_ulpt", "#splitline{"+phicut_title+"}{3<#it{p_{T}}<10 GeV};Track IP #it{d_{xy}} [#mum];# tracks", 100, d0_phi_ulpt_mean-8*d0_phi_ulpt_stddev, d0_phi_ulpt_mean+8*d0_phi_ulpt_stddev);
-    TH1F *h_mc_dz_phi_ulpt = new TH1F("h_mc_dz_phi_ulpt", "#splitline{"+phicut_title+"}{3<#it{p_{T}}<10 GeV};Track IP #it{d_{z}} [mm];# tracks", 100, dz_phi_ulpt_mean-8*dz_phi_ulpt_stddev, dz_phi_ulpt_mean+8*dz_phi_ulpt_stddev);
+    info_d0[PHI_HIPT].title = "#splitline{" + phicut_title + "}{" + hipt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[PHI_HIPT].dataFigPath = figdir + Form("ippv_xy_fit/data_phi_hipt_%d", idx);
+    info_d0[PHI_HIPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_phi_hipt_%d", idx);
+    info_dz[PHI_HIPT].title = "#splitline{" + phicut_title + "}{" + hipt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[PHI_HIPT].dataFigPath = figdir + Form("ippv_z_fit/data_phi_hipt_%d", idx);
+    info_dz[PHI_HIPT].mcFigPath = figdir + Form("ippv_z_fit/mc_phi_hipt_%d", idx);
 
-    mctree->Project("h_mc_d0_pt_loeta", "pv_trk_d0_pvunbiased", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 1.4").GetTitle() + ")");
-    mctree->Project("h_mc_dz_pt_loeta", "pv_trk_dz_pvunbiased", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 1.4").GetTitle() + ")");
-    mctree->Project("h_mc_d0_pt_hieta", "pv_trk_d0_pvunbiased", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (ptcut+"abs(pv_trk_eta) > 1.4"+"abs(pv_trk_eta) < 3").GetTitle() + ")");
-    mctree->Project("h_mc_dz_pt_hieta", "pv_trk_dz_pvunbiased", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (ptcut+"abs(pv_trk_eta) > 1.4"+"abs(pv_trk_eta) < 3").GetTitle() + ")");
-    mctree->Project("h_mc_d0_pt_eta", "pv_trk_d0_pvunbiased", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 3").GetTitle() + ")");
-    mctree->Project("h_mc_dz_pt_eta", "pv_trk_dz_pvunbiased", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (ptcut+"abs(pv_trk_eta) < 3").GetTitle() + ")");
+    info_d0[PHI_ULPT].title = "#splitline{" + phicut_title + "}{" + ulpt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[PHI_ULPT].dataFigPath = figdir + Form("ippv_xy_fit/data_phi_ulpt_%d", idx);
+    info_d0[PHI_ULPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_phi_ulpt_%d", idx);
+    info_dz[PHI_ULPT].title = "#splitline{" + phicut_title + "}{" + ulpt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[PHI_ULPT].dataFigPath = figdir + Form("ippv_z_fit/data_phi_ulpt_%d", idx);
+    info_dz[PHI_ULPT].mcFigPath = figdir + Form("ippv_z_fit/mc_phi_ulpt_%d", idx);
 
-    mctree->Project("h_mc_d0_eta_lopt", "pv_trk_d0_pvunbiased", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (etacut+"pv_trk_pt > 0.1 && pv_trk_pt <1").GetTitle() + ")");
-    mctree->Project("h_mc_dz_eta_lopt", "pv_trk_dz_pvunbiased", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (etacut+"pv_trk_pt > 0.1 && pv_trk_pt < 1").GetTitle() + ")");
-    mctree->Project("h_mc_d0_eta_hipt", "pv_trk_d0_pvunbiased", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (etacut+"pv_trk_pt > 1 && pv_trk_pt < 3").GetTitle() + ")");
-    mctree->Project("h_mc_dz_eta_hipt", "pv_trk_dz_pvunbiased", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (etacut+"pv_trk_pt > 1 && pv_trk_pt < 3").GetTitle() + ")");
-    mctree->Project("h_mc_d0_eta_ulpt", "pv_trk_d0_pvunbiased", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (etacut+"pv_trk_pt > 3 && pv_trk_pt < 10").GetTitle() + ")");
-    mctree->Project("h_mc_dz_eta_ulpt", "pv_trk_dz_pvunbiased", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (etacut+"pv_trk_pt > 3 && pv_trk_pt < 10").GetTitle() + ")");
+    info_d0[PHI_ALLPT].title = phicut_title + ";Track IP #it{d_{xy}} [#mum];# tracks";
+    info_d0[PHI_ALLPT].dataFigPath = figdir + Form("ippv_xy_fit/data_phi_allpt_%d", idx);
+    info_d0[PHI_ALLPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_phi_allpt_%d", idx);
+    info_dz[PHI_ALLPT].title = phicut_title + ";Track IP #it{d_{z}} [#mum];# tracks";
+    info_dz[PHI_ALLPT].dataFigPath = figdir + Form("ippv_z_fit/data_phi_allpt_%d", idx);
+    info_dz[PHI_ALLPT].mcFigPath = figdir + Form("ippv_z_fit/mc_phi_allpt_%d", idx);
 
-    mctree->Project("h_mc_d0_phi_lopt", "pv_trk_d0_pvunbiased", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (phicut+"pv_trk_pt > 0.1 && pv_trk_pt < 1").GetTitle() + ")");
-    mctree->Project("h_mc_dz_phi_lopt", "pv_trk_dz_pvunbiased", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (phicut+"pv_trk_pt > 0.1 && pv_trk_pt < 1").GetTitle() + ")");
-    mctree->Project("h_mc_d0_phi_hipt", "pv_trk_d0_pvunbiased", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (phicut+"pv_trk_pt > 1 && pv_trk_pt < 3").GetTitle() + ")");
-    mctree->Project("h_mc_dz_phi_hipt", "pv_trk_dz_pvunbiased", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (phicut+"pv_trk_pt > 1 && pv_trk_pt < 3").GetTitle() + ")");
-    mctree->Project("h_mc_d0_phi_ulpt", "pv_trk_d0_pvunbiased", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (phicut+"pv_trk_pt > 3 && pv_trk_pt < 10").GetTitle() + ")");
-    mctree->Project("h_mc_dz_phi_ulpt", "pv_trk_dz_pvunbiased", TString("xsecweight * PSweight * cell_mask * PU_factor * (") + (phicut+"pv_trk_pt > 3 && pv_trk_pt < 10").GetTitle() + ")");
+    Float_t init_d0_min[NCOMB] = {-2000, -4000, -6000, -4000, -2000, -1000, -400, -2000, -2000, -500, -400, -1500};
+    Float_t init_d0_max[NCOMB] = {2000, 4000, 6000, 4000, 2000, 1000, 400, 2000, 2000, 500, 400, 1500};
+    Float_t init_dz_min[NCOMB] = {-2000, -10000, -10000, -10000, -8000, -4000, -2000, -5000, -3000, -1500, -600, -2000};
+    Float_t init_dz_max[NCOMB] = {2000, 10000, 10000, 10000, 8000, 4000, 2000, 5000, 3000, 1500, 600, 2000};
 
-    auto result_reso_d0_pt_loeta = fit_compare(h_data_d0_pt_loeta, h_mc_d0_pt_loeta, era, figdir+Form("ippv_xy_fit/data_pt_loeta_%d", idx), figdir+Form("ippv_xy_fit/mc_pt_loeta_%d", idx), 0.1);
-    auto result_reso_dz_pt_loeta = fit_compare(h_data_dz_pt_loeta, h_mc_dz_pt_loeta, era, figdir+Form("ippv_z_fit/data_pt_loeta_%d", idx), figdir+Form("ippv_z_fit/mc_pt_loeta_%d", idx), 0.1);
-    auto result_reso_d0_pt_hieta = fit_compare(h_data_d0_pt_hieta, h_mc_d0_pt_hieta, era, figdir+Form("ippv_xy_fit/data_pt_hieta_%d", idx), figdir+Form("ippv_xy_fit/mc_pt_hieta_%d", idx), 0.1);
-    auto result_reso_dz_pt_hieta = fit_compare(h_data_dz_pt_hieta, h_mc_dz_pt_hieta, era, figdir+Form("ippv_z_fit/data_pt_hieta_%d", idx), figdir+Form("ippv_z_fit/mc_pt_hieta_%d", idx), 0.1);
-    auto result_reso_d0_pt_eta = fit_compare(h_data_d0_pt_eta, h_mc_d0_pt_eta, era, figdir+Form("ippv_xy_fit/data_pt_eta_%d", idx), figdir+Form("ippv_xy_fit/mc_pt_eta_%d", idx), 0.1);
-    auto result_reso_dz_pt_eta = fit_compare(h_data_dz_pt_eta, h_mc_dz_pt_eta, era, figdir+Form("ippv_z_fit/data_pt_eta_%d", idx), figdir+Form("ippv_z_fit/mc_pt_eta_%d", idx), 0.1);
+    // ---------- First pass on data: compute histogram ranges ----------
+    Stat stats_d0_data[NCOMB];
+    Stat stats_dz_data[NCOMB];
+    auto stat_action_data = [&](Int_t cid, Float_t d0, Float_t dz)
+    {
+        if (d0 >= init_d0_min[cid] && d0 <= init_d0_max[cid])
+            stats_d0_data[cid].Fill(d0);
+        if (dz >= init_dz_min[cid] && dz <= init_dz_max[cid])
+            stats_dz_data[cid].Fill(dz);
+    };
 
-    auto result_reso_d0_eta_lopt = fit_compare(h_data_d0_eta_lopt, h_mc_d0_eta_lopt, era, figdir+Form("ippv_xy_fit/data_eta_lopt_%d", idx), figdir+Form("ippv_xy_fit/mc_eta_lopt_%d", idx), 0.1);
-    auto result_reso_dz_eta_lopt = fit_compare(h_data_dz_eta_lopt, h_mc_dz_eta_lopt, era, figdir+Form("ippv_z_fit/data_eta_lopt_%d", idx), figdir+Form("ippv_z_fit/mc_eta_lopt_%d", idx), 0.1);
-    auto result_reso_d0_eta_hipt = fit_compare(h_data_d0_eta_hipt, h_mc_d0_eta_hipt, era, figdir+Form("ippv_xy_fit/data_eta_hipt_%d", idx), figdir+Form("ippv_xy_fit/mc_eta_hipt_%d", idx), 0.1);
-    auto result_reso_dz_eta_hipt = fit_compare(h_data_dz_eta_hipt, h_mc_dz_eta_hipt, era, figdir+Form("ippv_z_fit/data_eta_hipt_%d", idx), figdir+Form("ippv_z_fit/mc_eta_hipt_%d", idx), 0.1);
-    auto result_reso_d0_eta_ulpt = fit_compare(h_data_d0_eta_ulpt, h_mc_d0_eta_ulpt, era, figdir+Form("ippv_xy_fit/data_eta_ulpt_%d", idx), figdir+Form("ippv_xy_fit/mc_eta_ulpt_%d", idx), 0.1);
-    auto result_reso_dz_eta_ulpt = fit_compare(h_data_dz_eta_ulpt, h_mc_dz_eta_ulpt, era, figdir+Form("ippv_z_fit/data_eta_ulpt_%d", idx), figdir+Form("ippv_z_fit/mc_eta_ulpt_%d", idx), 0.1);
+    process_tree_tracks(datatree, nData, idx,
+                             pv_trk_pt_edges, pv_trk_pt_uleta_edges, pv_trk_eta_edges, pv_trk_phi_edges,
+                             *pv_trk_pt, *pv_trk_eta, *pv_trk_phi,
+                             *pv_trk_d0, *pv_trk_dz,
+                             stat_action_data);
 
-    auto result_reso_d0_phi_lopt = fit_compare(h_data_d0_phi_lopt, h_mc_d0_phi_lopt, era, figdir+Form("ippv_xy_fit/data_phi_lopt_%d", idx), figdir+Form("ippv_xy_fit/mc_phi_lopt_%d", idx), 0.1);
-    auto result_reso_dz_phi_lopt = fit_compare(h_data_dz_phi_lopt, h_mc_dz_phi_lopt, era, figdir+Form("ippv_z_fit/data_phi_lopt_%d", idx), figdir+Form("ippv_z_fit/mc_phi_lopt_%d", idx), 0.1);
-    auto result_reso_d0_phi_hipt = fit_compare(h_data_d0_phi_hipt, h_mc_d0_phi_hipt, era, figdir+Form("ippv_xy_fit/data_phi_hipt_%d", idx), figdir+Form("ippv_xy_fit/mc_phi_hipt_%d", idx), 0.1);
-    auto result_reso_dz_phi_hipt = fit_compare(h_data_dz_phi_hipt, h_mc_dz_phi_hipt, era, figdir+Form("ippv_z_fit/data_phi_hipt_%d", idx), figdir+Form("ippv_z_fit/mc_phi_hipt_%d", idx), 0.1);
-    auto result_reso_d0_phi_ulpt = fit_compare(h_data_d0_phi_ulpt, h_mc_d0_phi_ulpt, era, figdir+Form("ippv_xy_fit/data_phi_ulpt_%d", idx), figdir+Form("ippv_xy_fit/mc_phi_ulpt_%d", idx), 0.1);
-    auto result_reso_dz_phi_ulpt = fit_compare(h_data_dz_phi_ulpt, h_mc_dz_phi_ulpt, era, figdir+Form("ippv_z_fit/data_phi_ulpt_%d", idx), figdir+Form("ippv_z_fit/mc_phi_ulpt_%d", idx), 0.1);
+    // ---------- Build histograms ----------
+    TH1F *h_d0_data[NCOMB] = {nullptr};
+    TH1F *h_d0_mc[NCOMB] = {nullptr};
+    TH1F *h_dz_data[NCOMB] = {nullptr};
+    TH1F *h_dz_mc[NCOMB] = {nullptr};
 
+    for (Int_t cid = 0; cid < NCOMB; ++cid)
+    {
+        if (!stats_d0_data[cid].Valid() || !stats_dz_data[cid].Valid())
+            continue;
+        Float_t mean_d0 = stats_d0_data[cid].Mean();
+        Float_t sigma_d0 = stats_d0_data[cid].Sigma();
+        Float_t mean_dz = stats_dz_data[cid].Mean();
+        Float_t sigma_dz = stats_dz_data[cid].Sigma();
+        if (sigma_d0 <= 0.0)
+        {
+            mean_d0 = 0.5f * (init_d0_min[cid] + init_d0_max[cid]);
+            sigma_d0 = (init_d0_max[cid] - init_d0_min[cid]) / (2.f * nsigma);
+        }
+        if (sigma_dz <= 0.0)
+        {
+            mean_dz = 0.5f * (init_dz_min[cid] + init_dz_max[cid]);
+            sigma_dz = (init_dz_max[cid] - init_dz_min[cid]) / (2.f * nsigma);
+        }
+        Float_t d0_min = mean_d0 - nsigma * sigma_d0;
+        Float_t d0_max = mean_d0 + nsigma * sigma_d0;
+        Float_t dz_min = mean_dz - nsigma * sigma_dz;
+        Float_t dz_max = mean_dz + nsigma * sigma_dz;
+        if (abs(pv_trk_eta_edges[idx] + pv_trk_eta_edges[idx + 1]) / 2 > 2.4 && (cid >= 5) && (cid <= 7))
+        {
+            dz_min = -1000.f;
+            dz_max = 1000.f;
+        }
+        h_d0_data[cid] = new TH1F(Form("h_d0_data_%d_%d", idx, cid), info_d0[cid].title, nbins, d0_min, d0_max);
+        h_d0_mc[cid] = new TH1F(Form("h_d0_mc_%d_%d", idx, cid), info_d0[cid].title, nbins, d0_min, d0_max);
+        h_dz_data[cid] = new TH1F(Form("h_dz_data_%d_%d", idx, cid), info_dz[cid].title, nbins, dz_min, dz_max);
+        h_dz_mc[cid] = new TH1F(Form("h_dz_mc_%d_%d", idx, cid), info_dz[cid].title, nbins, dz_min, dz_max);
+        h_d0_data[cid]->Sumw2();
+        h_d0_mc[cid]->Sumw2();
+        h_dz_data[cid]->Sumw2();
+        h_dz_mc[cid]->Sumw2();
+    }
+
+    // ---------- Second pass on data: fill ----------
+    auto fill_action_data = [&](Int_t cid, Float_t d0, Float_t dz)
+    {
+        if (h_d0_data[cid])
+            h_d0_data[cid]->Fill(d0);
+        if (h_dz_data[cid])
+            h_dz_data[cid]->Fill(dz);
+    };
+    process_tree_tracks(datatree, nData, idx,
+                             pv_trk_pt_edges, pv_trk_pt_uleta_edges, pv_trk_eta_edges, pv_trk_phi_edges,
+                             *pv_trk_pt, *pv_trk_eta, *pv_trk_phi,
+                             *pv_trk_d0, *pv_trk_dz,
+                             fill_action_data);
+
+    // ---------- MC: process per entry ----------
+    const Float_t pt_lo = pv_trk_pt_edges[idx];
+    const Float_t pt_hi = pv_trk_pt_edges[idx + 1];
+    const Float_t pt_uleta_lo = pv_trk_pt_uleta_edges[idx];
+    const Float_t pt_uleta_hi = pv_trk_pt_uleta_edges[idx + 1];
+    const Float_t eta_lo = pv_trk_eta_edges[idx];
+    const Float_t eta_hi = pv_trk_eta_edges[idx + 1];
+    const Float_t phi_lo = pv_trk_phi_edges[idx];
+    const Float_t phi_hi = pv_trk_phi_edges[idx + 1];
+
+    for (auto &mc_entry : tuplelist[period.Data()]["mc"])
+    {
+        std::string path = mc_entry["path"];
+        std::string dataset = mc_entry["dataset"];
+        if (path.empty())
+            continue;
+
+        if (xsec_weight_map.find(dataset) == xsec_weight_map.end())
+            continue;
+        Float_t xsec_weight = xsec_weight_map[dataset];
+
+        // PS weights with mask
+        double ps_weights_entry[N_TRIGS];
+        for (int it = 0; it < N_TRIGS; ++it)
+        {
+            std::string trig_key = std::string(TRIG_NAMES[it]).substr(4); // strip "HLT_"
+            bool masked = mask_json[period.Data()][dataset][trig_key].get<bool>();
+            ps_weights_entry[it] = masked ? 0.0 : ps_weights_final[it];
+        }
+
+        TChain *mctree_entry = new TChain("residuals/tree");
+        mctree_entry->Add(TString(path) + "/*.root");
+        bind_common_branches(mctree_entry);
+        mctree_entry->SetBranchAddress("NumTrueInts", &NumTrueInts);
+        bind_trig_branches(mctree_entry);
+
+        Long64_t nMC_entry = mctree_entry->GetEntries();
+
+        for (Long64_t ie = 0; ie < nMC_entry; ++ie)
+        {
+            mctree_entry->GetEntry(ie);
+
+            Float_t w_ps = 0.0;
+            for (Int_t it = 0; it < N_TRIGS; ++it)
+            {
+                if (trig_pass_raw[it])
+                {
+                    w_ps = ps_weights_entry[it];
+                    break;
+                }
+            }
+
+            Float_t w_pu = (NumTrueInts >= 1 && NumTrueInts <= (Int_t)PU_weights.size()) ? PU_weights[NumTrueInts - 1] : 0.0;
+
+            Float_t w = w_pu * xsec_weight * w_ps;
+
+            const size_t nTrk = pv_trk_pt->size();
+            for (size_t it = 0; it < nTrk; ++it)
+            {
+                Float_t pt = (*pv_trk_pt)[it];
+                Float_t eta = (*pv_trk_eta)[it];
+                Float_t phi = (*pv_trk_phi)[it];
+                Float_t d0 = (*pv_trk_d0)[it];
+                Float_t dz = (*pv_trk_dz)[it];
+
+                const Float_t aeta = std::fabs(eta);
+
+                Bool_t in_ptbin = (pt > pt_lo && pt < pt_hi);
+                Bool_t in_ptuletabin = (pt > pt_uleta_lo && pt < pt_uleta_hi);
+                Bool_t in_etabin = (eta > eta_lo && eta < eta_hi);
+                Bool_t in_phibin = (phi > phi_lo && phi < phi_hi);
+
+                Bool_t loeta = (aeta < 1.3);
+                Bool_t hieta = (aeta > 1.3 && aeta < 2.5);
+                Bool_t uleta = (aeta > 2.5 && aeta < 3.0);
+                Bool_t alleta = (aeta < 10.0);
+
+                Bool_t lopt = (pt > 0.1 && pt < 1.0);
+                Bool_t hipt = (pt > 1.0 && pt < 3.0);
+                Bool_t ulpt = (pt > 3.0 && pt < 10.0);
+                Bool_t allpt = (pt > 0);
+
+                auto fill = [&](Int_t cid, Float_t d0v, Float_t dzv)
+                {
+                    if (h_d0_mc[cid])
+                        h_d0_mc[cid]->Fill(d0v, w);
+                    if (h_dz_mc[cid])
+                        h_dz_mc[cid]->Fill(dzv, w);
+                };
+
+                if (in_ptbin && loeta)
+                    fill(PT_LOETA, d0, dz);
+                if (in_ptbin && hieta)
+                    fill(PT_HIETA, d0, dz);
+                if (in_ptuletabin && uleta)
+                    fill(PT_ULETA, d0, dz);
+                if (in_ptbin && alleta)
+                    fill(PT_ALLETA, d0, dz);
+
+                if (in_etabin && lopt)
+                    fill(ETA_LOPT, d0, dz);
+                if (in_etabin && hipt)
+                    fill(ETA_HIPT, d0, dz);
+                if (in_etabin && ulpt)
+                    fill(ETA_ULPT, d0, dz);
+                if (in_etabin && allpt)
+                    fill(ETA_ALLPT, d0, dz);
+
+                if (in_phibin && lopt)
+                    fill(PHI_LOPT, d0, dz);
+                if (in_phibin && hipt)
+                    fill(PHI_HIPT, d0, dz);
+                if (in_phibin && ulpt)
+                    fill(PHI_ULPT, d0, dz);
+                if (in_phibin && allpt)
+                    fill(PHI_ALLPT, d0, dz);
+            }
+        }
+
+        delete mctree_entry;
+    }
+
+    // ---------- Fit & write JSON ----------
     nlohmann::json resojson;
-    resojson["pt"] = (pv_trk_pt_edges[idx] + pv_trk_pt_edges[idx+1])/2;
-    resojson["eta"] = (pv_trk_eta_edges[idx] + pv_trk_eta_edges[idx+1])/2;
-    resojson["phi"] = (pv_trk_phi_edges[idx] + pv_trk_phi_edges[idx+1])/2;
+    resojson["pt"] = (pv_trk_pt_edges[idx] + pv_trk_pt_edges[idx + 1]) / 2.0;
+    resojson["pt_uleta"] = (pv_trk_pt_uleta_edges[idx] + pv_trk_pt_uleta_edges[idx + 1]) / 2.0;
+    resojson["eta"] = (pv_trk_eta_edges[idx] + pv_trk_eta_edges[idx + 1]) / 2.0;
+    resojson["phi"] = (pv_trk_phi_edges[idx] + pv_trk_phi_edges[idx + 1]) / 2.0;
 
-    resojson["reso_data_d0_pt_loeta"] = result_reso_d0_pt_loeta.first;
-    resojson["reso_data_dz_pt_loeta"] = result_reso_dz_pt_loeta.first;
-    resojson["reso_data_d0_pt_hieta"] = result_reso_d0_pt_hieta.first;
-    resojson["reso_data_dz_pt_hieta"] = result_reso_dz_pt_hieta.first;
-    resojson["reso_data_d0_pt_eta"] = result_reso_d0_pt_eta.first;
-    resojson["reso_data_dz_pt_eta"] = result_reso_dz_pt_eta.first;
+    Float_t reso_data_d0[NCOMB] = {0.0};
+    Float_t reso_data_dz[NCOMB] = {0.0};
+    Float_t reso_mc_d0[NCOMB] = {0.0};
+    Float_t reso_mc_dz[NCOMB] = {0.0};
 
-    resojson["reso_data_d0_eta_lopt"] = result_reso_d0_eta_lopt.first;
-    resojson["reso_data_dz_eta_lopt"] = result_reso_dz_eta_lopt.first;
-    resojson["reso_data_d0_eta_hipt"] = result_reso_d0_eta_hipt.first;
-    resojson["reso_data_dz_eta_hipt"] = result_reso_dz_eta_hipt.first;
-    resojson["reso_data_d0_eta_ulpt"] = result_reso_d0_eta_ulpt.first;
-    resojson["reso_data_dz_eta_ulpt"] = result_reso_dz_eta_ulpt.first;
+    for (Int_t cid = 0; cid < NCOMB; ++cid)
+    {
+        if (h_d0_data[cid] && h_d0_data[cid]->GetEntries() > 0)
+            reso_data_d0[cid] = fit_res(h_d0_data[cid], period, "Data", info_d0[cid].dataFigPath, 0.1);
+        if (h_dz_data[cid] && h_dz_data[cid]->GetEntries() > 0)
+            reso_data_dz[cid] = fit_res(h_dz_data[cid], period, "Data", info_dz[cid].dataFigPath, 0.1);
+        if (h_d0_mc[cid] && h_d0_mc[cid]->GetEntries() > 0)
+            reso_mc_d0[cid] = fit_res(h_d0_mc[cid], period, "Simulation", info_d0[cid].mcFigPath, 0.1);
+        if (h_dz_mc[cid] && h_dz_mc[cid]->GetEntries() > 0)
+            reso_mc_dz[cid] = fit_res(h_dz_mc[cid], period, "Simulation", info_dz[cid].mcFigPath, 0.1);
 
-    resojson["reso_data_d0_phi_lopt"] = result_reso_d0_phi_lopt.first;
-    resojson["reso_data_dz_phi_lopt"] = result_reso_dz_phi_lopt.first;
-    resojson["reso_data_d0_phi_hipt"] = result_reso_d0_phi_hipt.first;
-    resojson["reso_data_dz_phi_hipt"] = result_reso_dz_phi_hipt.first;
-    resojson["reso_data_d0_phi_ulpt"] = result_reso_d0_phi_ulpt.first;
-    resojson["reso_data_dz_phi_ulpt"] = result_reso_dz_phi_ulpt.first;
+        TString suffix = COMB_SUFFIX[cid];
+        resojson[Form("reso_data_d0_%s", suffix.Data())] = reso_data_d0[cid];
+        resojson[Form("reso_data_dz_%s", suffix.Data())] = reso_data_dz[cid];
+        resojson[Form("reso_mc_d0_%s", suffix.Data())] = reso_mc_d0[cid];
+        resojson[Form("reso_mc_dz_%s", suffix.Data())] = reso_mc_dz[cid];
+    }
 
-    resojson["reso_mc_d0_pt_loeta"] = result_reso_d0_pt_loeta.second;
-    resojson["reso_mc_dz_pt_loeta"] = result_reso_dz_pt_loeta.second;
-    resojson["reso_mc_d0_pt_hieta"] = result_reso_d0_pt_hieta.second;
-    resojson["reso_mc_dz_pt_hieta"] = result_reso_dz_pt_hieta.second;
-    resojson["reso_mc_d0_pt_eta"] = result_reso_d0_pt_eta.second;
-    resojson["reso_mc_dz_pt_eta"] = result_reso_dz_pt_eta.second;
-
-    resojson["reso_mc_d0_eta_lopt"] = result_reso_d0_eta_lopt.second;
-    resojson["reso_mc_dz_eta_lopt"] = result_reso_dz_eta_lopt.second;
-    resojson["reso_mc_d0_eta_hipt"] = result_reso_d0_eta_hipt.second;
-    resojson["reso_mc_dz_eta_hipt"] = result_reso_dz_eta_hipt.second;
-    resojson["reso_mc_d0_eta_ulpt"] = result_reso_d0_eta_ulpt.second;
-    resojson["reso_mc_dz_eta_ulpt"] = result_reso_dz_eta_ulpt.second;
-
-    resojson["reso_mc_d0_phi_lopt"] = result_reso_d0_phi_lopt.second;
-    resojson["reso_mc_dz_phi_lopt"] = result_reso_dz_phi_lopt.second;
-    resojson["reso_mc_d0_phi_hipt"] = result_reso_d0_phi_hipt.second;
-    resojson["reso_mc_dz_phi_hipt"] = result_reso_dz_phi_hipt.second;
-    resojson["reso_mc_d0_phi_ulpt"] = result_reso_d0_phi_ulpt.second;
-    resojson["reso_mc_dz_phi_ulpt"] = result_reso_dz_phi_ulpt.second;
-
-    std::ofstream outFile("/pnfs/iihe/cms/store/user/kakang/IPres/analysis/json/JetHT_"+era+Form("/ip_res/fit_%d.json",idx));
+    std::ofstream outFile(storage_dir + "/json/" + period + Form("/ip_res/fit_%d.json", idx));
     outFile << resojson.dump(4);
     outFile.close();
+
+    // ---------- Cleanup ----------
+    for (Int_t cid = 0; cid < NCOMB; ++cid)
+    {
+        delete h_d0_data[cid];
+        delete h_d0_mc[cid];
+        delete h_dz_data[cid];
+        delete h_dz_mc[cid];
+    }
+    delete datatree;
 
     return 0;
 }

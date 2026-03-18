@@ -52,7 +52,7 @@ Int_t draw_pv_res(TString period){
         std::ifstream infile(storage_dir + "/json/" + period + Form("/pv_res/fit_%d.json",i));
         infile >> results;
 
-        sumpt2_sqrt[i] = results["sumpt2_sqrt"];
+        sumpt2_sqrt[i] = results["pv_SumTrackPt2_sqrt"];
         reso_data_pullx[i] = results["reso_data_pullx"];
         reso_data_pully[i] = results["reso_data_pully"];
         reso_data_pullz[i] = results["reso_data_pullz"];

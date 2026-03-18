@@ -67,7 +67,7 @@ std::vector<Float_t> get_quantile_edges_from_hist(TH1 *hist, Int_t nbins, Float_
     return qs;
 }
 
-Int_t binning_mc()
+Int_t binning()
 {
     // 打开 data / MC 文件
     std::ifstream tuplelist_file("/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/analysis/macros/JetHT/tuplelist.json");
@@ -219,7 +219,7 @@ Int_t binning_mc()
         {"pv_trk_eta", pv_trk_eta_binedges},
         {"pv_trk_phi", pv_trk_phi_binedges}};
 
-    TString binning_json = "/eos/home-k/kakang/IPres/analysis/JetHT/json/binning.json";
+    TString binning_json = "/eos/home-k/kakang/IPres/analysis/JetHT/json/binning_mc.json";
 
     std::ofstream outfile(binning_json);
     outfile << splitparams.dump(4);

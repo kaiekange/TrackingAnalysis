@@ -5,7 +5,7 @@ import json
 import glob
 import numpy as np
 
-def xsec_weight(period: str) -> int:
+def weight_xsec(period: str) -> int:
 
     with open("tuplelist.json", "r") as f:
         config = json.load(f)
@@ -35,4 +35,4 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python official_PU_weight.py <period>  # e.g. 2022 or 2022EE")
         sys.exit(1)
-    sys.exit(xsec_weight(sys.argv[1]))
+    sys.exit(weight_xsec(sys.argv[1]))

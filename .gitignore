@@ -25,6 +25,7 @@
 *.app
 *.dwo
 *.root
+*.txt
 **/kakang.cc
 EDAnalyzers/condor/condor_logs
 EDAnalyzers/condor/InputList
@@ -33,7 +34,6 @@ EDAnalyzers/crab/Status
 EDAnalyzers/crab/DatasetList
 EDAnalyzers/crab/JSON
 EDAnalyzers/crab/crab_*
-EDAnalyzers/crab/*.txt
 EDAnalyzers/crab/oldjobs
 EDAnalyzers/crab/crabConfig.py
 EDAnalyzers/crab/__pycache__

@@ -4,7 +4,7 @@ from ROOT import RDataFrame, RDF, gInterpreter
 import json
 import numpy as np
 
-def PS_weight(period: str) -> int:
+def weight_PS(period: str) -> int:
 
     with open("tuplelist.json", "r") as f:
         fileconfig = json.load(f)
@@ -46,4 +46,4 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python official_PU_weight.py <period>  # e.g. 2022 or 2022EE")
         sys.exit(1)
-    sys.exit(PS_weight(sys.argv[1]))
+    sys.exit(weight_PS(sys.argv[1]))

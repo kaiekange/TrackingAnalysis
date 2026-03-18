@@ -4,11 +4,12 @@ RunOnData=$1
 GlobalTag=$2
 EventScale=$3
 EventModulo=$4
-InputList=$5
-OutputDir=$6
-GroupSize=$7
-Process=$8
-GoldenJSON=$9
+SampleType=$5
+InputList=$6
+OutputDir=$7
+GroupSize=$8
+Process=$9
+GoldenJSON=${10}
 
 StartLine=$(( Process * GroupSize + 1 ))
 EndLine=$(( StartLine + GroupSize - 1 ))
@@ -29,4 +30,4 @@ source /cvmfs/cms.cern.ch/cmsset_default.sh
 cd /afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/
 cmsenv
 voms-proxy-info -all -file $X509_USER_PROXY
-cmsRun ${CfgFile} RunOnData=${RunOnData} GlobalTag=${GlobalTag} EventScale=${EventScale} EventModulo=${EventModulo} InputFile="${InputFile}" OutputFile="${OutputFile}" GoldenJSON="${GoldenJSON}" &> ${LogFile}
+cmsRun ${CfgFile} RunOnData=${RunOnData} GlobalTag=${GlobalTag} EventScale=${EventScale} EventModulo=${EventModulo} SampleType="${SampleType}" InputFile="${InputFile}" OutputFile="${OutputFile}" GoldenJSON="${GoldenJSON}" &> ${LogFile}
