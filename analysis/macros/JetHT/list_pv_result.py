@@ -10,7 +10,7 @@ warnings.filterwarnings(
     category=UserWarning
 )
 
-periods = ["2022_preEE", "2022_postEE", "2023_preBPix", "2023_postBPix", "2024"]
+periods = ["2022", "2022EE", "2023", "2023BPix", "2024"]
 keys = ["reso_data_pvx", "reso_data_pvy", "reso_data_pvz"]
 
 def getminmax():

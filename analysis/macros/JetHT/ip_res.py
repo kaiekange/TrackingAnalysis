@@ -9,15 +9,35 @@ def submit_jobs(period):
     os.makedirs(f"/eos/home-k/kakang/IPres/analysis/JetHT/figures/{period}/ip_res/ippv_xy_fit", exist_ok=True)
     os.makedirs(f"/eos/home-k/kakang/IPres/analysis/JetHT/figures/{period}/ip_res/ippv_z_fit", exist_ok=True)
 
-    scheduler_log = f"./condor_logs/ipres_{period}.log"
+#     scheduler_log = f"./condor_logs/ipres_{period}.log"
+#     if os.path.exists(scheduler_log):
+#         os.remove(scheduler_log)
+
+#     submit_description = f"""
+# executable = ip_res.sh
+# arguments = {period} $(Process)
+# log = ./condor_logs/ipres_{period}.log
+# JobBatchName = IPres_JetHT_ipres_{period}
+# request_cpus = 1
+# request_memory = 8G
+# request_disk = 10M
+# +JobFlavour = "workday"
+# notify_user = kai.kang@cern.ch
+# notification = error
+# max_retries = 1
+# should_transfer_files = NO
+# queue 200
+# """
+    scheduler_log = f"./condor_logs/ipres_{period}_rerun.log"
     if os.path.exists(scheduler_log):
         os.remove(scheduler_log)
 
-    submit_description = f"""
+    for rerun_job in [0, 1, 198, 199]:
+        submit_description = f"""
 executable = ip_res.sh
-arguments = {period} $(Process)
-log = ./condor_logs/ipres_{period}.log
-JobBatchName = IPres_JetHT_ipres_{period}
+arguments = {period} {rerun_job}
+log = ./condor_logs/ipres_{period}_{rerun_job}.log
+JobBatchName = IPres_ZeroBias_ipres_{period}_{rerun_job}
 request_cpus = 1
 request_memory = 8G
 request_disk = 10M
@@ -28,7 +48,7 @@ max_retries = 1
 should_transfer_files = NO
 queue 1
 """
-    subprocess.run(["condor_submit"], input=submit_description.encode())
+        subprocess.run(["condor_submit"], input=submit_description.encode())
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

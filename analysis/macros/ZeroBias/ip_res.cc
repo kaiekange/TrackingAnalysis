@@ -137,6 +137,7 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
     Float_t high = ip_var_max - mean;
 
     ip_var.setRange("normRange", mean - 1e6, mean + 1e6);
+    // ip_var.setRange("normRange", mean - 8 * hist_rms, mean + 8 * hist_rms);
     RooAbsReal *denom = model.createIntegral(ip_var, RooFit::Range("normRange"));
     while (high - low > tolerance)
     {
@@ -533,11 +534,11 @@ Int_t ip_res(TString period, Int_t idx)
         Float_t d0_max = mean_d0 + nsigma * sigma_d0;
         Float_t dz_min = mean_dz - nsigma * sigma_dz;
         Float_t dz_max = mean_dz + nsigma * sigma_dz;
-        if (abs(pv_trk_eta_edges[idx] + pv_trk_eta_edges[idx + 1]) / 2 > 2.4 && (cid >= 5) && (cid <= 7))
-        {
-            dz_min = -1000.f;
-            dz_max = 1000.f;
-        }
+        // if (abs(pv_trk_eta_edges[idx] + pv_trk_eta_edges[idx + 1]) / 2 > 2.4 && (cid >= 5) && (cid <= 7))
+        // {
+        //     dz_min = -1000.f;
+        //     dz_max = 1000.f;
+        // }
         h_d0_data[cid] = new TH1F(Form("h_d0_data_%d_%d", idx, cid), info_d0[cid].title, nbins, d0_min, d0_max);
         h_d0_mc[cid] = new TH1F(Form("h_d0_mc_%d_%d", idx, cid), info_d0[cid].title, nbins, d0_min, d0_max);
         h_dz_data[cid] = new TH1F(Form("h_dz_data_%d_%d", idx, cid), info_dz[cid].title, nbins, dz_min, dz_max);
@@ -573,6 +574,7 @@ Int_t ip_res(TString period, Int_t idx)
     }
 
     bind_common_branches(mctree);
+    mctree->SetBranchAddress("NumTrueInts", &NumTrueInts);
     Long64_t nMC = mctree->GetEntries();
 
     auto fill_action_mc = [&](Int_t cid, Float_t d0, Float_t dz, Float_t w)

@@ -26,6 +26,8 @@ process.load("CondCore.CondDB.CondDB_cfi")
 process.load("Configuration.Geometry.GeometryRecoDB_cff")
 process.load("Configuration.StandardSequences.MagneticField_38T_cff")
 
+process.MessageLogger.cerr.FwkReport.reportEvery = 10000
+
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(-1))
 
 process.source = source

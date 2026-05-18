@@ -21,13 +21,13 @@
 
 const TString datatype_text = "Unbiased collision events";
 const TString storage_dir = "/eos/home-k/kakang/IPres/analysis/ZeroBias";
-const Int_t nbins = 100;
+const Int_t nbins = 50;
 
 const std::vector<TString> periods = {
-    "2022_preEE",
-    "2022_postEE",
-    "2023_preBPix",
-    "2023_postBPix",
+    "2022",
+    "2022EE",
+    "2023",
+    "2023BPix",
     "2024"
 };
 
@@ -47,6 +47,7 @@ void draw_all_graphs(std::vector<TGraph> &graphs,
     TCanvas *canvas = new TCanvas("canvas", "canvas", 800, 600);
     canvas_setup(canvas);
     canvas->SetBottomMargin(0.15);
+    canvas->SetRightMargin(0.17);
     
     graphs[0].SetMarkerStyle(20);
     graphs[0].SetMarkerSize(0.5);
@@ -67,9 +68,9 @@ void draw_all_graphs(std::vector<TGraph> &graphs,
         graphs[i].SetMarkerColor(colors[i]);
         graphs[i].Draw("P SAME");
     }
-    write_text(0.55, 0.85, datatype_text);
+    write_text(0.5, 0.85, datatype_text);
 
-    TLegend *mylegend = new TLegend(0.55, 0.6, 0.65, 0.8, "", "brNDC");
+    TLegend *mylegend = new TLegend(0.84, 0.5, 0.96, 0.9, "", "brNDC");
     for (size_t i = 0; i < nGraphs && i < periods.size(); ++i)
     {
         TString tmp_period = periods[i];
@@ -134,7 +135,7 @@ Int_t compare_pv_res()
             }
             infile >> results;
 
-            sumpt2_sqrt[i] = results["sumpt2_sqrt"];
+            sumpt2_sqrt[i] = results["pv_SumTrackPt2_sqrt"];
             reso_data_pvx[i] = results["reso_data_pvx"];
             reso_data_pvy[i] = results["reso_data_pvy"];
             reso_data_pvz[i] = results["reso_data_pvz"];

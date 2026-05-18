@@ -78,6 +78,8 @@ const char *TRIG_BRANCH_NAMES[N_TRIGS] = {
     "trig_PFHT250_pass",
     "trig_PFHT180_pass"};
 
+const Float_t PS_VALUES[N_TRIGS] = {1, 16, 32, 64, 128, 256, 500, 1600, 4100, 11400};
+
 struct Stat
 {
     Int_t n = 0;
@@ -281,10 +283,10 @@ Int_t pv_res(TString period, Int_t idx)
     xsec_file >> xsec_json;
     xsec_file.close();
 
-    std::ifstream ps_file(storage_dir + "/pileup/" + period + "/PS_weight.json");
-    nlohmann::json ps_json;
-    ps_file >> ps_json;
-    ps_file.close();
+    // std::ifstream ps_file(storage_dir + "/pileup/" + period + "/PS_weight.json");
+    // nlohmann::json ps_json;
+    // ps_file >> ps_json;
+    // ps_file.close();
 
     std::ifstream mask_file(storage_dir + "/pileup/" + period + "/trigger_mask.json");
     nlohmann::json mask_json;
@@ -307,7 +309,8 @@ Int_t pv_res(TString period, Int_t idx)
 
     Float_t ps_weights_final[N_TRIGS];
     for (Int_t it = 0; it < N_TRIGS; ++it)
-        ps_weights_final[it] = ps_json[it]["PS_weight"].get<Float_t>();
+        ps_weights_final[it] = 1.0f / PS_VALUES[it];
+    // ps_weights_final[it] = ps_json[it]["PS_weight"].get<Float_t>();
 
     // ---------- Branch variables ----------
     Float_t pv_SumTrackPt2;
@@ -530,9 +533,9 @@ Int_t pv_res(TString period, Int_t idx)
     for (Int_t cid = 0; cid < NCOMB; ++cid)
     {
         if (h_data[cid] && h_data[cid]->GetEntries() > 0)
-            reso_data[cid] = fit_res(h_data[cid], period, "Data", histinfo[cid].dataFigPath, 0.1);
+            reso_data[cid] = fit_res(h_data[cid], period, "Data", histinfo[cid].dataFigPath);
         if (h_mc[cid] && h_mc[cid]->GetEntries() > 0)
-            reso_mc[cid] = fit_res(h_mc[cid], period, "Simulation", histinfo[cid].mcFigPath, 0.1);
+            reso_mc[cid] = fit_res(h_mc[cid], period, "Simulation", histinfo[cid].mcFigPath);
 
         TString suffix = COMB_SUFFIX[cid];
         resojson[Form("reso_data_%s", suffix.Data())] = reso_data[cid];

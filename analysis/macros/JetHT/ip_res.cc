@@ -90,6 +90,8 @@ const char *TRIG_BRANCH_NAMES[N_TRIGS] = {
     "trig_PFHT250_pass",
     "trig_PFHT180_pass"};
 
+const Float_t PS_VALUES[N_TRIGS] = {1, 16, 32, 64, 128, 256, 500, 1600, 4100, 11400};
+
 struct Stat
 {
     Int_t n = 0;
@@ -164,6 +166,7 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
     Float_t high = ip_var_max - mean;
 
     ip_var.setRange("normRange", mean - 1e6, mean + 1e6);
+    // ip_var.setRange("normRange", mean - 8 * hist_rms, mean + 8 * hist_rms);
     RooAbsReal *denom = model.createIntegral(ip_var, RooFit::Range("normRange"));
     while (high - low > tolerance)
     {
@@ -336,10 +339,10 @@ Int_t ip_res(TString period, Int_t idx)
     xsec_file >> xsec_json;
     xsec_file.close();
 
-    std::ifstream ps_file(storage_dir + "/pileup/" + period + "/PS_weight.json");
-    nlohmann::json ps_json;
-    ps_file >> ps_json;
-    ps_file.close();
+    // std::ifstream ps_file(storage_dir + "/pileup/" + period + "/PS_weight.json");
+    // nlohmann::json ps_json;
+    // ps_file >> ps_json;
+    // ps_file.close();
 
     std::ifstream mask_file(storage_dir + "/pileup/" + period + "/trigger_mask.json");
     nlohmann::json mask_json;
@@ -365,7 +368,8 @@ Int_t ip_res(TString period, Int_t idx)
 
     Float_t ps_weights_final[N_TRIGS];
     for (Int_t it = 0; it < N_TRIGS; ++it)
-        ps_weights_final[it] = ps_json[it]["PS_weight"].get<Float_t>();
+        ps_weights_final[it] = 1.0f / PS_VALUES[it];
+    // ps_weights_final[it] = ps_json[it]["PS_weight"].get<Float_t>();
 
     // ---------- Branch variables ----------
     std::vector<Float_t> *pv_trk_pt = nullptr;
@@ -520,10 +524,10 @@ Int_t ip_res(TString period, Int_t idx)
     };
 
     process_tree_tracks(datatree, nData, idx,
-                             pv_trk_pt_edges, pv_trk_pt_uleta_edges, pv_trk_eta_edges, pv_trk_phi_edges,
-                             *pv_trk_pt, *pv_trk_eta, *pv_trk_phi,
-                             *pv_trk_d0, *pv_trk_dz,
-                             stat_action_data);
+                        pv_trk_pt_edges, pv_trk_pt_uleta_edges, pv_trk_eta_edges, pv_trk_phi_edges,
+                        *pv_trk_pt, *pv_trk_eta, *pv_trk_phi,
+                        *pv_trk_d0, *pv_trk_dz,
+                        stat_action_data);
 
     // ---------- Build histograms ----------
     TH1F *h_d0_data[NCOMB] = {nullptr};
@@ -553,11 +557,11 @@ Int_t ip_res(TString period, Int_t idx)
         Float_t d0_max = mean_d0 + nsigma * sigma_d0;
         Float_t dz_min = mean_dz - nsigma * sigma_dz;
         Float_t dz_max = mean_dz + nsigma * sigma_dz;
-        if (abs(pv_trk_eta_edges[idx] + pv_trk_eta_edges[idx + 1]) / 2 > 2.4 && (cid >= 5) && (cid <= 7))
-        {
-            dz_min = -1000.f;
-            dz_max = 1000.f;
-        }
+        // if (abs(pv_trk_eta_edges[idx] + pv_trk_eta_edges[idx + 1]) / 2 > 2.4 && (cid >= 5) && (cid <= 7))
+        // {
+        //     dz_min = -1000.f;
+        //     dz_max = 1000.f;
+        // }
         h_d0_data[cid] = new TH1F(Form("h_d0_data_%d_%d", idx, cid), info_d0[cid].title, nbins, d0_min, d0_max);
         h_d0_mc[cid] = new TH1F(Form("h_d0_mc_%d_%d", idx, cid), info_d0[cid].title, nbins, d0_min, d0_max);
         h_dz_data[cid] = new TH1F(Form("h_dz_data_%d_%d", idx, cid), info_dz[cid].title, nbins, dz_min, dz_max);
@@ -577,10 +581,10 @@ Int_t ip_res(TString period, Int_t idx)
             h_dz_data[cid]->Fill(dz);
     };
     process_tree_tracks(datatree, nData, idx,
-                             pv_trk_pt_edges, pv_trk_pt_uleta_edges, pv_trk_eta_edges, pv_trk_phi_edges,
-                             *pv_trk_pt, *pv_trk_eta, *pv_trk_phi,
-                             *pv_trk_d0, *pv_trk_dz,
-                             fill_action_data);
+                        pv_trk_pt_edges, pv_trk_pt_uleta_edges, pv_trk_eta_edges, pv_trk_phi_edges,
+                        *pv_trk_pt, *pv_trk_eta, *pv_trk_phi,
+                        *pv_trk_d0, *pv_trk_dz,
+                        fill_action_data);
 
     // ---------- MC: process per entry ----------
     const Float_t pt_lo = pv_trk_pt_edges[idx];

@@ -327,7 +327,7 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
     // PV refitting
     std::vector<TransientVertex> refitted_tPVs = revertex->makeVertices(tracks, *beamspotHandle, iSetup);
 
-    edm::LogPrint("Residuals") << "Primary vertices = " << primvtxHandle->size() << ", refitted vertices = " << refitted_tPVs.size() << ", tracks = " << tracks.size();
+    // edm::LogPrint("Residuals") << "Primary vertices = " << primvtxHandle->size() << ", refitted vertices = " << refitted_tPVs.size() << ", tracks = " << tracks.size();
     if (refitted_tPVs.empty())
         return;
 

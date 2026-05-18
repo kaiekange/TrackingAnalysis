@@ -83,10 +83,10 @@ void compare_gr(
     canvas->Update();
     canvas->SaveAs(figpath + ".png");
 
-    gr1->SetMaximum(height*100.);
-    gr1->SetMinimum(ground/100.);
-    c1->SetLogy(1);
-    canvas->Update();
-    canvas->RedrawAxis();
-    canvas->SaveAs(figpath + "_log.png");
+    // gr1->SetMaximum(height*100.);
+    // gr1->SetMinimum(ground/100.);
+    // c1->SetLogy(1);
+    // canvas->Update();
+    // canvas->RedrawAxis();
+    // canvas->SaveAs(figpath + "_log.png");
 }

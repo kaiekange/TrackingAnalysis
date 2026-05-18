@@ -16,14 +16,14 @@ SAMPLETYPE = "JetHT"
 # GLOBALTAG="132X_mcRun3_2022_realistic_postEE_v4"
 # GLOBALTAG="130X_mcRun3_2022_realistic_postEE_v6"
 
-# YEAR="2023"
-# GLOBALTAG="130X_mcRun3_2023_realistic_v14"
+YEAR="2023"
+GLOBALTAG="130X_mcRun3_2023_realistic_v14"
 
 # YEAR="2023BPix"
 # GLOBALTAG="130X_mcRun3_2023_realistic_postBPix_v2"
 
-YEAR="2024"
-GLOBALTAG="150X_mcRun3_2024_realistic_v2"
+# YEAR="2024"
+# GLOBALTAG="150X_mcRun3_2024_realistic_v2"
 
 EVENTSCALE = 1
 EVENTMODULO = 0
@@ -76,6 +76,7 @@ def submitMC():
 
     ver = "Track-v20260210"
     prodv = f"/eos/home-k/kakang/Run3TrackingAnalysis/Ntuple/{ver}"
+    # prodv = f"/eos/cms/store/group/phys_tracking/kakang/Run3TrackingAnalysis/Ntuple/{ver}"
 
     for dataset in Datasets:
 
@@ -83,15 +84,15 @@ def submitMC():
 
         InputList = f"/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/EDAnalyzers/condor/InputList/{YEAR}_{SAMPLETYPE}_{title}.txt"
 
-        njobs = save_das_files(dataset, InputList)
-        ngroup = min(njobs, 100)
+        # njobs = save_das_files(dataset, InputList)
+        # ngroup = min(njobs, 50)
         # ngroup = (njobs + GroupSize - 1) // GroupSize
         # ngroup = min(ngroup, 100)
-        
+        ngroup = 20
 
         outdir = convert(dataset, prodv, EVENTSCALE, EVENTMODULO)
 
-        print(njobs)
+        # print(njobs)
 
         os.makedirs(f"{outdir}/log", exist_ok=True)
 

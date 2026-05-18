@@ -116,6 +116,7 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
     Float_t high = pv_var_max - mean;
 
     pv_var.setRange("normRange", mean - 1e6, mean + 1e6);
+    // pv_var.setRange("normRange", mean - 8 * hist_rms, mean + 8 * hist_rms);
     RooAbsReal *denom = model.createIntegral(pv_var, RooFit::Range("normRange"));
     while (high - low > tolerance)
     {
@@ -402,6 +403,7 @@ Int_t pv_res(TString period, Int_t idx)
     }
 
     bind_common_branches(mctree);
+    mctree->SetBranchAddress("NumTrueInts", &NumTrueInts);
     Long64_t nMC = mctree->GetEntries();
 
     auto fill_action_mc = [&](Int_t cid, Float_t var, Float_t w)
@@ -429,9 +431,9 @@ Int_t pv_res(TString period, Int_t idx)
     for (Int_t cid = 0; cid < NCOMB; ++cid)
     {
         if (h_data[cid] && h_data[cid]->GetEntries() > 0)
-            reso_data[cid] = fit_res(h_data[cid], period, "Data", histinfo[cid].dataFigPath, 0.1);
+            reso_data[cid] = fit_res(h_data[cid], period, "Data", histinfo[cid].dataFigPath);
         if (h_mc[cid] && h_mc[cid]->GetEntries() > 0)
-            reso_mc[cid] = fit_res(h_mc[cid], period, "Simulation", histinfo[cid].mcFigPath, 0.1);
+            reso_mc[cid] = fit_res(h_mc[cid], period, "Simulation", histinfo[cid].mcFigPath);
 
         TString suffix = COMB_SUFFIX[cid];
         resojson[Form("reso_data_%s", suffix.Data())] = reso_data[cid];

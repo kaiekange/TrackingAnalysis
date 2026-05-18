@@ -14,7 +14,7 @@ warnings.filterwarnings(
 )
 
 # 5 个 era
-periods = ["2022_preEE", "2022_postEE", "2023_preBPix", "2023_postBPix", "2024"]
+periods = ["2022", "2022EE", "2023", "2023BPix", "2024"]
 
 # 每个变量的 y 轴标题（LaTeX）
 VAR_TITLES = {
@@ -48,38 +48,39 @@ OUT_DIR = Path("/eos/home-k/kakang/IPres/analysis/ZeroBias/figures/ip_res")
 # ============ 1. 读取数据 ============
 
 def load_all_data():
-    """
-    返回:
-      data[period] = {
-        "pt": np.array([...]),
-        var1: np.array([...]),
-        ...
-      }
-    """
     data = {}
 
     for period in periods:
         base_dir = Path(BASE_DIR_TEMPLATE.format(period=period))
         pts = []
+        pt_uleta_list = []
         vals = {v: [] for v in ALL_VARS}
 
         for path in base_dir.glob("*.json"):
             d = json.loads(path.read_text())
-            # 如果实际 key 是 'pv_trk_pt'，这里改成 d["pv_trk_pt"]
+
             pt = d["pt"]
+            pt_uleta = d.get("pt_uleta", pt)  # fallback
+
             pts.append(pt)
+            pt_uleta_list.append(pt_uleta)
+
             for v in ALL_VARS:
                 vals[v].append(d[v])
 
         if len(pts) == 0:
             print(f"[WARN] period {period}: no entries found.")
-            pts_arr = np.array([])
-            period_data = {"pt": pts_arr}
+            period_data = {
+                "pt": np.array([]),
+                "pt_uleta": np.array([]),
+            }
             for v in ALL_VARS:
                 period_data[v] = np.array([])
         else:
-            pts_arr = np.array(pts, dtype=float)
-            period_data = {"pt": pts_arr}
+            period_data = {
+                "pt": np.array(pts, dtype=float),
+                "pt_uleta": np.array(pt_uleta_list, dtype=float),
+            }
             for v in ALL_VARS:
                 period_data[v] = np.array(vals[v], dtype=float)
 
@@ -91,22 +92,20 @@ def load_all_data():
 # ============ 2. 最近 pt 的值 + 画 2×2 柱状图 ============
 
 def get_values_at_closest_pts(data, var):
-    """
-    对某个 var，找到每个 period 里 pt 最接近 TARGET_PTS 时的值。
-
-    返回:
-      values: shape = (n_targets, n_periods)
-        values[i, j] = 在第 j 个 period 中, pt ~ TARGET_PTS[i] 时 var 的值 (若该 period 无数据则 NaN)
-    """
     n_targets = len(TARGET_PTS)
     n_periods = len(periods)
     values = np.full((n_targets, n_periods), np.nan, dtype=float)
 
+    use_uleta = "uleta" in var
+
     for j, period in enumerate(periods):
-        pts = data[period]["pt"]
+        pts = data[period]["pt_uleta"] if use_uleta else data[period]["pt"]
+
         if pts.size == 0:
             continue
+
         arr = data[period][var]
+
         for i, t in enumerate(TARGET_PTS):
             idx = np.argmin(np.abs(pts - t))
             values[i, j] = float(arr[idx])
@@ -195,28 +194,26 @@ def plot_closest_pt_bar(data, var, ytitle, outfile):
 # ============ 3. 区间 median / mean + 画 1×3 柱状图 ============
 
 def get_bin_stats(data, var, stat="median"):
-    """
-    对某个 var，在 3 个 pt 区间内 (per period) 计算 median 或 mean。
-
-    返回:
-      stats_arr: shape = (n_bins, n_periods)
-        stats_arr[i, j] = 第 j 个 period，在第 i 个区间里的 median/mean
-    """
     n_bins = len(PT_BINS)
     n_periods = len(periods)
     stats_arr = np.full((n_bins, n_periods), np.nan, dtype=float)
 
+    use_uleta = "uleta" in var
+
     for j, period in enumerate(periods):
-        pts = data[period]["pt"]
+        pts = data[period]["pt_uleta"] if use_uleta else data[period]["pt"]
         vals = data[period][var]
+
         if pts.size == 0:
             continue
 
         for i, (low, high) in enumerate(PT_BINS):
             mask = (pts >= low) & (pts < high)
             subset = vals[mask]
+
             if subset.size == 0:
                 continue
+
             if stat == "median":
                 stats_arr[i, j] = float(np.nanmedian(subset))
             elif stat == "mean":

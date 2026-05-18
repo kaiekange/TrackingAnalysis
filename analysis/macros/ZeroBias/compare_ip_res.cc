@@ -21,13 +21,13 @@
 
 const TString datatype_text = "Unbiased collision events";
 const TString storage_dir = "/eos/home-k/kakang/IPres/analysis/ZeroBias";
-const Int_t nbins = 500;
+const Int_t nbins = 200;
 
 const std::vector<TString> periods = {
-    "2022_preEE",
-    "2022_postEE",
-    "2023_preBPix",
-    "2023_postBPix",
+    "2022",
+    "2022EE",
+    "2023",
+    "2023BPix",
     "2024"};
 
 const Color_t colors[] = {kBlack, kRed, kBlue, kGreen + 2, kOrange + 7};
@@ -47,6 +47,7 @@ void draw_all_graphs(std::vector<TGraph> &graphs,
     TCanvas *canvas = new TCanvas("canvas", "canvas", 800, 600);
     canvas_setup(canvas);
     canvas->SetBottomMargin(0.15);
+    canvas->SetRightMargin(0.17);
 
     graphs[0].SetMarkerStyle(20);
     graphs[0].SetMarkerSize(0.5);
@@ -54,8 +55,8 @@ void draw_all_graphs(std::vector<TGraph> &graphs,
     graphs[0].Draw("AP");
     graphs[0].GetYaxis()->SetTitle(ylabel);
     graphs[0].GetXaxis()->SetTitle(xlabel);
-    graphs[0].SetMaximum(height * 1.5);
-    graphs[0].SetMinimum(0.0);
+    graphs[0].SetMaximum(height * 1.3);
+    graphs[0].SetMinimum(0);
     graphs[0].GetYaxis()->SetNdivisions(810);
 
     const size_t nGraphs = graphs.size();
@@ -67,9 +68,9 @@ void draw_all_graphs(std::vector<TGraph> &graphs,
         graphs[i].SetMarkerColor(colors[i]);
         graphs[i].Draw("P SAME");
     }
-    write_text(0.55, 0.85, addtext);
+    write_text(0.5, 0.85, addtext);
 
-    TLegend *mylegend = new TLegend(0.55, 0.6, 0.65, 0.8, "", "brNDC");
+    TLegend *mylegend = new TLegend(0.84, 0.5, 0.96, 0.9, "", "brNDC");
     for (size_t i = 0; i < nGraphs && i < periods.size(); ++i)
     {
         TString tmp_period = periods[i];
@@ -87,7 +88,14 @@ void draw_all_graphs(std::vector<TGraph> &graphs,
 
     canvas->Update();
     canvas->RedrawAxis();
-    canvas->SaveAs(figpath);
+    canvas->SaveAs(figpath + ".png");
+
+    // graphs[0].SetMaximum(height * 100);
+    // graphs[0].SetMinimum(10);
+    // canvas->SetLogy(1);
+    // canvas->Update();
+    // canvas->RedrawAxis();
+    // canvas->SaveAs(figpath + "_log.png");
 
     delete mylegend;
     delete canvas;
@@ -101,8 +109,6 @@ Int_t compare_ip_res()
     Float_t new_height_dz_pt_loeta = 0;
     Float_t new_height_d0_pt_hieta = 0;
     Float_t new_height_dz_pt_hieta = 0;
-    Float_t new_height_d0_pt_uleta = 0;
-    Float_t new_height_dz_pt_uleta = 0;
     Float_t new_height_d0_pt_alleta = 0;
     Float_t new_height_dz_pt_alleta = 0;
     Float_t height_d0_pt_loeta = 0;
@@ -134,8 +140,6 @@ Int_t compare_ip_res()
     std::vector<TGraph> new_graphs_dz_pt_loeta;
     std::vector<TGraph> new_graphs_d0_pt_hieta;
     std::vector<TGraph> new_graphs_dz_pt_hieta;
-    std::vector<TGraph> new_graphs_d0_pt_uleta;
-    std::vector<TGraph> new_graphs_dz_pt_uleta;
     std::vector<TGraph> new_graphs_d0_pt_alleta;
     std::vector<TGraph> new_graphs_dz_pt_alleta;
     std::vector<TGraph> graphs_d0_pt_loeta;
@@ -199,6 +203,7 @@ Int_t compare_ip_res()
         Float_t eta[nbins];
         Float_t phi[nbins];
         Float_t pt[nbins];
+        Float_t pt_uleta[nbins];
 
         for (Int_t i = 0; i < nbins; i++)
         {
@@ -209,6 +214,7 @@ Int_t compare_ip_res()
             eta[i] = results["eta"];
             phi[i] = results["phi"];
             pt[i] = results["pt"];
+            pt_uleta[i] = results["pt_uleta"];
 
             reso_data_d0_pt_loeta[i] = results["reso_data_d0_pt_loeta"];
             reso_data_dz_pt_loeta[i] = results["reso_data_dz_pt_loeta"];
@@ -242,7 +248,6 @@ Int_t compare_ip_res()
         std::vector<double> v_pt;
         std::vector<double> v_d0_pt_loeta, v_dz_pt_loeta;
         std::vector<double> v_d0_pt_hieta, v_dz_pt_hieta;
-        std::vector<double> v_d0_pt_uleta, v_dz_pt_uleta;
         std::vector<double> v_d0_pt_alleta, v_dz_pt_alleta;
 
         for (Int_t i = 0; i < nbins; ++i)
@@ -257,9 +262,6 @@ Int_t compare_ip_res()
             v_d0_pt_hieta.push_back(reso_data_d0_pt_hieta[i]);
             v_dz_pt_hieta.push_back(reso_data_dz_pt_hieta[i]);
 
-            v_d0_pt_uleta.push_back(reso_data_d0_pt_uleta[i]);
-            v_dz_pt_uleta.push_back(reso_data_dz_pt_uleta[i]);
-
             v_d0_pt_alleta.push_back(reso_data_d0_pt_alleta[i]);
             v_dz_pt_alleta.push_back(reso_data_dz_pt_alleta[i]);
         }
@@ -268,8 +270,6 @@ Int_t compare_ip_res()
         TGraph new_gr_data_dz_pt_loeta(v_pt.size(), v_pt.data(), v_dz_pt_loeta.data());
         TGraph new_gr_data_d0_pt_hieta(v_pt.size(), v_pt.data(), v_d0_pt_hieta.data());
         TGraph new_gr_data_dz_pt_hieta(v_pt.size(), v_pt.data(), v_dz_pt_hieta.data());
-        TGraph new_gr_data_d0_pt_uleta(v_pt.size(), v_pt.data(), v_d0_pt_uleta.data());
-        TGraph new_gr_data_dz_pt_uleta(v_pt.size(), v_pt.data(), v_dz_pt_uleta.data());
         TGraph new_gr_data_d0_pt_alleta(v_pt.size(), v_pt.data(), v_d0_pt_alleta.data());
         TGraph new_gr_data_dz_pt_alleta(v_pt.size(), v_pt.data(), v_dz_pt_alleta.data());
 
@@ -277,8 +277,8 @@ Int_t compare_ip_res()
         TGraph gr_data_dz_pt_loeta(nbins, pt, reso_data_dz_pt_loeta);
         TGraph gr_data_d0_pt_hieta(nbins, pt, reso_data_d0_pt_hieta);
         TGraph gr_data_dz_pt_hieta(nbins, pt, reso_data_dz_pt_hieta);
-        TGraph gr_data_d0_pt_uleta(nbins, pt, reso_data_d0_pt_uleta);
-        TGraph gr_data_dz_pt_uleta(nbins, pt, reso_data_dz_pt_uleta);
+        TGraph gr_data_d0_pt_uleta(nbins, pt_uleta, reso_data_d0_pt_uleta);
+        TGraph gr_data_dz_pt_uleta(nbins, pt_uleta, reso_data_dz_pt_uleta);
         TGraph gr_data_d0_pt_alleta(nbins, pt, reso_data_d0_pt_alleta);
         TGraph gr_data_dz_pt_alleta(nbins, pt, reso_data_dz_pt_alleta);
 
@@ -304,8 +304,6 @@ Int_t compare_ip_res()
         new_height_dz_pt_loeta = std::max(new_height_dz_pt_loeta, (Float_t)*std::max_element(v_dz_pt_loeta.begin(), v_dz_pt_loeta.end()));
         new_height_d0_pt_hieta = std::max(new_height_d0_pt_hieta, (Float_t)*std::max_element(v_d0_pt_hieta.begin(), v_d0_pt_hieta.end()));
         new_height_dz_pt_hieta = std::max(new_height_dz_pt_hieta, (Float_t)*std::max_element(v_dz_pt_hieta.begin(), v_dz_pt_hieta.end()));
-        new_height_d0_pt_uleta = std::max(new_height_d0_pt_uleta, (Float_t)*std::max_element(v_d0_pt_uleta.begin(), v_d0_pt_uleta.end()));
-        new_height_dz_pt_uleta = std::max(new_height_dz_pt_uleta, (Float_t)*std::max_element(v_dz_pt_uleta.begin(), v_dz_pt_uleta.end()));
         new_height_d0_pt_alleta = std::max(new_height_d0_pt_alleta, (Float_t)*std::max_element(v_d0_pt_alleta.begin(), v_d0_pt_alleta.end()));
         new_height_dz_pt_alleta = std::max(new_height_dz_pt_alleta, (Float_t)*std::max_element(v_dz_pt_alleta.begin(), v_dz_pt_alleta.end()));
 
@@ -340,8 +338,6 @@ Int_t compare_ip_res()
         new_graphs_dz_pt_loeta.push_back(new_gr_data_dz_pt_loeta);
         new_graphs_d0_pt_hieta.push_back(new_gr_data_d0_pt_hieta);
         new_graphs_dz_pt_hieta.push_back(new_gr_data_dz_pt_hieta);
-        new_graphs_d0_pt_uleta.push_back(new_gr_data_d0_pt_uleta);
-        new_graphs_dz_pt_uleta.push_back(new_gr_data_dz_pt_uleta);
         new_graphs_d0_pt_alleta.push_back(new_gr_data_d0_pt_alleta);
         new_graphs_dz_pt_alleta.push_back(new_gr_data_dz_pt_alleta);
         graphs_d0_pt_loeta.push_back(gr_data_d0_pt_loeta);
@@ -370,45 +366,43 @@ Int_t compare_ip_res()
         graphs_dz_phi_allpt.push_back(gr_data_dz_phi_allpt);
     }
 
-    draw_all_graphs(new_graphs_d0_pt_loeta, new_height_d0_pt_loeta, "#splitline{" + datatype_text + "}{|#it{#eta}|<1.3}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "new_d0_pt_loeta.png");
-    draw_all_graphs(new_graphs_d0_pt_hieta, new_height_d0_pt_hieta, "#splitline{" + datatype_text + "}{1.3<|#it{#eta}|<2.5}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "new_d0_pt_hieta.png");
-    draw_all_graphs(new_graphs_d0_pt_uleta, new_height_d0_pt_uleta, "#splitline{" + datatype_text + "}{2.5<|#it{#eta}|<3.0}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "new_d0_pt_uleta.png");
-    draw_all_graphs(new_graphs_d0_pt_alleta, new_height_d0_pt_alleta, datatype_text, "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "new_d0_pt_alleta.png");
+    draw_all_graphs(new_graphs_d0_pt_loeta, new_height_d0_pt_loeta, "#splitline{" + datatype_text + "}{|#it{#eta}|<1.3}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "new_d0_pt_loeta");
+    draw_all_graphs(new_graphs_d0_pt_hieta, new_height_d0_pt_hieta, "#splitline{" + datatype_text + "}{1.3<|#it{#eta}|<2.5}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "new_d0_pt_hieta");
+    draw_all_graphs(new_graphs_d0_pt_alleta, new_height_d0_pt_alleta, datatype_text, "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "new_d0_pt_alleta");
 
-    draw_all_graphs(graphs_d0_pt_loeta, height_d0_pt_loeta, "#splitline{" + datatype_text + "}{|#it{#eta}|<1.3}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_pt_loeta.png");
-    draw_all_graphs(graphs_d0_pt_hieta, height_d0_pt_hieta, "#splitline{" + datatype_text + "}{1.3<|#it{#eta}|<2.5}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_pt_hieta.png");
-    draw_all_graphs(graphs_d0_pt_uleta, height_d0_pt_uleta, "#splitline{" + datatype_text + "}{2.5<|#it{#eta}|<3.0}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_pt_uleta.png");
-    draw_all_graphs(graphs_d0_pt_alleta, height_d0_pt_alleta, datatype_text, "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_pt_alleta.png");
+    draw_all_graphs(graphs_d0_pt_loeta, height_d0_pt_loeta, "#splitline{" + datatype_text + "}{|#it{#eta}|<1.3}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_pt_loeta");
+    draw_all_graphs(graphs_d0_pt_hieta, height_d0_pt_hieta, "#splitline{" + datatype_text + "}{1.3<|#it{#eta}|<2.5}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_pt_hieta");
+    draw_all_graphs(graphs_d0_pt_uleta, height_d0_pt_uleta, "#splitline{" + datatype_text + "}{2.5<|#it{#eta}|<3.0}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_pt_uleta");
+    draw_all_graphs(graphs_d0_pt_alleta, height_d0_pt_alleta, datatype_text, "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_pt_alleta");
 
-    draw_all_graphs(graphs_d0_eta_lopt, height_d0_eta_lopt, "#splitline{" + datatype_text + "}{0.1<#it{p_{T}}<1 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_eta_lopt.png");
-    draw_all_graphs(graphs_d0_eta_hipt, height_d0_eta_hipt, "#splitline{" + datatype_text + "}{1<#it{p_{T}}<3 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_eta_hipt.png");
-    draw_all_graphs(graphs_d0_eta_ulpt, height_d0_eta_ulpt, "#splitline{" + datatype_text + "}{3<#it{p_{T}}<10 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_eta_ulpt.png");
-    draw_all_graphs(graphs_d0_eta_allpt, height_d0_eta_allpt, datatype_text, "Track #it{#eta}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_eta_allpt.png");
+    draw_all_graphs(graphs_d0_eta_lopt, height_d0_eta_lopt, "#splitline{" + datatype_text + "}{0.1<#it{p_{T}}<1 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_eta_lopt");
+    draw_all_graphs(graphs_d0_eta_hipt, height_d0_eta_hipt, "#splitline{" + datatype_text + "}{1<#it{p_{T}}<3 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_eta_hipt");
+    draw_all_graphs(graphs_d0_eta_ulpt, height_d0_eta_ulpt, "#splitline{" + datatype_text + "}{3<#it{p_{T}}<10 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_eta_ulpt");
+    draw_all_graphs(graphs_d0_eta_allpt, height_d0_eta_allpt, datatype_text, "Track #it{#eta}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_eta_allpt");
 
-    draw_all_graphs(graphs_d0_phi_lopt, height_d0_phi_lopt, "#splitline{" + datatype_text + "}{0.1<#it{p_{T}}<1 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_lopt.png");
-    draw_all_graphs(graphs_d0_phi_hipt, height_d0_phi_hipt, "#splitline{" + datatype_text + "}{1<#it{p_{T}}<3 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_hipt.png");
-    draw_all_graphs(graphs_d0_phi_ulpt, height_d0_phi_ulpt, "#splitline{" + datatype_text + "}{3<#it{p_{T}}<10 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_ulpt.png");
-    draw_all_graphs(graphs_d0_phi_allpt, height_d0_phi_allpt, datatype_text, "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_allpt.png");
+    draw_all_graphs(graphs_d0_phi_lopt, height_d0_phi_lopt, "#splitline{" + datatype_text + "}{0.1<#it{p_{T}}<1 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_lopt");
+    draw_all_graphs(graphs_d0_phi_hipt, height_d0_phi_hipt, "#splitline{" + datatype_text + "}{1<#it{p_{T}}<3 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_hipt");
+    draw_all_graphs(graphs_d0_phi_ulpt, height_d0_phi_ulpt, "#splitline{" + datatype_text + "}{3<#it{p_{T}}<10 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_ulpt");
+    draw_all_graphs(graphs_d0_phi_allpt, height_d0_phi_allpt, datatype_text, "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_allpt");
 
-    draw_all_graphs(new_graphs_dz_pt_loeta, new_height_dz_pt_loeta, "#splitline{" + datatype_text + "}{|#it{#eta}|<1.3}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "new_dz_pt_loeta.png");
-    draw_all_graphs(new_graphs_dz_pt_hieta, new_height_dz_pt_hieta, "#splitline{" + datatype_text + "}{1.3<|#it{#eta}|<2.5}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "new_dz_pt_hieta.png");
-    draw_all_graphs(new_graphs_dz_pt_uleta, new_height_dz_pt_uleta, "#splitline{" + datatype_text + "}{2.5<|#it{#eta}|<3.0}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "new_dz_pt_uleta.png");
-    draw_all_graphs(new_graphs_dz_pt_alleta, new_height_dz_pt_alleta, datatype_text, "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "new_dz_pt_alleta.png");
+    draw_all_graphs(new_graphs_dz_pt_loeta, new_height_dz_pt_loeta, "#splitline{" + datatype_text + "}{|#it{#eta}|<1.3}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "new_dz_pt_loeta");
+    draw_all_graphs(new_graphs_dz_pt_hieta, new_height_dz_pt_hieta, "#splitline{" + datatype_text + "}{1.3<|#it{#eta}|<2.5}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "new_dz_pt_hieta");
+    draw_all_graphs(new_graphs_dz_pt_alleta, new_height_dz_pt_alleta, datatype_text, "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "new_dz_pt_alleta");
 
-    draw_all_graphs(graphs_dz_pt_loeta, height_dz_pt_loeta, "#splitline{" + datatype_text + "}{|#it{#eta}|<1.3}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_pt_loeta.png");
-    draw_all_graphs(graphs_dz_pt_hieta, height_dz_pt_hieta, "#splitline{" + datatype_text + "}{1.3<|#it{#eta}|<2.5}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_pt_hieta.png");
-    draw_all_graphs(graphs_dz_pt_uleta, height_dz_pt_uleta, "#splitline{" + datatype_text + "}{2.5<|#it{#eta}|<3.0}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_pt_uleta.png");
-    draw_all_graphs(graphs_dz_pt_alleta, height_dz_pt_alleta, datatype_text, "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_pt_alleta.png");
+    draw_all_graphs(graphs_dz_pt_loeta, height_dz_pt_loeta, "#splitline{" + datatype_text + "}{|#it{#eta}|<1.3}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_pt_loeta");
+    draw_all_graphs(graphs_dz_pt_hieta, height_dz_pt_hieta, "#splitline{" + datatype_text + "}{1.3<|#it{#eta}|<2.5}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_pt_hieta");
+    draw_all_graphs(graphs_dz_pt_uleta, height_dz_pt_uleta, "#splitline{" + datatype_text + "}{2.5<|#it{#eta}|<3.0}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_pt_uleta");
+    draw_all_graphs(graphs_dz_pt_alleta, height_dz_pt_alleta, datatype_text, "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_pt_alleta");
 
-    draw_all_graphs(graphs_dz_eta_lopt, height_dz_eta_lopt, "#splitline{" + datatype_text + "}{0.1<#it{p_{T}}<1 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_eta_lopt.png");
-    draw_all_graphs(graphs_dz_eta_hipt, height_dz_eta_hipt, "#splitline{" + datatype_text + "}{1<#it{p_{T}}<3 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_eta_hipt.png");
-    draw_all_graphs(graphs_dz_eta_ulpt, height_dz_eta_ulpt, "#splitline{" + datatype_text + "}{3<#it{p_{T}}<10 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_eta_ulpt.png");
-    draw_all_graphs(graphs_dz_eta_allpt, height_dz_eta_allpt, datatype_text, "Track #it{#eta}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_eta_allpt.png");
+    draw_all_graphs(graphs_dz_eta_lopt, height_dz_eta_lopt, "#splitline{" + datatype_text + "}{0.1<#it{p_{T}}<1 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_eta_lopt");
+    draw_all_graphs(graphs_dz_eta_hipt, height_dz_eta_hipt, "#splitline{" + datatype_text + "}{1<#it{p_{T}}<3 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_eta_hipt");
+    draw_all_graphs(graphs_dz_eta_ulpt, height_dz_eta_ulpt, "#splitline{" + datatype_text + "}{3<#it{p_{T}}<10 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_eta_ulpt");
+    draw_all_graphs(graphs_dz_eta_allpt, height_dz_eta_allpt, datatype_text, "Track #it{#eta}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_eta_allpt");
 
-    draw_all_graphs(graphs_dz_phi_lopt, height_dz_phi_lopt, "#splitline{" + datatype_text + "}{0.1<#it{p_{T}}<1 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_lopt.png");
-    draw_all_graphs(graphs_dz_phi_hipt, height_dz_phi_hipt, "#splitline{" + datatype_text + "}{1<#it{p_{T}}<3 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_hipt.png");
-    draw_all_graphs(graphs_dz_phi_ulpt, height_dz_phi_ulpt, "#splitline{" + datatype_text + "}{3<#it{p_{T}}<10 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_ulpt.png");
-    draw_all_graphs(graphs_dz_phi_allpt, height_dz_phi_allpt, datatype_text, "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_allpt.png");
+    draw_all_graphs(graphs_dz_phi_lopt, height_dz_phi_lopt, "#splitline{" + datatype_text + "}{0.1<#it{p_{T}}<1 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_lopt");
+    draw_all_graphs(graphs_dz_phi_hipt, height_dz_phi_hipt, "#splitline{" + datatype_text + "}{1<#it{p_{T}}<3 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_hipt");
+    draw_all_graphs(graphs_dz_phi_ulpt, height_dz_phi_ulpt, "#splitline{" + datatype_text + "}{3<#it{p_{T}}<10 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_ulpt");
+    draw_all_graphs(graphs_dz_phi_allpt, height_dz_phi_allpt, datatype_text, "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_allpt");
 
     return 0;
 }
