@@ -7,6 +7,8 @@ ResTree::ResTree(TTree *_tree)
 
 void ResTree::Init()
 {
+    ev_run = null;
+    ev_id = null;
     ev_nPV = null;
 
     trig_ZeroBias_pass = false;
@@ -116,6 +118,8 @@ void ResTree::Init()
 
 void ResTree::CreateBranches(Bool_t runOnData)
 {
+    tree->Branch("ev_run", &ev_run);
+    tree->Branch("ev_id", &ev_id);
     tree->Branch("ev_nPV", &ev_nPV);
 
     tree->Branch("trig_ZeroBias_pass", &trig_ZeroBias_pass);

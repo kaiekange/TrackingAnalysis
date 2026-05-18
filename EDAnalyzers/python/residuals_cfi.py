@@ -14,7 +14,7 @@ residuals = cms.EDAnalyzer("Residuals",
             maxD0Error = cms.double(1.0),
             maxDzError = cms.double(1.0),
             minPt = cms.double(0.0),
-            maxEta = cms.double(5.0), # 2.4
+            maxEta = cms.double(5.0),
             minValidStripHits = cms.int32(0),
             trackQuality = cms.string("any")
             ),                                

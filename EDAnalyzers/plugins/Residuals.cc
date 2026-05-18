@@ -217,6 +217,9 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
 
     ftree->Init();
 
+    ftree->ev_run = iEvent.id().run();
+    ftree->ev_id  = iEvent.id().event();
+
     //==================================================//
     //--------------------------------------------------//
     // Triggers
@@ -533,11 +536,10 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
         }
     }
 
-    if (nTracks)
-    {
-        pv_fracHighPurity_p1 /= Float_t(nTracks);
-        pv_fracHighPurity_p2 /= Float_t(nTracks);
-    }
+    if (vtxTkCollection1.size())
+        pv_fracHighPurity_p1 /= Float_t(vtxTkCollection1.size());
+    if (vtxTkCollection2.size())
+        pv_fracHighPurity_p2 /= Float_t(vtxTkCollection2.size());
 
     std::vector<TransientVertex> refitted_tPVs1 = revertex->makeVertices(vtxTkCollection1, *beamspotHandle, iSetup);
     std::vector<TransientVertex> refitted_tPVs2 = revertex->makeVertices(vtxTkCollection2, *beamspotHandle, iSetup);

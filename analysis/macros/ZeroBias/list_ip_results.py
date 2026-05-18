@@ -66,7 +66,7 @@ def load_all_data():
             pt_uleta_list.append(pt_uleta)
 
             for v in ALL_VARS:
-                vals[v].append(d[v])
+                vals[v].append(d.get(v, float('nan')))
 
         if len(pts) == 0:
             print(f"[WARN] period {period}: no entries found.")

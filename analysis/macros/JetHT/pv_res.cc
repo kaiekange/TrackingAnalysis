@@ -119,6 +119,12 @@ struct HistInfo
 
 Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath, Float_t tolerance = 1e-4)
 {
+    Int_t filledBins = 0;
+    for (Int_t i = 1; i <= hist->GetNbinsX(); i++)
+        if (hist->GetBinContent(i) > 0) filledBins++;
+    if ((Double_t)filledBins / hist->GetNbinsX() < 0.1)
+        return -1.f;
+
     setTDRStyle();
     lumi_sqrtS = "13.6 TeV, " + period;
 
@@ -136,6 +142,8 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
 
     RooDataHist hdatahist("hdatahist", "", pv_var, hist);
     RooFitResult *fitResult = model.fitTo(hdatahist, RooFit::Save(true));
+    if (fitResult->status() != 0)
+        std::cerr << "[WARN] fit_res: RooFit did not converge (status=" << fitResult->status() << ") for " << hist->GetName() << std::endl;
     fitResult->Print();
     delete fitResult;
 
@@ -461,7 +469,9 @@ Int_t pv_res(TString period, Int_t idx)
         for (int it = 0; it < N_TRIGS; ++it)
         {
             std::string trig_key = std::string(TRIG_NAMES[it]).substr(4); // strip "HLT_"
-            bool masked = mask_json[period.Data()][dataset][trig_key].get<bool>();
+            bool masked = false;
+            if (mask_json.contains(period.Data()) && mask_json[period.Data()].contains(dataset))
+                masked = mask_json[period.Data()][dataset].value(trig_key, false);
             ps_weights_entry[it] = masked ? 0.0 : ps_weights_final[it];
         }
 

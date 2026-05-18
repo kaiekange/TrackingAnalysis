@@ -109,7 +109,7 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
             filledBins++;
     }
     if ((Double_t)filledBins / hist->GetNbinsX() < 0.1)
-        return 0.;
+        return -1.f;
 
     setTDRStyle();
     lumi_sqrtS = "13.6 TeV, " + period;
@@ -128,6 +128,8 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
 
     RooDataHist hdatahist("hdatahist", "", ip_var, hist);
     RooFitResult *fitResult = model.fitTo(hdatahist, RooFit::Save(true));
+    if (fitResult->status() != 0)
+        std::cerr << "[WARN] fit_res: RooFit did not converge (status=" << fitResult->status() << ") for " << hist->GetName() << std::endl;
     fitResult->Print();
     delete fitResult;
 

@@ -30,17 +30,29 @@ const std::vector<TString> periods = {
     "2023BPix",
     "2024"};
 
-const Color_t colors[] = {kBlack, kRed, kBlue, kGreen + 2, kOrange + 7};
+const Color_t colors[]     = {kBlack, kRed+1, kAzure+7, kGreen+2, kOrange+7};
+const Style_t markers[]    = {20,     21,   22,    33,         23          };
+const Style_t linestyles[] = {1,      1,    1,     2,          1           };
 
 void draw_all_graphs(std::vector<TGraph> &graphs,
                      Float_t height,
                      TString addtext,
                      TString xlabel,
                      TString ylabel,
-                     TString figpath)
+                     TString figpath,
+                     bool dynamic_range = true)
 {
     if (graphs.empty())
         return;
+
+    Float_t floor_val = height;
+    for (auto &g : graphs) {
+        Double_t *y_arr = g.GetY();
+        for (Int_t i = 0; i < g.GetN(); ++i)
+            if (y_arr[i] > 0.0 && Float_t(y_arr[i]) < floor_val)
+                floor_val = Float_t(y_arr[i]);
+    }
+    Float_t margin = 0.2f * (height - floor_val);
 
     lumi_sqrtS = "13.6 TeV, Run 3";
 
@@ -49,23 +61,34 @@ void draw_all_graphs(std::vector<TGraph> &graphs,
     canvas->SetBottomMargin(0.15);
     canvas->SetRightMargin(0.17);
 
-    graphs[0].SetMarkerStyle(20);
-    graphs[0].SetMarkerSize(0.5);
+    graphs[0].SetMarkerStyle(markers[0]);
+    graphs[0].SetMarkerSize(0.9);
     graphs[0].SetMarkerColor(colors[0]);
+    graphs[0].SetLineColor(colors[0]);
+    graphs[0].SetLineStyle(linestyles[0]);
+    graphs[0].SetLineWidth(2);
     graphs[0].Draw("AP");
     graphs[0].GetYaxis()->SetTitle(ylabel);
     graphs[0].GetXaxis()->SetTitle(xlabel);
-    graphs[0].SetMaximum(height * 1.3);
-    graphs[0].SetMinimum(0);
+    if (dynamic_range) {
+        graphs[0].SetMaximum(height + 1.5f * margin);
+        graphs[0].SetMinimum(std::max(0.f, floor_val - margin));
+    } else {
+        graphs[0].SetMaximum(height * 1.3f);
+        graphs[0].SetMinimum(0.f);
+    }
     graphs[0].GetYaxis()->SetNdivisions(810);
 
     const size_t nGraphs = graphs.size();
 
     for (size_t i = 1; i < nGraphs; ++i)
     {
-        graphs[i].SetMarkerStyle(20);
-        graphs[i].SetMarkerSize(0.5);
+        graphs[i].SetMarkerStyle(markers[i]);
+        graphs[i].SetMarkerSize(0.9);
         graphs[i].SetMarkerColor(colors[i]);
+        graphs[i].SetLineColor(colors[i]);
+        graphs[i].SetLineStyle(linestyles[i]);
+        graphs[i].SetLineWidth(2);
         graphs[i].Draw("P SAME");
     }
     write_text(0.5, 0.85, addtext);
@@ -75,7 +98,7 @@ void draw_all_graphs(std::vector<TGraph> &graphs,
     {
         TString tmp_period = periods[i];
         tmp_period.ReplaceAll("_", " ");
-        mylegend->AddEntry(const_cast<TGraph *>(&graphs[i]), tmp_period, "p");
+        mylegend->AddEntry(const_cast<TGraph *>(&graphs[i]), tmp_period, "lp");
     }
     mylegend->SetTextFont(42);
     mylegend->SetTextColor(kBlack);
@@ -380,10 +403,10 @@ Int_t compare_ip_res()
     draw_all_graphs(graphs_d0_eta_ulpt, height_d0_eta_ulpt, "#splitline{" + datatype_text + "}{3<#it{p_{T}}<10 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_eta_ulpt");
     draw_all_graphs(graphs_d0_eta_allpt, height_d0_eta_allpt, datatype_text, "Track #it{#eta}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_eta_allpt");
 
-    draw_all_graphs(graphs_d0_phi_lopt, height_d0_phi_lopt, "#splitline{" + datatype_text + "}{0.1<#it{p_{T}}<1 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_lopt");
-    draw_all_graphs(graphs_d0_phi_hipt, height_d0_phi_hipt, "#splitline{" + datatype_text + "}{1<#it{p_{T}}<3 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_hipt");
-    draw_all_graphs(graphs_d0_phi_ulpt, height_d0_phi_ulpt, "#splitline{" + datatype_text + "}{3<#it{p_{T}}<10 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_ulpt");
-    draw_all_graphs(graphs_d0_phi_allpt, height_d0_phi_allpt, datatype_text, "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_allpt");
+    draw_all_graphs(graphs_d0_phi_lopt, height_d0_phi_lopt, "#splitline{" + datatype_text + "}{0.1<#it{p_{T}}<1 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_lopt", false);
+    draw_all_graphs(graphs_d0_phi_hipt, height_d0_phi_hipt, "#splitline{" + datatype_text + "}{1<#it{p_{T}}<3 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_hipt", false);
+    draw_all_graphs(graphs_d0_phi_ulpt, height_d0_phi_ulpt, "#splitline{" + datatype_text + "}{3<#it{p_{T}}<10 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_ulpt", false);
+    draw_all_graphs(graphs_d0_phi_allpt, height_d0_phi_allpt, datatype_text, "Track #it{#phi}", "Track IP resolution #it{d_{xy}} [#mum]", figdir + "d0_phi_allpt", false);
 
     draw_all_graphs(new_graphs_dz_pt_loeta, new_height_dz_pt_loeta, "#splitline{" + datatype_text + "}{|#it{#eta}|<1.3}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "new_dz_pt_loeta");
     draw_all_graphs(new_graphs_dz_pt_hieta, new_height_dz_pt_hieta, "#splitline{" + datatype_text + "}{1.3<|#it{#eta}|<2.5}", "Track #it{p_{T}} [GeV]", "Track IP resolution #it{d_{z}} [#mum]", figdir + "new_dz_pt_hieta");
@@ -399,10 +422,10 @@ Int_t compare_ip_res()
     draw_all_graphs(graphs_dz_eta_ulpt, height_dz_eta_ulpt, "#splitline{" + datatype_text + "}{3<#it{p_{T}}<10 GeV}", "Track #it{#eta}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_eta_ulpt");
     draw_all_graphs(graphs_dz_eta_allpt, height_dz_eta_allpt, datatype_text, "Track #it{#eta}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_eta_allpt");
 
-    draw_all_graphs(graphs_dz_phi_lopt, height_dz_phi_lopt, "#splitline{" + datatype_text + "}{0.1<#it{p_{T}}<1 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_lopt");
-    draw_all_graphs(graphs_dz_phi_hipt, height_dz_phi_hipt, "#splitline{" + datatype_text + "}{1<#it{p_{T}}<3 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_hipt");
-    draw_all_graphs(graphs_dz_phi_ulpt, height_dz_phi_ulpt, "#splitline{" + datatype_text + "}{3<#it{p_{T}}<10 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_ulpt");
-    draw_all_graphs(graphs_dz_phi_allpt, height_dz_phi_allpt, datatype_text, "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_allpt");
+    draw_all_graphs(graphs_dz_phi_lopt, height_dz_phi_lopt, "#splitline{" + datatype_text + "}{0.1<#it{p_{T}}<1 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_lopt", false);
+    draw_all_graphs(graphs_dz_phi_hipt, height_dz_phi_hipt, "#splitline{" + datatype_text + "}{1<#it{p_{T}}<3 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_hipt", false);
+    draw_all_graphs(graphs_dz_phi_ulpt, height_dz_phi_ulpt, "#splitline{" + datatype_text + "}{3<#it{p_{T}}<10 GeV}", "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_ulpt", false);
+    draw_all_graphs(graphs_dz_phi_allpt, height_dz_phi_allpt, datatype_text, "Track #it{#phi}", "Track IP resolution #it{d_{z}} [#mum]", figdir + "dz_phi_allpt", false);
 
     return 0;
 }

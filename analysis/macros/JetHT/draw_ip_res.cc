@@ -14,6 +14,19 @@ const TString datatype_text = "High-q^{2} multi-jet events";
 const TString storage_dir = "/eos/home-k/kakang/IPres/analysis/JetHT";
 const Int_t nbins = 200;
 
+TGraph* make_graph(Int_t n, const Float_t *x, const Float_t *y) {
+    std::vector<Float_t> vx, vy;
+    for (Int_t i = 0; i < n; ++i)
+        if (y[i] > 0.f) { vx.push_back(x[i]); vy.push_back(y[i]); }
+    return new TGraph((Int_t)vx.size(), vx.data(), vy.data());
+}
+
+Float_t valid_max(const Float_t *first, const Float_t *last) {
+    Float_t m = 0.f;
+    for (const Float_t *p = first; p != last; ++p) if (*p > m) m = *p;
+    return m;
+}
+
 Int_t draw_ip_res(TString period){
 
     TString figdir = storage_dir + "/figures/" + period + "/ip_res/";
@@ -174,173 +187,173 @@ Int_t draw_ip_res(TString period){
         reso_mc_d0_phi_allpt[i] = results["reso_mc_d0_phi_allpt"];
         reso_mc_dz_phi_allpt[i] = results["reso_mc_dz_phi_allpt"];
 
-        reso_div_d0_pt_loeta[i] = reso_data_d0_pt_loeta[i] / reso_mc_d0_pt_loeta[i];
-        reso_div_dz_pt_loeta[i] = reso_data_dz_pt_loeta[i] / reso_mc_dz_pt_loeta[i];
-        reso_div_d0_pt_hieta[i] = reso_data_d0_pt_hieta[i] / reso_mc_d0_pt_hieta[i];
-        reso_div_dz_pt_hieta[i] = reso_data_dz_pt_hieta[i] / reso_mc_dz_pt_hieta[i];
-        reso_div_d0_pt_uleta[i] = reso_data_d0_pt_uleta[i] / reso_mc_d0_pt_uleta[i];
-        reso_div_dz_pt_uleta[i] = reso_data_dz_pt_uleta[i] / reso_mc_dz_pt_uleta[i];
-        reso_div_d0_pt_alleta[i] = reso_data_d0_pt_alleta[i] / reso_mc_d0_pt_alleta[i];
-        reso_div_dz_pt_alleta[i] = reso_data_dz_pt_alleta[i] / reso_mc_dz_pt_alleta[i];
+        reso_div_d0_pt_loeta[i]  = (reso_mc_d0_pt_loeta[i]  > 0.f) ? reso_data_d0_pt_loeta[i]  / reso_mc_d0_pt_loeta[i]  : 0.f;
+        reso_div_dz_pt_loeta[i]  = (reso_mc_dz_pt_loeta[i]  > 0.f) ? reso_data_dz_pt_loeta[i]  / reso_mc_dz_pt_loeta[i]  : 0.f;
+        reso_div_d0_pt_hieta[i]  = (reso_mc_d0_pt_hieta[i]  > 0.f) ? reso_data_d0_pt_hieta[i]  / reso_mc_d0_pt_hieta[i]  : 0.f;
+        reso_div_dz_pt_hieta[i]  = (reso_mc_dz_pt_hieta[i]  > 0.f) ? reso_data_dz_pt_hieta[i]  / reso_mc_dz_pt_hieta[i]  : 0.f;
+        reso_div_d0_pt_uleta[i]  = (reso_mc_d0_pt_uleta[i]  > 0.f) ? reso_data_d0_pt_uleta[i]  / reso_mc_d0_pt_uleta[i]  : 0.f;
+        reso_div_dz_pt_uleta[i]  = (reso_mc_dz_pt_uleta[i]  > 0.f) ? reso_data_dz_pt_uleta[i]  / reso_mc_dz_pt_uleta[i]  : 0.f;
+        reso_div_d0_pt_alleta[i] = (reso_mc_d0_pt_alleta[i] > 0.f) ? reso_data_d0_pt_alleta[i] / reso_mc_d0_pt_alleta[i] : 0.f;
+        reso_div_dz_pt_alleta[i] = (reso_mc_dz_pt_alleta[i] > 0.f) ? reso_data_dz_pt_alleta[i] / reso_mc_dz_pt_alleta[i] : 0.f;
 
-        reso_div_d0_eta_lopt[i] = reso_data_d0_eta_lopt[i] / reso_mc_d0_eta_lopt[i];
-        reso_div_dz_eta_lopt[i] = reso_data_dz_eta_lopt[i] / reso_mc_dz_eta_lopt[i];
-        reso_div_d0_eta_hipt[i] = reso_data_d0_eta_hipt[i] / reso_mc_d0_eta_hipt[i];
-        reso_div_dz_eta_hipt[i] = reso_data_dz_eta_hipt[i] / reso_mc_dz_eta_hipt[i];
-        reso_div_d0_eta_ulpt[i] = reso_data_d0_eta_ulpt[i] / reso_mc_d0_eta_ulpt[i];
-        reso_div_dz_eta_ulpt[i] = reso_data_dz_eta_ulpt[i] / reso_mc_dz_eta_ulpt[i];
-        reso_div_d0_eta_allpt[i] = reso_data_d0_eta_allpt[i] / reso_mc_d0_eta_allpt[i];
-        reso_div_dz_eta_allpt[i] = reso_data_dz_eta_allpt[i] / reso_mc_dz_eta_allpt[i];
+        reso_div_d0_eta_lopt[i]  = (reso_mc_d0_eta_lopt[i]  > 0.f) ? reso_data_d0_eta_lopt[i]  / reso_mc_d0_eta_lopt[i]  : 0.f;
+        reso_div_dz_eta_lopt[i]  = (reso_mc_dz_eta_lopt[i]  > 0.f) ? reso_data_dz_eta_lopt[i]  / reso_mc_dz_eta_lopt[i]  : 0.f;
+        reso_div_d0_eta_hipt[i]  = (reso_mc_d0_eta_hipt[i]  > 0.f) ? reso_data_d0_eta_hipt[i]  / reso_mc_d0_eta_hipt[i]  : 0.f;
+        reso_div_dz_eta_hipt[i]  = (reso_mc_dz_eta_hipt[i]  > 0.f) ? reso_data_dz_eta_hipt[i]  / reso_mc_dz_eta_hipt[i]  : 0.f;
+        reso_div_d0_eta_ulpt[i]  = (reso_mc_d0_eta_ulpt[i]  > 0.f) ? reso_data_d0_eta_ulpt[i]  / reso_mc_d0_eta_ulpt[i]  : 0.f;
+        reso_div_dz_eta_ulpt[i]  = (reso_mc_dz_eta_ulpt[i]  > 0.f) ? reso_data_dz_eta_ulpt[i]  / reso_mc_dz_eta_ulpt[i]  : 0.f;
+        reso_div_d0_eta_allpt[i] = (reso_mc_d0_eta_allpt[i] > 0.f) ? reso_data_d0_eta_allpt[i] / reso_mc_d0_eta_allpt[i] : 0.f;
+        reso_div_dz_eta_allpt[i] = (reso_mc_dz_eta_allpt[i] > 0.f) ? reso_data_dz_eta_allpt[i] / reso_mc_dz_eta_allpt[i] : 0.f;
 
-        reso_div_d0_phi_lopt[i] = reso_data_d0_phi_lopt[i] / reso_mc_d0_phi_lopt[i];
-        reso_div_dz_phi_lopt[i] = reso_data_dz_phi_lopt[i] / reso_mc_dz_phi_lopt[i];
-        reso_div_d0_phi_hipt[i] = reso_data_d0_phi_hipt[i] / reso_mc_d0_phi_hipt[i];
-        reso_div_dz_phi_hipt[i] = reso_data_dz_phi_hipt[i] / reso_mc_dz_phi_hipt[i];
-        reso_div_d0_phi_ulpt[i] = reso_data_d0_phi_ulpt[i] / reso_mc_d0_phi_ulpt[i];
-        reso_div_dz_phi_ulpt[i] = reso_data_dz_phi_ulpt[i] / reso_mc_dz_phi_ulpt[i];
-        reso_div_d0_phi_allpt[i] = reso_data_d0_phi_allpt[i] / reso_mc_d0_phi_allpt[i];
-        reso_div_dz_phi_allpt[i] = reso_data_dz_phi_allpt[i] / reso_mc_dz_phi_allpt[i];
+        reso_div_d0_phi_lopt[i]  = (reso_mc_d0_phi_lopt[i]  > 0.f) ? reso_data_d0_phi_lopt[i]  / reso_mc_d0_phi_lopt[i]  : 0.f;
+        reso_div_dz_phi_lopt[i]  = (reso_mc_dz_phi_lopt[i]  > 0.f) ? reso_data_dz_phi_lopt[i]  / reso_mc_dz_phi_lopt[i]  : 0.f;
+        reso_div_d0_phi_hipt[i]  = (reso_mc_d0_phi_hipt[i]  > 0.f) ? reso_data_d0_phi_hipt[i]  / reso_mc_d0_phi_hipt[i]  : 0.f;
+        reso_div_dz_phi_hipt[i]  = (reso_mc_dz_phi_hipt[i]  > 0.f) ? reso_data_dz_phi_hipt[i]  / reso_mc_dz_phi_hipt[i]  : 0.f;
+        reso_div_d0_phi_ulpt[i]  = (reso_mc_d0_phi_ulpt[i]  > 0.f) ? reso_data_d0_phi_ulpt[i]  / reso_mc_d0_phi_ulpt[i]  : 0.f;
+        reso_div_dz_phi_ulpt[i]  = (reso_mc_dz_phi_ulpt[i]  > 0.f) ? reso_data_dz_phi_ulpt[i]  / reso_mc_dz_phi_ulpt[i]  : 0.f;
+        reso_div_d0_phi_allpt[i] = (reso_mc_d0_phi_allpt[i] > 0.f) ? reso_data_d0_phi_allpt[i] / reso_mc_d0_phi_allpt[i] : 0.f;
+        reso_div_dz_phi_allpt[i] = (reso_mc_dz_phi_allpt[i] > 0.f) ? reso_data_dz_phi_allpt[i] / reso_mc_dz_phi_allpt[i] : 0.f;
 
     }
 
-    TGraph * gr_data_d0_pt_loeta = new TGraph(nbins, pt, reso_data_d0_pt_loeta);
-    TGraph * gr_data_dz_pt_loeta = new TGraph(nbins, pt, reso_data_dz_pt_loeta);
-    TGraph * gr_data_d0_pt_hieta = new TGraph(nbins, pt, reso_data_d0_pt_hieta);
-    TGraph * gr_data_dz_pt_hieta = new TGraph(nbins, pt, reso_data_dz_pt_hieta);
-    TGraph * gr_data_d0_pt_uleta = new TGraph(nbins, pt_uleta, reso_data_d0_pt_uleta);
-    TGraph * gr_data_dz_pt_uleta = new TGraph(nbins, pt_uleta, reso_data_dz_pt_uleta);
-    TGraph * gr_data_d0_pt_alleta = new TGraph(nbins, pt, reso_data_d0_pt_alleta);
-    TGraph * gr_data_dz_pt_alleta = new TGraph(nbins, pt, reso_data_dz_pt_alleta);
+    TGraph * gr_data_d0_pt_loeta = make_graph(nbins, pt, reso_data_d0_pt_loeta);
+    TGraph * gr_data_dz_pt_loeta = make_graph(nbins, pt, reso_data_dz_pt_loeta);
+    TGraph * gr_data_d0_pt_hieta = make_graph(nbins, pt, reso_data_d0_pt_hieta);
+    TGraph * gr_data_dz_pt_hieta = make_graph(nbins, pt, reso_data_dz_pt_hieta);
+    TGraph * gr_data_d0_pt_uleta = make_graph(nbins, pt_uleta, reso_data_d0_pt_uleta);
+    TGraph * gr_data_dz_pt_uleta = make_graph(nbins, pt_uleta, reso_data_dz_pt_uleta);
+    TGraph * gr_data_d0_pt_alleta = make_graph(nbins, pt, reso_data_d0_pt_alleta);
+    TGraph * gr_data_dz_pt_alleta = make_graph(nbins, pt, reso_data_dz_pt_alleta);
 
-    TGraph * gr_data_d0_eta_lopt = new TGraph(nbins, eta, reso_data_d0_eta_lopt);
-    TGraph * gr_data_dz_eta_lopt = new TGraph(nbins, eta, reso_data_dz_eta_lopt);
-    TGraph * gr_data_d0_eta_hipt = new TGraph(nbins, eta, reso_data_d0_eta_hipt);
-    TGraph * gr_data_dz_eta_hipt = new TGraph(nbins, eta, reso_data_dz_eta_hipt);
-    TGraph * gr_data_d0_eta_ulpt = new TGraph(nbins, eta, reso_data_d0_eta_ulpt);
-    TGraph * gr_data_dz_eta_ulpt = new TGraph(nbins, eta, reso_data_dz_eta_ulpt);
-    TGraph * gr_data_d0_eta_allpt = new TGraph(nbins, eta, reso_data_d0_eta_allpt);
-    TGraph * gr_data_dz_eta_allpt = new TGraph(nbins, eta, reso_data_dz_eta_allpt);
+    TGraph * gr_data_d0_eta_lopt = make_graph(nbins, eta, reso_data_d0_eta_lopt);
+    TGraph * gr_data_dz_eta_lopt = make_graph(nbins, eta, reso_data_dz_eta_lopt);
+    TGraph * gr_data_d0_eta_hipt = make_graph(nbins, eta, reso_data_d0_eta_hipt);
+    TGraph * gr_data_dz_eta_hipt = make_graph(nbins, eta, reso_data_dz_eta_hipt);
+    TGraph * gr_data_d0_eta_ulpt = make_graph(nbins, eta, reso_data_d0_eta_ulpt);
+    TGraph * gr_data_dz_eta_ulpt = make_graph(nbins, eta, reso_data_dz_eta_ulpt);
+    TGraph * gr_data_d0_eta_allpt = make_graph(nbins, eta, reso_data_d0_eta_allpt);
+    TGraph * gr_data_dz_eta_allpt = make_graph(nbins, eta, reso_data_dz_eta_allpt);
 
-    TGraph * gr_data_d0_phi_lopt = new TGraph(nbins, phi, reso_data_d0_phi_lopt);
-    TGraph * gr_data_dz_phi_lopt = new TGraph(nbins, phi, reso_data_dz_phi_lopt);
-    TGraph * gr_data_d0_phi_hipt = new TGraph(nbins, phi, reso_data_d0_phi_hipt);
-    TGraph * gr_data_dz_phi_hipt = new TGraph(nbins, phi, reso_data_dz_phi_hipt);
-    TGraph * gr_data_d0_phi_ulpt = new TGraph(nbins, phi, reso_data_d0_phi_ulpt);
-    TGraph * gr_data_dz_phi_ulpt = new TGraph(nbins, phi, reso_data_dz_phi_ulpt);
-    TGraph * gr_data_d0_phi_allpt = new TGraph(nbins, phi, reso_data_d0_phi_allpt);
-    TGraph * gr_data_dz_phi_allpt = new TGraph(nbins, phi, reso_data_dz_phi_allpt);
-
-
-    TGraph * gr_mc_d0_pt_loeta = new TGraph(nbins, pt, reso_mc_d0_pt_loeta);
-    TGraph * gr_mc_dz_pt_loeta = new TGraph(nbins, pt, reso_mc_dz_pt_loeta);
-    TGraph * gr_mc_d0_pt_hieta = new TGraph(nbins, pt, reso_mc_d0_pt_hieta);
-    TGraph * gr_mc_dz_pt_hieta = new TGraph(nbins, pt, reso_mc_dz_pt_hieta);
-    TGraph * gr_mc_d0_pt_uleta = new TGraph(nbins, pt_uleta, reso_mc_d0_pt_uleta);
-    TGraph * gr_mc_dz_pt_uleta = new TGraph(nbins, pt_uleta, reso_mc_dz_pt_uleta);
-    TGraph * gr_mc_d0_pt_alleta = new TGraph(nbins, pt, reso_mc_d0_pt_alleta);
-    TGraph * gr_mc_dz_pt_alleta = new TGraph(nbins, pt, reso_mc_dz_pt_alleta);
-
-    TGraph * gr_mc_d0_eta_lopt = new TGraph(nbins, eta, reso_mc_d0_eta_lopt);
-    TGraph * gr_mc_dz_eta_lopt = new TGraph(nbins, eta, reso_mc_dz_eta_lopt);
-    TGraph * gr_mc_d0_eta_hipt = new TGraph(nbins, eta, reso_mc_d0_eta_hipt);
-    TGraph * gr_mc_dz_eta_hipt = new TGraph(nbins, eta, reso_mc_dz_eta_hipt);
-    TGraph * gr_mc_d0_eta_ulpt = new TGraph(nbins, eta, reso_mc_d0_eta_ulpt);
-    TGraph * gr_mc_dz_eta_ulpt = new TGraph(nbins, eta, reso_mc_dz_eta_ulpt);
-    TGraph * gr_mc_d0_eta_allpt = new TGraph(nbins, eta, reso_mc_d0_eta_allpt);
-    TGraph * gr_mc_dz_eta_allpt = new TGraph(nbins, eta, reso_mc_dz_eta_allpt);
-
-    TGraph * gr_mc_d0_phi_lopt = new TGraph(nbins, phi, reso_mc_d0_phi_lopt);
-    TGraph * gr_mc_dz_phi_lopt = new TGraph(nbins, phi, reso_mc_dz_phi_lopt);
-    TGraph * gr_mc_d0_phi_hipt = new TGraph(nbins, phi, reso_mc_d0_phi_hipt);
-    TGraph * gr_mc_dz_phi_hipt = new TGraph(nbins, phi, reso_mc_dz_phi_hipt);
-    TGraph * gr_mc_d0_phi_ulpt = new TGraph(nbins, phi, reso_mc_d0_phi_ulpt);
-    TGraph * gr_mc_dz_phi_ulpt = new TGraph(nbins, phi, reso_mc_dz_phi_ulpt);
-    TGraph * gr_mc_d0_phi_allpt = new TGraph(nbins, phi, reso_mc_d0_phi_allpt);
-    TGraph * gr_mc_dz_phi_allpt = new TGraph(nbins, phi, reso_mc_dz_phi_allpt);
+    TGraph * gr_data_d0_phi_lopt = make_graph(nbins, phi, reso_data_d0_phi_lopt);
+    TGraph * gr_data_dz_phi_lopt = make_graph(nbins, phi, reso_data_dz_phi_lopt);
+    TGraph * gr_data_d0_phi_hipt = make_graph(nbins, phi, reso_data_d0_phi_hipt);
+    TGraph * gr_data_dz_phi_hipt = make_graph(nbins, phi, reso_data_dz_phi_hipt);
+    TGraph * gr_data_d0_phi_ulpt = make_graph(nbins, phi, reso_data_d0_phi_ulpt);
+    TGraph * gr_data_dz_phi_ulpt = make_graph(nbins, phi, reso_data_dz_phi_ulpt);
+    TGraph * gr_data_d0_phi_allpt = make_graph(nbins, phi, reso_data_d0_phi_allpt);
+    TGraph * gr_data_dz_phi_allpt = make_graph(nbins, phi, reso_data_dz_phi_allpt);
 
 
-    TGraph * gr_div_d0_pt_loeta = new TGraph(nbins, pt, reso_div_d0_pt_loeta);
-    TGraph * gr_div_dz_pt_loeta = new TGraph(nbins, pt, reso_div_dz_pt_loeta);
-    TGraph * gr_div_d0_pt_hieta = new TGraph(nbins, pt, reso_div_d0_pt_hieta);
-    TGraph * gr_div_dz_pt_hieta = new TGraph(nbins, pt, reso_div_dz_pt_hieta);
-    TGraph * gr_div_d0_pt_uleta = new TGraph(nbins, pt_uleta, reso_div_d0_pt_uleta);
-    TGraph * gr_div_dz_pt_uleta = new TGraph(nbins, pt_uleta, reso_div_dz_pt_uleta);
-    TGraph * gr_div_d0_pt_alleta = new TGraph(nbins, pt, reso_div_d0_pt_alleta);
-    TGraph * gr_div_dz_pt_alleta = new TGraph(nbins, pt, reso_div_dz_pt_alleta);
+    TGraph * gr_mc_d0_pt_loeta = make_graph(nbins, pt, reso_mc_d0_pt_loeta);
+    TGraph * gr_mc_dz_pt_loeta = make_graph(nbins, pt, reso_mc_dz_pt_loeta);
+    TGraph * gr_mc_d0_pt_hieta = make_graph(nbins, pt, reso_mc_d0_pt_hieta);
+    TGraph * gr_mc_dz_pt_hieta = make_graph(nbins, pt, reso_mc_dz_pt_hieta);
+    TGraph * gr_mc_d0_pt_uleta = make_graph(nbins, pt_uleta, reso_mc_d0_pt_uleta);
+    TGraph * gr_mc_dz_pt_uleta = make_graph(nbins, pt_uleta, reso_mc_dz_pt_uleta);
+    TGraph * gr_mc_d0_pt_alleta = make_graph(nbins, pt, reso_mc_d0_pt_alleta);
+    TGraph * gr_mc_dz_pt_alleta = make_graph(nbins, pt, reso_mc_dz_pt_alleta);
 
-    TGraph * gr_div_d0_eta_lopt = new TGraph(nbins, eta, reso_div_d0_eta_lopt);
-    TGraph * gr_div_dz_eta_lopt = new TGraph(nbins, eta, reso_div_dz_eta_lopt);
-    TGraph * gr_div_d0_eta_hipt = new TGraph(nbins, eta, reso_div_d0_eta_hipt);
-    TGraph * gr_div_dz_eta_hipt = new TGraph(nbins, eta, reso_div_dz_eta_hipt);
-    TGraph * gr_div_d0_eta_ulpt = new TGraph(nbins, eta, reso_div_d0_eta_ulpt);
-    TGraph * gr_div_dz_eta_ulpt = new TGraph(nbins, eta, reso_div_dz_eta_ulpt);
-    TGraph * gr_div_d0_eta_allpt = new TGraph(nbins, eta, reso_div_d0_eta_allpt);
-    TGraph * gr_div_dz_eta_allpt = new TGraph(nbins, eta, reso_div_dz_eta_allpt);
+    TGraph * gr_mc_d0_eta_lopt = make_graph(nbins, eta, reso_mc_d0_eta_lopt);
+    TGraph * gr_mc_dz_eta_lopt = make_graph(nbins, eta, reso_mc_dz_eta_lopt);
+    TGraph * gr_mc_d0_eta_hipt = make_graph(nbins, eta, reso_mc_d0_eta_hipt);
+    TGraph * gr_mc_dz_eta_hipt = make_graph(nbins, eta, reso_mc_dz_eta_hipt);
+    TGraph * gr_mc_d0_eta_ulpt = make_graph(nbins, eta, reso_mc_d0_eta_ulpt);
+    TGraph * gr_mc_dz_eta_ulpt = make_graph(nbins, eta, reso_mc_dz_eta_ulpt);
+    TGraph * gr_mc_d0_eta_allpt = make_graph(nbins, eta, reso_mc_d0_eta_allpt);
+    TGraph * gr_mc_dz_eta_allpt = make_graph(nbins, eta, reso_mc_dz_eta_allpt);
 
-    TGraph * gr_div_d0_phi_lopt = new TGraph(nbins, phi, reso_div_d0_phi_lopt);
-    TGraph * gr_div_dz_phi_lopt = new TGraph(nbins, phi, reso_div_dz_phi_lopt);
-    TGraph * gr_div_d0_phi_hipt = new TGraph(nbins, phi, reso_div_d0_phi_hipt);
-    TGraph * gr_div_dz_phi_hipt = new TGraph(nbins, phi, reso_div_dz_phi_hipt);
-    TGraph * gr_div_d0_phi_ulpt = new TGraph(nbins, phi, reso_div_d0_phi_ulpt);
-    TGraph * gr_div_dz_phi_ulpt = new TGraph(nbins, phi, reso_div_dz_phi_ulpt);
-    TGraph * gr_div_d0_phi_allpt = new TGraph(nbins, phi, reso_div_d0_phi_allpt);
-    TGraph * gr_div_dz_phi_allpt = new TGraph(nbins, phi, reso_div_dz_phi_allpt);
+    TGraph * gr_mc_d0_phi_lopt = make_graph(nbins, phi, reso_mc_d0_phi_lopt);
+    TGraph * gr_mc_dz_phi_lopt = make_graph(nbins, phi, reso_mc_dz_phi_lopt);
+    TGraph * gr_mc_d0_phi_hipt = make_graph(nbins, phi, reso_mc_d0_phi_hipt);
+    TGraph * gr_mc_dz_phi_hipt = make_graph(nbins, phi, reso_mc_dz_phi_hipt);
+    TGraph * gr_mc_d0_phi_ulpt = make_graph(nbins, phi, reso_mc_d0_phi_ulpt);
+    TGraph * gr_mc_dz_phi_ulpt = make_graph(nbins, phi, reso_mc_dz_phi_ulpt);
+    TGraph * gr_mc_d0_phi_allpt = make_graph(nbins, phi, reso_mc_d0_phi_allpt);
+    TGraph * gr_mc_dz_phi_allpt = make_graph(nbins, phi, reso_mc_dz_phi_allpt);
+
+
+    TGraph * gr_div_d0_pt_loeta = make_graph(nbins, pt, reso_div_d0_pt_loeta);
+    TGraph * gr_div_dz_pt_loeta = make_graph(nbins, pt, reso_div_dz_pt_loeta);
+    TGraph * gr_div_d0_pt_hieta = make_graph(nbins, pt, reso_div_d0_pt_hieta);
+    TGraph * gr_div_dz_pt_hieta = make_graph(nbins, pt, reso_div_dz_pt_hieta);
+    TGraph * gr_div_d0_pt_uleta = make_graph(nbins, pt_uleta, reso_div_d0_pt_uleta);
+    TGraph * gr_div_dz_pt_uleta = make_graph(nbins, pt_uleta, reso_div_dz_pt_uleta);
+    TGraph * gr_div_d0_pt_alleta = make_graph(nbins, pt, reso_div_d0_pt_alleta);
+    TGraph * gr_div_dz_pt_alleta = make_graph(nbins, pt, reso_div_dz_pt_alleta);
+
+    TGraph * gr_div_d0_eta_lopt = make_graph(nbins, eta, reso_div_d0_eta_lopt);
+    TGraph * gr_div_dz_eta_lopt = make_graph(nbins, eta, reso_div_dz_eta_lopt);
+    TGraph * gr_div_d0_eta_hipt = make_graph(nbins, eta, reso_div_d0_eta_hipt);
+    TGraph * gr_div_dz_eta_hipt = make_graph(nbins, eta, reso_div_dz_eta_hipt);
+    TGraph * gr_div_d0_eta_ulpt = make_graph(nbins, eta, reso_div_d0_eta_ulpt);
+    TGraph * gr_div_dz_eta_ulpt = make_graph(nbins, eta, reso_div_dz_eta_ulpt);
+    TGraph * gr_div_d0_eta_allpt = make_graph(nbins, eta, reso_div_d0_eta_allpt);
+    TGraph * gr_div_dz_eta_allpt = make_graph(nbins, eta, reso_div_dz_eta_allpt);
+
+    TGraph * gr_div_d0_phi_lopt = make_graph(nbins, phi, reso_div_d0_phi_lopt);
+    TGraph * gr_div_dz_phi_lopt = make_graph(nbins, phi, reso_div_dz_phi_lopt);
+    TGraph * gr_div_d0_phi_hipt = make_graph(nbins, phi, reso_div_d0_phi_hipt);
+    TGraph * gr_div_dz_phi_hipt = make_graph(nbins, phi, reso_div_dz_phi_hipt);
+    TGraph * gr_div_d0_phi_ulpt = make_graph(nbins, phi, reso_div_d0_phi_ulpt);
+    TGraph * gr_div_dz_phi_ulpt = make_graph(nbins, phi, reso_div_dz_phi_ulpt);
+    TGraph * gr_div_d0_phi_allpt = make_graph(nbins, phi, reso_div_d0_phi_allpt);
+    TGraph * gr_div_dz_phi_allpt = make_graph(nbins, phi, reso_div_dz_phi_allpt);
 
     
 
-    Float_t height_data_d0_pt_loeta = *std::max_element(reso_data_d0_pt_loeta, reso_data_d0_pt_loeta+nbins);
-    Float_t height_data_dz_pt_loeta = *std::max_element(reso_data_dz_pt_loeta, reso_data_dz_pt_loeta+nbins);
-    Float_t height_data_d0_pt_hieta = *std::max_element(reso_data_d0_pt_hieta, reso_data_d0_pt_hieta+nbins);
-    Float_t height_data_dz_pt_hieta = *std::max_element(reso_data_dz_pt_hieta, reso_data_dz_pt_hieta+nbins);
-    Float_t height_data_d0_pt_uleta = *std::max_element(reso_data_d0_pt_uleta, reso_data_d0_pt_uleta+nbins);
-    Float_t height_data_dz_pt_uleta = *std::max_element(reso_data_dz_pt_uleta, reso_data_dz_pt_uleta+nbins);
-    Float_t height_data_d0_pt_alleta = *std::max_element(reso_data_d0_pt_alleta, reso_data_d0_pt_alleta+nbins);
-    Float_t height_data_dz_pt_alleta = *std::max_element(reso_data_dz_pt_alleta, reso_data_dz_pt_alleta+nbins);
+    Float_t height_data_d0_pt_loeta = valid_max(reso_data_d0_pt_loeta, reso_data_d0_pt_loeta+nbins);
+    Float_t height_data_dz_pt_loeta = valid_max(reso_data_dz_pt_loeta, reso_data_dz_pt_loeta+nbins);
+    Float_t height_data_d0_pt_hieta = valid_max(reso_data_d0_pt_hieta, reso_data_d0_pt_hieta+nbins);
+    Float_t height_data_dz_pt_hieta = valid_max(reso_data_dz_pt_hieta, reso_data_dz_pt_hieta+nbins);
+    Float_t height_data_d0_pt_uleta = valid_max(reso_data_d0_pt_uleta, reso_data_d0_pt_uleta+nbins);
+    Float_t height_data_dz_pt_uleta = valid_max(reso_data_dz_pt_uleta, reso_data_dz_pt_uleta+nbins);
+    Float_t height_data_d0_pt_alleta = valid_max(reso_data_d0_pt_alleta, reso_data_d0_pt_alleta+nbins);
+    Float_t height_data_dz_pt_alleta = valid_max(reso_data_dz_pt_alleta, reso_data_dz_pt_alleta+nbins);
 
-    Float_t height_data_d0_eta_lopt = *std::max_element(reso_data_d0_eta_lopt, reso_data_d0_eta_lopt+nbins);
-    Float_t height_data_dz_eta_lopt = *std::max_element(reso_data_dz_eta_lopt, reso_data_dz_eta_lopt+nbins);
-    Float_t height_data_d0_eta_hipt = *std::max_element(reso_data_d0_eta_hipt, reso_data_d0_eta_hipt+nbins);
-    Float_t height_data_dz_eta_hipt = *std::max_element(reso_data_dz_eta_hipt, reso_data_dz_eta_hipt+nbins);
-    Float_t height_data_d0_eta_ulpt = *std::max_element(reso_data_d0_eta_ulpt, reso_data_d0_eta_ulpt+nbins);
-    Float_t height_data_dz_eta_ulpt = *std::max_element(reso_data_dz_eta_ulpt, reso_data_dz_eta_ulpt+nbins);
-    Float_t height_data_d0_eta_allpt = *std::max_element(reso_data_d0_eta_allpt, reso_data_d0_eta_allpt+nbins);
-    Float_t height_data_dz_eta_allpt = *std::max_element(reso_data_dz_eta_allpt, reso_data_dz_eta_allpt+nbins);
+    Float_t height_data_d0_eta_lopt = valid_max(reso_data_d0_eta_lopt, reso_data_d0_eta_lopt+nbins);
+    Float_t height_data_dz_eta_lopt = valid_max(reso_data_dz_eta_lopt, reso_data_dz_eta_lopt+nbins);
+    Float_t height_data_d0_eta_hipt = valid_max(reso_data_d0_eta_hipt, reso_data_d0_eta_hipt+nbins);
+    Float_t height_data_dz_eta_hipt = valid_max(reso_data_dz_eta_hipt, reso_data_dz_eta_hipt+nbins);
+    Float_t height_data_d0_eta_ulpt = valid_max(reso_data_d0_eta_ulpt, reso_data_d0_eta_ulpt+nbins);
+    Float_t height_data_dz_eta_ulpt = valid_max(reso_data_dz_eta_ulpt, reso_data_dz_eta_ulpt+nbins);
+    Float_t height_data_d0_eta_allpt = valid_max(reso_data_d0_eta_allpt, reso_data_d0_eta_allpt+nbins);
+    Float_t height_data_dz_eta_allpt = valid_max(reso_data_dz_eta_allpt, reso_data_dz_eta_allpt+nbins);
 
-    Float_t height_data_d0_phi_lopt = *std::max_element(reso_data_d0_phi_lopt, reso_data_d0_phi_lopt+nbins);
-    Float_t height_data_dz_phi_lopt = *std::max_element(reso_data_dz_phi_lopt, reso_data_dz_phi_lopt+nbins);
-    Float_t height_data_d0_phi_hipt = *std::max_element(reso_data_d0_phi_hipt, reso_data_d0_phi_hipt+nbins);
-    Float_t height_data_dz_phi_hipt = *std::max_element(reso_data_dz_phi_hipt, reso_data_dz_phi_hipt+nbins);
-    Float_t height_data_d0_phi_ulpt = *std::max_element(reso_data_d0_phi_ulpt, reso_data_d0_phi_ulpt+nbins);
-    Float_t height_data_dz_phi_ulpt = *std::max_element(reso_data_dz_phi_ulpt, reso_data_dz_phi_ulpt+nbins);
-    Float_t height_data_d0_phi_allpt = *std::max_element(reso_data_d0_phi_allpt, reso_data_d0_phi_allpt+nbins);
-    Float_t height_data_dz_phi_allpt = *std::max_element(reso_data_dz_phi_allpt, reso_data_dz_phi_allpt+nbins);
+    Float_t height_data_d0_phi_lopt = valid_max(reso_data_d0_phi_lopt, reso_data_d0_phi_lopt+nbins);
+    Float_t height_data_dz_phi_lopt = valid_max(reso_data_dz_phi_lopt, reso_data_dz_phi_lopt+nbins);
+    Float_t height_data_d0_phi_hipt = valid_max(reso_data_d0_phi_hipt, reso_data_d0_phi_hipt+nbins);
+    Float_t height_data_dz_phi_hipt = valid_max(reso_data_dz_phi_hipt, reso_data_dz_phi_hipt+nbins);
+    Float_t height_data_d0_phi_ulpt = valid_max(reso_data_d0_phi_ulpt, reso_data_d0_phi_ulpt+nbins);
+    Float_t height_data_dz_phi_ulpt = valid_max(reso_data_dz_phi_ulpt, reso_data_dz_phi_ulpt+nbins);
+    Float_t height_data_d0_phi_allpt = valid_max(reso_data_d0_phi_allpt, reso_data_d0_phi_allpt+nbins);
+    Float_t height_data_dz_phi_allpt = valid_max(reso_data_dz_phi_allpt, reso_data_dz_phi_allpt+nbins);
 
-    Float_t height_mc_d0_pt_loeta = *std::max_element(reso_mc_d0_pt_loeta, reso_mc_d0_pt_loeta+nbins);
-    Float_t height_mc_dz_pt_loeta = *std::max_element(reso_mc_dz_pt_loeta, reso_mc_dz_pt_loeta+nbins);
-    Float_t height_mc_d0_pt_hieta = *std::max_element(reso_mc_d0_pt_hieta, reso_mc_d0_pt_hieta+nbins);
-    Float_t height_mc_dz_pt_hieta = *std::max_element(reso_mc_dz_pt_hieta, reso_mc_dz_pt_hieta+nbins);
-    Float_t height_mc_d0_pt_uleta = *std::max_element(reso_mc_d0_pt_uleta, reso_mc_d0_pt_uleta+nbins);
-    Float_t height_mc_dz_pt_uleta = *std::max_element(reso_mc_dz_pt_uleta, reso_mc_dz_pt_uleta+nbins);
-    Float_t height_mc_d0_pt_alleta = *std::max_element(reso_mc_d0_pt_alleta, reso_mc_d0_pt_alleta+nbins);
-    Float_t height_mc_dz_pt_alleta = *std::max_element(reso_mc_dz_pt_alleta, reso_mc_dz_pt_alleta+nbins);
+    Float_t height_mc_d0_pt_loeta = valid_max(reso_mc_d0_pt_loeta, reso_mc_d0_pt_loeta+nbins);
+    Float_t height_mc_dz_pt_loeta = valid_max(reso_mc_dz_pt_loeta, reso_mc_dz_pt_loeta+nbins);
+    Float_t height_mc_d0_pt_hieta = valid_max(reso_mc_d0_pt_hieta, reso_mc_d0_pt_hieta+nbins);
+    Float_t height_mc_dz_pt_hieta = valid_max(reso_mc_dz_pt_hieta, reso_mc_dz_pt_hieta+nbins);
+    Float_t height_mc_d0_pt_uleta = valid_max(reso_mc_d0_pt_uleta, reso_mc_d0_pt_uleta+nbins);
+    Float_t height_mc_dz_pt_uleta = valid_max(reso_mc_dz_pt_uleta, reso_mc_dz_pt_uleta+nbins);
+    Float_t height_mc_d0_pt_alleta = valid_max(reso_mc_d0_pt_alleta, reso_mc_d0_pt_alleta+nbins);
+    Float_t height_mc_dz_pt_alleta = valid_max(reso_mc_dz_pt_alleta, reso_mc_dz_pt_alleta+nbins);
 
-    Float_t height_mc_d0_eta_lopt = *std::max_element(reso_mc_d0_eta_lopt, reso_mc_d0_eta_lopt+nbins);
-    Float_t height_mc_dz_eta_lopt = *std::max_element(reso_mc_dz_eta_lopt, reso_mc_dz_eta_lopt+nbins);
-    Float_t height_mc_d0_eta_hipt = *std::max_element(reso_mc_d0_eta_hipt, reso_mc_d0_eta_hipt+nbins);
-    Float_t height_mc_dz_eta_hipt = *std::max_element(reso_mc_dz_eta_hipt, reso_mc_dz_eta_hipt+nbins);
-    Float_t height_mc_d0_eta_ulpt = *std::max_element(reso_mc_d0_eta_ulpt, reso_mc_d0_eta_ulpt+nbins);
-    Float_t height_mc_dz_eta_ulpt = *std::max_element(reso_mc_dz_eta_ulpt, reso_mc_dz_eta_ulpt+nbins);
-    Float_t height_mc_d0_eta_allpt = *std::max_element(reso_mc_d0_eta_allpt, reso_mc_d0_eta_allpt+nbins);
-    Float_t height_mc_dz_eta_allpt = *std::max_element(reso_mc_dz_eta_allpt, reso_mc_dz_eta_allpt+nbins);
+    Float_t height_mc_d0_eta_lopt = valid_max(reso_mc_d0_eta_lopt, reso_mc_d0_eta_lopt+nbins);
+    Float_t height_mc_dz_eta_lopt = valid_max(reso_mc_dz_eta_lopt, reso_mc_dz_eta_lopt+nbins);
+    Float_t height_mc_d0_eta_hipt = valid_max(reso_mc_d0_eta_hipt, reso_mc_d0_eta_hipt+nbins);
+    Float_t height_mc_dz_eta_hipt = valid_max(reso_mc_dz_eta_hipt, reso_mc_dz_eta_hipt+nbins);
+    Float_t height_mc_d0_eta_ulpt = valid_max(reso_mc_d0_eta_ulpt, reso_mc_d0_eta_ulpt+nbins);
+    Float_t height_mc_dz_eta_ulpt = valid_max(reso_mc_dz_eta_ulpt, reso_mc_dz_eta_ulpt+nbins);
+    Float_t height_mc_d0_eta_allpt = valid_max(reso_mc_d0_eta_allpt, reso_mc_d0_eta_allpt+nbins);
+    Float_t height_mc_dz_eta_allpt = valid_max(reso_mc_dz_eta_allpt, reso_mc_dz_eta_allpt+nbins);
 
-    Float_t height_mc_d0_phi_lopt = *std::max_element(reso_mc_d0_phi_lopt, reso_mc_d0_phi_lopt+nbins);
-    Float_t height_mc_dz_phi_lopt = *std::max_element(reso_mc_dz_phi_lopt, reso_mc_dz_phi_lopt+nbins);
-    Float_t height_mc_d0_phi_hipt = *std::max_element(reso_mc_d0_phi_hipt, reso_mc_d0_phi_hipt+nbins);
-    Float_t height_mc_dz_phi_hipt = *std::max_element(reso_mc_dz_phi_hipt, reso_mc_dz_phi_hipt+nbins);
-    Float_t height_mc_d0_phi_ulpt = *std::max_element(reso_mc_d0_phi_ulpt, reso_mc_d0_phi_ulpt+nbins);
-    Float_t height_mc_dz_phi_ulpt = *std::max_element(reso_mc_dz_phi_ulpt, reso_mc_dz_phi_ulpt+nbins);
-    Float_t height_mc_d0_phi_allpt = *std::max_element(reso_mc_d0_phi_allpt, reso_mc_d0_phi_allpt+nbins);
-    Float_t height_mc_dz_phi_allpt = *std::max_element(reso_mc_dz_phi_allpt, reso_mc_dz_phi_allpt+nbins);
+    Float_t height_mc_d0_phi_lopt = valid_max(reso_mc_d0_phi_lopt, reso_mc_d0_phi_lopt+nbins);
+    Float_t height_mc_dz_phi_lopt = valid_max(reso_mc_dz_phi_lopt, reso_mc_dz_phi_lopt+nbins);
+    Float_t height_mc_d0_phi_hipt = valid_max(reso_mc_d0_phi_hipt, reso_mc_d0_phi_hipt+nbins);
+    Float_t height_mc_dz_phi_hipt = valid_max(reso_mc_dz_phi_hipt, reso_mc_dz_phi_hipt+nbins);
+    Float_t height_mc_d0_phi_ulpt = valid_max(reso_mc_d0_phi_ulpt, reso_mc_d0_phi_ulpt+nbins);
+    Float_t height_mc_dz_phi_ulpt = valid_max(reso_mc_dz_phi_ulpt, reso_mc_dz_phi_ulpt+nbins);
+    Float_t height_mc_d0_phi_allpt = valid_max(reso_mc_d0_phi_allpt, reso_mc_d0_phi_allpt+nbins);
+    Float_t height_mc_dz_phi_allpt = valid_max(reso_mc_dz_phi_allpt, reso_mc_dz_phi_allpt+nbins);
 
     Float_t height_d0_pt_loeta = std::max(height_data_d0_pt_loeta, height_mc_d0_pt_loeta);
     Float_t height_dz_pt_loeta = std::max(height_data_dz_pt_loeta, height_mc_dz_pt_loeta);
@@ -452,32 +465,32 @@ Int_t draw_ip_res(TString period){
     Float_t floor_dz_phi_allpt = std::min(floor_data_dz_phi_allpt, floor_mc_dz_phi_allpt);
 
 
-    Float_t height_div_d0_pt_loeta = *std::max_element(reso_div_d0_pt_loeta, reso_div_d0_pt_loeta+nbins);
-    Float_t height_div_dz_pt_loeta = *std::max_element(reso_div_dz_pt_loeta, reso_div_dz_pt_loeta+nbins);
-    Float_t height_div_d0_pt_hieta = *std::max_element(reso_div_d0_pt_hieta, reso_div_d0_pt_hieta+nbins);
-    Float_t height_div_dz_pt_hieta = *std::max_element(reso_div_dz_pt_hieta, reso_div_dz_pt_hieta+nbins);
-    Float_t height_div_d0_pt_uleta = *std::max_element(reso_div_d0_pt_uleta, reso_div_d0_pt_uleta+nbins);
-    Float_t height_div_dz_pt_uleta = *std::max_element(reso_div_dz_pt_uleta, reso_div_dz_pt_uleta+nbins);
-    Float_t height_div_d0_pt_alleta = *std::max_element(reso_div_d0_pt_alleta, reso_div_d0_pt_alleta+nbins);
-    Float_t height_div_dz_pt_alleta = *std::max_element(reso_div_dz_pt_alleta, reso_div_dz_pt_alleta+nbins);
+    Float_t height_div_d0_pt_loeta = valid_max(reso_div_d0_pt_loeta, reso_div_d0_pt_loeta+nbins);
+    Float_t height_div_dz_pt_loeta = valid_max(reso_div_dz_pt_loeta, reso_div_dz_pt_loeta+nbins);
+    Float_t height_div_d0_pt_hieta = valid_max(reso_div_d0_pt_hieta, reso_div_d0_pt_hieta+nbins);
+    Float_t height_div_dz_pt_hieta = valid_max(reso_div_dz_pt_hieta, reso_div_dz_pt_hieta+nbins);
+    Float_t height_div_d0_pt_uleta = valid_max(reso_div_d0_pt_uleta, reso_div_d0_pt_uleta+nbins);
+    Float_t height_div_dz_pt_uleta = valid_max(reso_div_dz_pt_uleta, reso_div_dz_pt_uleta+nbins);
+    Float_t height_div_d0_pt_alleta = valid_max(reso_div_d0_pt_alleta, reso_div_d0_pt_alleta+nbins);
+    Float_t height_div_dz_pt_alleta = valid_max(reso_div_dz_pt_alleta, reso_div_dz_pt_alleta+nbins);
 
-    Float_t height_div_d0_eta_lopt = *std::max_element(reso_div_d0_eta_lopt, reso_div_d0_eta_lopt+nbins);
-    Float_t height_div_dz_eta_lopt = *std::max_element(reso_div_dz_eta_lopt, reso_div_dz_eta_lopt+nbins);
-    Float_t height_div_d0_eta_hipt = *std::max_element(reso_div_d0_eta_hipt, reso_div_d0_eta_hipt+nbins);
-    Float_t height_div_dz_eta_hipt = *std::max_element(reso_div_dz_eta_hipt, reso_div_dz_eta_hipt+nbins);
-    Float_t height_div_d0_eta_ulpt = *std::max_element(reso_div_d0_eta_ulpt, reso_div_d0_eta_ulpt+nbins);
-    Float_t height_div_dz_eta_ulpt = *std::max_element(reso_div_dz_eta_ulpt, reso_div_dz_eta_ulpt+nbins);
-    Float_t height_div_d0_eta_allpt = *std::max_element(reso_div_d0_eta_allpt, reso_div_d0_eta_allpt+nbins);
-    Float_t height_div_dz_eta_allpt = *std::max_element(reso_div_dz_eta_allpt, reso_div_dz_eta_allpt+nbins);
+    Float_t height_div_d0_eta_lopt = valid_max(reso_div_d0_eta_lopt, reso_div_d0_eta_lopt+nbins);
+    Float_t height_div_dz_eta_lopt = valid_max(reso_div_dz_eta_lopt, reso_div_dz_eta_lopt+nbins);
+    Float_t height_div_d0_eta_hipt = valid_max(reso_div_d0_eta_hipt, reso_div_d0_eta_hipt+nbins);
+    Float_t height_div_dz_eta_hipt = valid_max(reso_div_dz_eta_hipt, reso_div_dz_eta_hipt+nbins);
+    Float_t height_div_d0_eta_ulpt = valid_max(reso_div_d0_eta_ulpt, reso_div_d0_eta_ulpt+nbins);
+    Float_t height_div_dz_eta_ulpt = valid_max(reso_div_dz_eta_ulpt, reso_div_dz_eta_ulpt+nbins);
+    Float_t height_div_d0_eta_allpt = valid_max(reso_div_d0_eta_allpt, reso_div_d0_eta_allpt+nbins);
+    Float_t height_div_dz_eta_allpt = valid_max(reso_div_dz_eta_allpt, reso_div_dz_eta_allpt+nbins);
 
-    Float_t height_div_d0_phi_lopt = *std::max_element(reso_div_d0_phi_lopt, reso_div_d0_phi_lopt+nbins);
-    Float_t height_div_dz_phi_lopt = *std::max_element(reso_div_dz_phi_lopt, reso_div_dz_phi_lopt+nbins);
-    Float_t height_div_d0_phi_hipt = *std::max_element(reso_div_d0_phi_hipt, reso_div_d0_phi_hipt+nbins);
-    Float_t height_div_dz_phi_hipt = *std::max_element(reso_div_dz_phi_hipt, reso_div_dz_phi_hipt+nbins);
-    Float_t height_div_d0_phi_ulpt = *std::max_element(reso_div_d0_phi_ulpt, reso_div_d0_phi_ulpt+nbins);
-    Float_t height_div_dz_phi_ulpt = *std::max_element(reso_div_dz_phi_ulpt, reso_div_dz_phi_ulpt+nbins);
-    Float_t height_div_d0_phi_allpt = *std::max_element(reso_div_d0_phi_allpt, reso_div_d0_phi_allpt+nbins);
-    Float_t height_div_dz_phi_allpt = *std::max_element(reso_div_dz_phi_allpt, reso_div_dz_phi_allpt+nbins);
+    Float_t height_div_d0_phi_lopt = valid_max(reso_div_d0_phi_lopt, reso_div_d0_phi_lopt+nbins);
+    Float_t height_div_dz_phi_lopt = valid_max(reso_div_dz_phi_lopt, reso_div_dz_phi_lopt+nbins);
+    Float_t height_div_d0_phi_hipt = valid_max(reso_div_d0_phi_hipt, reso_div_d0_phi_hipt+nbins);
+    Float_t height_div_dz_phi_hipt = valid_max(reso_div_dz_phi_hipt, reso_div_dz_phi_hipt+nbins);
+    Float_t height_div_d0_phi_ulpt = valid_max(reso_div_d0_phi_ulpt, reso_div_d0_phi_ulpt+nbins);
+    Float_t height_div_dz_phi_ulpt = valid_max(reso_div_dz_phi_ulpt, reso_div_dz_phi_ulpt+nbins);
+    Float_t height_div_d0_phi_allpt = valid_max(reso_div_d0_phi_allpt, reso_div_d0_phi_allpt+nbins);
+    Float_t height_div_dz_phi_allpt = valid_max(reso_div_dz_phi_allpt, reso_div_dz_phi_allpt+nbins);
 
     Float_t floor_div_d0_pt_loeta = *std::min_element(reso_div_d0_pt_loeta, reso_div_d0_pt_loeta+nbins);
     Float_t floor_div_dz_pt_loeta = *std::min_element(reso_div_dz_pt_loeta, reso_div_dz_pt_loeta+nbins);

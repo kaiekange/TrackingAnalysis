@@ -14,6 +14,19 @@ const TString datatype_text = "Unbiased collision events";
 const TString storage_dir = "/eos/home-k/kakang/IPres/analysis/ZeroBias";
 const Int_t nbins = 50;
 
+TGraph* make_graph(Int_t n, const Float_t *x, const Float_t *y) {
+    std::vector<Float_t> vx, vy;
+    for (Int_t i = 0; i < n; ++i)
+        if (y[i] > 0.f) { vx.push_back(x[i]); vy.push_back(y[i]); }
+    return new TGraph((Int_t)vx.size(), vx.data(), vy.data());
+}
+
+Float_t valid_max(const Float_t *first, const Float_t *last) {
+    Float_t m = 0.f;
+    for (const Float_t *p = first; p != last; ++p) if (*p > m) m = *p;
+    return m;
+}
+
 Int_t draw_pv_res(TString period){
 
     TString figdir = storage_dir + "/figures/" + period + "/pv_res/";
@@ -63,42 +76,42 @@ Int_t draw_pv_res(TString period){
         reso_mc_pvx[i] = results["reso_mc_pvx"];
         reso_mc_pvy[i] = results["reso_mc_pvy"];
         reso_mc_pvz[i] = results["reso_mc_pvz"];
-        reso_div_pullx[i] = reso_data_pullx[i] / reso_mc_pullx[i];
-        reso_div_pully[i] = reso_data_pully[i] / reso_mc_pully[i];
-        reso_div_pullz[i] = reso_data_pullz[i] / reso_mc_pullz[i];
-        reso_div_pvx[i] = reso_data_pvx[i] / reso_mc_pvx[i];
-        reso_div_pvy[i] = reso_data_pvy[i] / reso_mc_pvy[i];
-        reso_div_pvz[i] = reso_data_pvz[i] / reso_mc_pvz[i];
+        reso_div_pullx[i] = (reso_mc_pullx[i] > 0.f) ? reso_data_pullx[i] / reso_mc_pullx[i] : 0.f;
+        reso_div_pully[i] = (reso_mc_pully[i] > 0.f) ? reso_data_pully[i] / reso_mc_pully[i] : 0.f;
+        reso_div_pullz[i] = (reso_mc_pullz[i] > 0.f) ? reso_data_pullz[i] / reso_mc_pullz[i] : 0.f;
+        reso_div_pvx[i]   = (reso_mc_pvx[i]   > 0.f) ? reso_data_pvx[i]   / reso_mc_pvx[i]   : 0.f;
+        reso_div_pvy[i]   = (reso_mc_pvy[i]   > 0.f) ? reso_data_pvy[i]   / reso_mc_pvy[i]   : 0.f;
+        reso_div_pvz[i]   = (reso_mc_pvz[i]   > 0.f) ? reso_data_pvz[i]   / reso_mc_pvz[i]   : 0.f;
     }
 
-    TGraph * gr_data_pvx = new TGraph(nbins, sumpt2_sqrt, reso_data_pvx);
-    TGraph * gr_data_pvy = new TGraph(nbins, sumpt2_sqrt, reso_data_pvy);
-    TGraph * gr_data_pvz = new TGraph(nbins, sumpt2_sqrt, reso_data_pvz);
-    TGraph * gr_data_pullx = new TGraph(nbins, sumpt2_sqrt, reso_data_pullx);
-    TGraph * gr_data_pully = new TGraph(nbins, sumpt2_sqrt, reso_data_pully);
-    TGraph * gr_data_pullz = new TGraph(nbins, sumpt2_sqrt, reso_data_pullz);
+    TGraph * gr_data_pvx = make_graph(nbins, sumpt2_sqrt, reso_data_pvx);
+    TGraph * gr_data_pvy = make_graph(nbins, sumpt2_sqrt, reso_data_pvy);
+    TGraph * gr_data_pvz = make_graph(nbins, sumpt2_sqrt, reso_data_pvz);
+    TGraph * gr_data_pullx = make_graph(nbins, sumpt2_sqrt, reso_data_pullx);
+    TGraph * gr_data_pully = make_graph(nbins, sumpt2_sqrt, reso_data_pully);
+    TGraph * gr_data_pullz = make_graph(nbins, sumpt2_sqrt, reso_data_pullz);
 
-    TGraph * gr_mc_pvx = new TGraph(nbins, sumpt2_sqrt, reso_mc_pvx);
-    TGraph * gr_mc_pvy = new TGraph(nbins, sumpt2_sqrt, reso_mc_pvy);
-    TGraph * gr_mc_pvz = new TGraph(nbins, sumpt2_sqrt, reso_mc_pvz);
-    TGraph * gr_mc_pullx = new TGraph(nbins, sumpt2_sqrt, reso_mc_pullx);
-    TGraph * gr_mc_pully = new TGraph(nbins, sumpt2_sqrt, reso_mc_pully);
-    TGraph * gr_mc_pullz = new TGraph(nbins, sumpt2_sqrt, reso_mc_pullz);
+    TGraph * gr_mc_pvx = make_graph(nbins, sumpt2_sqrt, reso_mc_pvx);
+    TGraph * gr_mc_pvy = make_graph(nbins, sumpt2_sqrt, reso_mc_pvy);
+    TGraph * gr_mc_pvz = make_graph(nbins, sumpt2_sqrt, reso_mc_pvz);
+    TGraph * gr_mc_pullx = make_graph(nbins, sumpt2_sqrt, reso_mc_pullx);
+    TGraph * gr_mc_pully = make_graph(nbins, sumpt2_sqrt, reso_mc_pully);
+    TGraph * gr_mc_pullz = make_graph(nbins, sumpt2_sqrt, reso_mc_pullz);
 
-    TGraph * gr_div_pvx = new TGraph(nbins, sumpt2_sqrt, reso_div_pvx);
-    TGraph * gr_div_pvy = new TGraph(nbins, sumpt2_sqrt, reso_div_pvy);
-    TGraph * gr_div_pvz = new TGraph(nbins, sumpt2_sqrt, reso_div_pvz);
-    TGraph * gr_div_pullx = new TGraph(nbins, sumpt2_sqrt, reso_div_pullx);
-    TGraph * gr_div_pully = new TGraph(nbins, sumpt2_sqrt, reso_div_pully);
-    TGraph * gr_div_pullz = new TGraph(nbins, sumpt2_sqrt, reso_div_pullz);
+    TGraph * gr_div_pvx = make_graph(nbins, sumpt2_sqrt, reso_div_pvx);
+    TGraph * gr_div_pvy = make_graph(nbins, sumpt2_sqrt, reso_div_pvy);
+    TGraph * gr_div_pvz = make_graph(nbins, sumpt2_sqrt, reso_div_pvz);
+    TGraph * gr_div_pullx = make_graph(nbins, sumpt2_sqrt, reso_div_pullx);
+    TGraph * gr_div_pully = make_graph(nbins, sumpt2_sqrt, reso_div_pully);
+    TGraph * gr_div_pullz = make_graph(nbins, sumpt2_sqrt, reso_div_pullz);
 
-    Float_t height_data_pvx = *std::max_element(reso_data_pvx, reso_data_pvx+nbins);
-    Float_t height_data_pvy = *std::max_element(reso_data_pvy, reso_data_pvy+nbins);
-    Float_t height_data_pvz = *std::max_element(reso_data_pvz, reso_data_pvz+nbins);
+    Float_t height_data_pvx = valid_max(reso_data_pvx, reso_data_pvx+nbins);
+    Float_t height_data_pvy = valid_max(reso_data_pvy, reso_data_pvy+nbins);
+    Float_t height_data_pvz = valid_max(reso_data_pvz, reso_data_pvz+nbins);
 
-    Float_t height_mc_pvx = *std::max_element(reso_mc_pvx, reso_mc_pvx+nbins);
-    Float_t height_mc_pvy = *std::max_element(reso_mc_pvy, reso_mc_pvy+nbins);
-    Float_t height_mc_pvz = *std::max_element(reso_mc_pvz, reso_mc_pvz+nbins);
+    Float_t height_mc_pvx = valid_max(reso_mc_pvx, reso_mc_pvx+nbins);
+    Float_t height_mc_pvy = valid_max(reso_mc_pvy, reso_mc_pvy+nbins);
+    Float_t height_mc_pvz = valid_max(reso_mc_pvz, reso_mc_pvz+nbins);
 
     Float_t floor_data_pvx = *std::min_element(reso_data_pvx, reso_data_pvx+nbins);
     Float_t floor_data_pvy = *std::min_element(reso_data_pvy, reso_data_pvy+nbins);
@@ -116,17 +129,17 @@ Int_t draw_pv_res(TString period){
     Float_t floor_pvy = std::min(floor_data_pvy, floor_mc_pvy);
     Float_t floor_pvz = std::min(floor_data_pvz, floor_mc_pvz);
 
-    Float_t height_div_pvx = *std::max_element(reso_div_pvx, reso_div_pvx+nbins);
-    Float_t height_div_pvy = *std::max_element(reso_div_pvy, reso_div_pvy+nbins);
-    Float_t height_div_pvz = *std::max_element(reso_div_pvz, reso_div_pvz+nbins);
+    Float_t height_div_pvx = valid_max(reso_div_pvx, reso_div_pvx+nbins);
+    Float_t height_div_pvy = valid_max(reso_div_pvy, reso_div_pvy+nbins);
+    Float_t height_div_pvz = valid_max(reso_div_pvz, reso_div_pvz+nbins);
 
     Float_t floor_div_pvx = *std::min_element(reso_div_pvx, reso_div_pvx+nbins);
     Float_t floor_div_pvy = *std::min_element(reso_div_pvy, reso_div_pvy+nbins);
     Float_t floor_div_pvz = *std::min_element(reso_div_pvz, reso_div_pvz+nbins);
 
-    Float_t height_div_pullx = *std::max_element(reso_div_pullx, reso_div_pullx+nbins);
-    Float_t height_div_pully = *std::max_element(reso_div_pully, reso_div_pully+nbins);
-    Float_t height_div_pullz = *std::max_element(reso_div_pullz, reso_div_pullz+nbins);
+    Float_t height_div_pullx = valid_max(reso_div_pullx, reso_div_pullx+nbins);
+    Float_t height_div_pully = valid_max(reso_div_pully, reso_div_pully+nbins);
+    Float_t height_div_pullz = valid_max(reso_div_pullz, reso_div_pullz+nbins);
 
     Float_t floor_div_pullx = *std::min_element(reso_div_pullx, reso_div_pullx+nbins);
     Float_t floor_div_pully = *std::min_element(reso_div_pully, reso_div_pully+nbins);

@@ -32,11 +32,12 @@ def getminmax():
             d = json.loads(path.read_text())
 
             for k in keys:
-                v = d[k]
-                if v < results[period][k]["min"]:
-                    results[period][k]["min"] = v
-                if v > results[period][k]["max"]:
-                    results[period][k]["max"] = v
+                v = d.get(k, float('nan'))
+                if not np.isnan(v):
+                    if v < results[period][k]["min"]:
+                        results[period][k]["min"] = v
+                    if v > results[period][k]["max"]:
+                        results[period][k]["max"] = v
 
     return results
 
