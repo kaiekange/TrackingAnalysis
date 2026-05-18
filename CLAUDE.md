@@ -126,3 +126,27 @@ The PV refitting uses `VertexReProducer` (DA clustering + AVF fitter), which wra
 | Analysis outputs | `/eos/home-k/kakang/IPres/analysis/{JetHT,ZeroBias}/` |
 
 Ntuple production version tag is `Track-v20260210` (defined at the top of `submitData.py`/`submitMC.py`).
+
+## Working Convention
+
+At the end of each session, update the "Last Session" section below.
+
+### Last Session
+
+**Date:** 2026-05-18
+
+**What was done:**
+- Fixed bugs A, B, C, G, H, I, K (and ZeroBias equivalents L) from the audit plan:
+  - **A** (`Residuals.cc:536-539`): `pv_fracHighPurity_p1/p2` now divide by their own partition sizes instead of `nTracks`
+  - **B** (`Tree.cc`, `Residuals.cc`): `ev_run` / `ev_id` initialized in `Tree::Init()` and set from `iEvent.id()` in `analyze()`
+  - **C** (`residuals_cfi.py`): corrected `maxEta` comment (value 5.0 is intentional); unknown `SampleType` now exits silently (no analysis needed per user)
+  - **G** (`draw_ip_res.cc`, `draw_pv_res.cc`): introduced `make_graph` (skips y ≤ 0) and `valid_max` (ignores negatives) to prevent inf/nan in ratio plots
+  - **H** (`ip_res.cc`, `pv_res.cc`): RooFit convergence status checked; sparse histograms return `-1.f` sentinel instead of `0.f`
+  - **I** (`ip_res.cc`, `pv_res.cc`): `mask_json` access guarded with `.contains()` / `.value()` to prevent crashes on missing keys
+  - **K** (`list_ip_results.py`, `list_pv_result.py`): all JSON reads use `.get(key, float('nan'))` to avoid `KeyError`
+- Improved `compare_ip_res.cc` and `compare_pv_res.cc` plots:
+  - Distinct marker shapes per era (circle, square, triangle-up, diamond, triangle-down)
+  - Better colors (`kRed+1`, `kAzure+7`, `kGreen+2`, `kOrange+7`)
+  - Dynamic y-axis zooming to data range for pt/eta plots
+  - Fixed wide y-axis (`0` to `height * 1.3`) for phi plots via `dynamic_range=false` parameter
+- All changes committed and pushed to `origin/master` (commit `551638b`)
