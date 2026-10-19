@@ -57,7 +57,7 @@ The grid proxy must exist at `/afs/cern.ch/user/k/kakang/tmp/x509up_u158898`.
 
 ## Analysis Macros
 
-Parallel macro directories exist for `JetHT` and `ZeroBias` under `analysis/macros/`. Run from the respective macro directory.
+Fitting and sample-specific scripts live in `analysis/macros/JetHT/` and `analysis/macros/ZeroBias/` (run from the respective directory). All plotting macros are shared in `analysis/macros/plotting/` and take the sample as first argument (run from `plotting/`).
 
 ### IP resolution (`ip_res.cc`)
 Fits unbiased IP distributions per pT/η/φ bin using a symmetric double-sided Crystal Ball (`RooCrystalBall`) fit. Writes results to JSON files in `/eos/home-k/kakang/IPres/analysis/<sample>/json/<period>/ip_res/`.
@@ -78,20 +78,17 @@ root -b -q 'pv_res.cc("<period>", <job_number>)'
 python pv_res.py <period>
 ```
 
-### Drawing resolution curves (`draw_ip_res.cc`, `draw_pv_res.cc`)
-Reads all JSON outputs for a period, draws resolution-vs-pT/η/φ plots.
+### Plotting (`analysis/macros/plotting/`)
+Reads the fit JSON outputs and draws data/MC resolution curves (per period) and multi-era overlays. An optional last argument redirects figures to `<outdir>/figures/...` instead of the sample storage dir (useful for before/after comparisons).
 
 ```bash
-root -b -q 'draw_ip_res.cc("<period>")'
-root -b -q 'draw_pv_res.cc("<period>")'
-```
-
-### Multi-era comparisons
-```bash
-root -b -q 'compare_ip_res.cc'   # overlays all eras on one canvas
-root -b -q 'compare_pv_res.cc'
-python list_ip_results.py         # bar charts across eras at target pT values
-python list_pv_result.py
+root -b -q 'draw_ip_res.cc("<sample>", "<period>")'   # e.g. draw_ip_res.cc("JetHT", "2023")
+root -b -q 'draw_pv_res.cc("<sample>", "<period>")'
+root -b -q 'compare_ip_res.cc("<sample>")'            # overlays all eras on one canvas
+root -b -q 'compare_pv_res.cc("<sample>")'
+root -b -q 'compare_polar_ip_res.cc("<sample>")'      # IP resolution vs phi, polar plots
+python list_ip_results.py <sample>                     # bar charts across eras at target pT values
+python list_pv_result.py <sample>
 ```
 
 Tuple paths per era/dataset are configured in `tuplelist.json` in each macro directory. Figures are saved to `/eos/home-k/kakang/IPres/analysis/<sample>/figures/`.
@@ -114,8 +111,9 @@ The PV refitting uses `VertexReProducer` (DA clustering + AVF fitter), which wra
 
 - `tdrStyle.cc` / `CMS_lumi.cc` — CMS plot style and luminosity labels
 - `draw_funcs.cc` — canvas setup helpers
+- `plot_common.cc` — shared plotting config: sample → storage dir / label, period list, lumi labels, colors/markers, `load_fits()` (reads `fit_<i>.json`), the 24-entry IP plot table `ip_plots()`, and the multi-era overlay `draw_period_overlay()`
 - The resolution fit (`fit_res`) and track loop (`process_tree_tracks`) are **not** shared: each `ip_res.cc` / `pv_res.cc` defines its own copy
-- `compare_gr.cc` — two-panel data/MC overlay with ratio pad, used by `compare_ip_res.cc` and `compare_pv_res.cc`
+- `compare_gr.cc` — two-panel data/MC overlay with ratio pad, used by `draw_ip_res.cc` and `draw_pv_res.cc`
 
 ### Output/storage paths
 

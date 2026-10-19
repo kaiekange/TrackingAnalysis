@@ -13,7 +13,21 @@ warnings.filterwarnings(
 periods = ["2022", "2022EE", "2023", "2023BPix", "2024"]
 keys = ["reso_data_pvx", "reso_data_pvy", "reso_data_pvz"]
 
-def getminmax():
+SAMPLES = ("JetHT", "ZeroBias")
+STORAGE_DIR = "/eos/home-k/kakang/IPres/analysis/{sample}"
+
+
+def parse_args():
+    # python <script> <JetHT|ZeroBias> [output root, default: sample storage dir]
+    if len(sys.argv) < 2 or sys.argv[1] not in SAMPLES:
+        print(f"Usage: python {sys.argv[0]} <JetHT|ZeroBias> [outdir]")
+        sys.exit(1)
+    sample = sys.argv[1]
+    storage = Path(STORAGE_DIR.format(sample=sample))
+    outroot = Path(sys.argv[2]) if len(sys.argv) > 2 else storage
+    return storage, outroot
+
+def getminmax(storage):
 
     results = {
         period: {
@@ -24,9 +38,7 @@ def getminmax():
     }
 
     for period in periods:
-        paths = Path(
-            f"/eos/home-k/kakang/IPres/analysis/JetHT/json/{period}/pv_res/"
-        ).glob("*.json")
+        paths = (storage / "json" / period / "pv_res").glob("*.json")
 
         for path in paths:
             d = json.loads(path.read_text())
@@ -155,11 +167,13 @@ def plot_cms_style(stats, key, title, outfile):
 
 
 def list_result():
-    stats = getminmax()
+    storage, outroot = parse_args()
+    out_dir = outroot / "figures" / "pv_res"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    stats = getminmax(storage)
     # LaTeX 的 μm
-    plot_cms_style(stats, "reso_data_pvx", r"PV resolution in x [$\mu$m]", "/eos/home-k/kakang/IPres/analysis/JetHT/figures/pv_res/pillar_pvx.png")
-    plot_cms_style(stats, "reso_data_pvy", r"PV resolution in y [$\mu$m]", "/eos/home-k/kakang/IPres/analysis/JetHT/figures/pv_res/pillar_pvy.png")
-    plot_cms_style(stats, "reso_data_pvz", r"PV resolution in z [$\mu$m]", "/eos/home-k/kakang/IPres/analysis/JetHT/figures/pv_res/pillar_pvz.png")
+    for axis in "xyz":
+        plot_cms_style(stats, f"reso_data_pv{axis}", rf"PV resolution in {axis} [$\mu$m]", str(out_dir / f"pillar_pv{axis}.png"))
 
 if __name__ == "__main__":
     sys.exit(list_result())

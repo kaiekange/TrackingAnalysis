@@ -39,19 +39,29 @@ TARGET_PTS = [0.1, 1.0, 3.0, 10.0]
 PT_BINS = [(0.1, 1.0), (1.0, 3.0), (3.0, 10.0)]
 PT_BIN_LABELS = ["0.1-1", "1-3", "3-10"]
 
-# JSON 路径模板
-BASE_DIR_TEMPLATE = "/eos/home-k/kakang/IPres/analysis/JetHT/json/{period}/ip_res/"
-# 输出目录
-OUT_DIR = Path("/eos/home-k/kakang/IPres/analysis/JetHT/figures/ip_res")
+
+SAMPLES = ("JetHT", "ZeroBias")
+STORAGE_DIR = "/eos/home-k/kakang/IPres/analysis/{sample}"
+
+
+def parse_args():
+    # python <script> <JetHT|ZeroBias> [output root, default: sample storage dir]
+    if len(sys.argv) < 2 or sys.argv[1] not in SAMPLES:
+        print(f"Usage: python {sys.argv[0]} <JetHT|ZeroBias> [outdir]")
+        sys.exit(1)
+    sample = sys.argv[1]
+    storage = Path(STORAGE_DIR.format(sample=sample))
+    outroot = Path(sys.argv[2]) if len(sys.argv) > 2 else storage
+    return storage, outroot
 
 
 # ============ 1. 读取数据 ============
 
-def load_all_data():
+def load_all_data(storage):
     data = {}
 
     for period in periods:
-        base_dir = Path(BASE_DIR_TEMPLATE.format(period=period))
+        base_dir = storage / "json" / period / "ip_res"
         pts = []
         pt_uleta_list = []
         vals = {v: [] for v in ALL_VARS}
@@ -300,9 +310,11 @@ def plot_bin_stats_bar(data, var, ytitle, stat, outfile):
 # ============ 4. 主入口：对 8 个变量全部画图 ============
 
 def main():
+    storage, outroot = parse_args()
+    OUT_DIR = outroot / "figures" / "ip_res"
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    data = load_all_data()
+    data = load_all_data(storage)
 
     for var in ALL_VARS:
         ytitle = VAR_TITLES[var]
