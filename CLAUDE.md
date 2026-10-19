@@ -101,9 +101,11 @@ The single EDAnalyzer plugin performs three operations per event:
 
 1. **Trigger filtering** — requires `HLT_ZeroBias_v*` (ZeroBias) or any `HLT_PFHT*_v` (JetHT)
 2. **IP resolution** — for each track in the refitted PV, refits the PV *without* that track (unbiased vertex), then records `d0` and `dz` relative to the unbiased vertex (`pv_trk_d0_pvunbiased`, `pv_trk_dz_pvunbiased`)
-3. **PV resolution** — randomly splits PV tracks 50/50, refits two sub-vertices, records both positions (`pv_x_p1/p2`, etc.) for difference-based resolution
+3. **PV resolution** — randomly splits PV tracks 50/50 (random seed derived from run/lumi/event, so the split is reproducible and independent of job grouping), refits two sub-vertices, records both positions, errors and covariances (`pv_x_p1/p2`, `pv_covXY_p1`, etc.) for difference-based resolution and pulls
 
-The PV refitting uses `VertexReProducer` (DA clustering + AVF fitter), which wraps the standard CMS offline primary vertex algorithm. Input tracks come from `packedPFCandidates` with `pvAssociationQuality >= 2`. All distances are stored in **microns** (`micron = 10000`).
+The PV refitting uses `VertexReProducer` (DA clustering + AVF fitter, **no beam-spot constraint**), which wraps the standard CMS offline primary vertex algorithm, including its track filter (e.g. transverse IP significance w.r.t. the beam line < 4, which truncates the d0 tails). Input tracks come from `packedPFCandidates` with `pvAssociationQuality >= 2`; high purity is *not* required (stored as `pv_trk_isHighPurity`). The transient tracks of the refitted PV are reused for all unbiased/split refits. All distances are stored in **microns** (`micron = 10000`), covariances in micron².
+
+Since `Track-v20261019` the tree also stores, per track, the unbiased-PV covariance (`pv_trk_pvunbiased_{x,y,z}Error`, `covXY/XZ/YZ`), hit-pattern summaries and charge, and per event the beam spot (`bs_*`) and `ev_lumi`. These are meant for subtracting the vertex uncertainty from the IP resolution: per track, err_PV,dxy² = J C Jᵀ with J = (sinφ, −cosφ, 0) and err_PV,dz² with J = (cosφ·sinhη, sinφ·sinhη, −1) (verified against `Track::dxy/dz`). Unused branches of earlier versions were dropped.
 
 `ResTree` (`interface/Tree.h`, `src/Tree.cc`) is the flat TTree wrapper. The sentinel value for missing data is `-777` (`null`).
 
@@ -123,7 +125,7 @@ The PV refitting uses `VertexReProducer` (DA clustering + AVF fitter), which wra
 | Ntuples (personal) | `/eos/home-k/kakang/Run3TrackingAnalysis/Ntuple/` |
 | Analysis outputs | `/eos/home-k/kakang/IPres/analysis/{JetHT,ZeroBias}/` |
 
-Ntuple production version tag is `Track-v20260210` (defined at the top of `submitData.py`/`submitMC.py`).
+Ntuple production version tag is `Track-v20261019` (data only; set in `condor/submitData.py` and `crab/submitData.sh`; MC stays at `Track-v20260210`). Data is now produced with `EventScale=0` (all events), and crab output goes to `T2_BE_IIHE`.
 
 ## Working Convention
 
@@ -133,7 +135,7 @@ At the end of each session, update the "Last Session" section below.
 
 **Date:** 2026-10-19
 
-**What was done** (cleanup pass, commits `bcccfa9`..`5f9a08e`, local only, not pushed):
+**What was done** (cleanup pass `bcccfa9`..`be364f1`, then the tuplizer update below; all pushed):
 - `bcccfa9`: snapshot of previously uncommitted work (incl. new `compare_polar_ip_res.cc`, `ZeroBias/polar_ip_res.py`)
 - T1 `8c6a8cf`: fixed `EventScale=0` div-by-zero (`Residuals.cc`); removed leftover `Process+20` in `run_group.sh`; `submitMC.py` computes `ngroup` from DAS file count (no cap); `ip_res.py`/`pv_res.py` restored to full 200/50-job submission; ZeroBias `draw_pv_res.cc` got the `period_title` fix
 - T2 `42f06fc`: deleted unused `find_res.cc`, `fit_res.cc`, `fit_compare.cc`, `list_ip_res.py`, `test/test.py`, `test/test2.py`, and the broken `submitData_rerun.py` → `run.sh` → `residuals_condor.py` chain
@@ -141,10 +143,15 @@ At the end of each session, update the "Last Session" section below.
 - crab/ is still used (alongside condor) — keep it
 - T4a `a1413db`: plotting macros merged into shared `analysis/macros/plotting/` (sample as first arg), table-driven IP plots via `functions/plot_common.cc`; verified byte-identical PNGs (382 ROOT + 54 matplotlib)
 - T4b: `compare_gr` data/MC plots — ratio range args were passed swapped, so the lower bound floated with the max ratio and 120/51000 points (20 plots, mostly phi hipt) fell below it; range is now computed from the ratio graph (at least [0.9,1.5]); top/bottom pads share x range; ratio=1 line spans the axis; data drawn above MC. Only the 300 data/MC plots changed
+- Tuplizer `Track-v20261019` (data only; see Architecture above): added unbiased-PV and split-vertex covariances, beam spot, hit info, charge, `ev_lumi`; dropped unused branches (incl. `fracHighPurity`, `trig_PFHT350_pass`); split seed from run/lumi/event; refit transient tracks reused; `pvAssociationQuality` via lookup; `VertexReProducer` cleanup. Production settings: `EventScale=0`, crab storage `T2_BE_IIHE`. Verified on 1000 Run2022C JetMET events (59 retained branches identical except split ones; seed reproducible across EventScale; Jacobian checked; file −49%, wall −15%, memory unchanged)
+- Physics plan agreed with the user (T4, not implemented yet): subtract the per-track vertex uncertainty from the IP resolution. Per track: pull-correct the unbiased-PV errors (err × pull, pull binned in the **half-vertex** √ΣpT², looked up with `pv_trk_pvunbiased_SumTrackPt2`), project to d0/dz with the full covariance, sub-bin each (pT,η,φ) bin by err_PV, fit σ_meas,k, then σ_meas,k² = σ_IP² + ⟨err²⟩_k (simultaneous fit, later maybe unbinned). Validate err_PV with split-vertex pulls and the beam-spot method (transverse only, BS width² + ⟨err²⟩). No beam-spot constraint anywhere
 
 **Open items for next session:**
+- Tuplizer checks not yet done: ZeroBias file (few-track vertices → refit-failure `-777` path, vector lengths) and the condor cfg `residuals_condor_group.py`; real per-event timing (startup excluded)
+- Before production (only on user request): crab `unitsPerJob=150` and condor `GroupSize=10` were tuned for EventScale 30 / 2 — rescale for EventScale=0; condor `request_memory=1G` but cmsRun RSS is 1.33 GB; condor still writes to EOS (only crab goes to T2_BE_IIHE); run `crab checkwrite --site=T2_BE_IIHE` first; afterwards `tuplelist.json` needs the new (xrootd) paths
+- `pv_res`: bin the pulls in half-vertex √ΣpT² (`pv_SumTrackPt2_p1/p2`) instead of full-PV ΣpT²
+- Era-wise comparisons (per data era) — plotting side later
 - `ZeroBias/compare_data_mc.cc`: stale (old IIHE paths) and weights *data* with `PU_factor` — port from JetHT, delete, or keep?
-- `Residuals.cc` `pv_trk_pvunbiased_fracHighPurity`: numerator over `newPVTkCollection`, denominator `tracksSize()` of refit (same class as bug A; branch unread by analysis)
 - `binning.json` is built from a single era but used for all periods
 - `submitMC.py` now has no job cap (old code had commented 50/100 caps)
 - Remaining refactor candidates: share `fit_res`/`process_tree_tracks` between `ip_res.cc`/`pv_res.cc` (JetHT has extra prescale/xsec/mask weighting — physics, verify JSON numerically); merge condor submit scripts / cmsRun cfgs; prune BuildFile deps; `compare_data_mc.cc` still has its own `lumi_map`

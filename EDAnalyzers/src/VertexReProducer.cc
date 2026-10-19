@@ -1,23 +1,25 @@
 #include "TrackingAnalysis/EDAnalyzers/interface/VertexReProducer.h"
 
 #include "RecoVertex/VertexPrimitives/interface/VertexState.h"
-#include "RecoVertex/VertexTools/interface/VertexDistance3D.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/Utilities/interface/Exception.h"
 
 #include <algorithm>
 
 VertexReProducer::VertexReProducer(const edm::ParameterSet &iConfig, edm::ConsumesCollector &iC)
     : builder_token_(iC.esConsumes<TransientTrackBuilder, TransientTrackRecord>(edm::ESInputTag("", "TransientTrackBuilder")))
 {
-    beamSpotConfig_ = iConfig.getParameter<std::string>("BeamSpotConfig");
-
+    // only the offline PV setup (track filter + DA_vect clustering) is implemented
     std::string trackSelectionAlgorithm = iConfig.getParameter<edm::ParameterSet>("TkFilterParameters").getParameter<std::string>("algorithm");
-    if (trackSelectionAlgorithm == "filter")
-    {
-        theTrackFilter_ = new TrackFilterForPVFinding(iConfig.getParameter<edm::ParameterSet>("TkFilterParameters"));
-    }
+    if (trackSelectionAlgorithm != "filter")
+        throw cms::Exception("Configuration") << "VertexReProducer: unsupported TkFilterParameters.algorithm " << trackSelectionAlgorithm;
+    std::string clusteringAlgorithm = iConfig.getParameter<edm::ParameterSet>("TkClusParameters").getParameter<std::string>("algorithm");
+    if (clusteringAlgorithm != "DA_vect")
+        throw cms::Exception("Configuration") << "VertexReProducer: unsupported TkClusParameters.algorithm " << clusteringAlgorithm;
+
+    theTrackFilter_ = new TrackFilterForPVFinding(iConfig.getParameter<edm::ParameterSet>("TkFilterParameters"));
     theTrackClusterizer_ = new DAClusterizerInZ_vect(iConfig.getParameter<edm::ParameterSet>("TkClusParameters").getParameter<edm::ParameterSet>("TkDAClusParameters"));
 
     vertexSelector_ = new VertexCompatibleWithBeam(VertexDistanceXY(), iConfig.getParameter<edm::ParameterSet>("VxFitterParameters").getParameter<double>("maxDistanceToBeam"));
@@ -27,16 +29,6 @@ VertexReProducer::VertexReProducer(const edm::ParameterSet &iConfig, edm::Consum
 
 std::vector<TransientVertex> VertexReProducer::makeVertices(const reco::TrackCollection &tracks, const reco::BeamSpot &bs, const edm::EventSetup &iSetup) const
 {
-    bool validBS = true;
-    VertexState beamVertexState(bs);
-    if ((beamVertexState.error().cxx() <= 0.) ||
-        (beamVertexState.error().cyy() <= 0.) ||
-        (beamVertexState.error().czz() <= 0.))
-    {
-        validBS = false;
-        edm::LogError("UnusableBeamSpot") << "Beamspot with invalid errors " << beamVertexState.error().matrix();
-    }
-
     edm::ESHandle<TransientTrackBuilder> theB = iSetup.getHandle(builder_token_);
 
     std::vector<reco::TransientTrack> t_tks;
@@ -49,6 +41,21 @@ std::vector<TransientVertex> VertexReProducer::makeVertices(const reco::TrackCol
         reco::TransientTrack transTrack = (*theB).build(pseudoTrack);
         t_tks.push_back(transTrack);
         t_tks.back().setBeamSpot(bs);
+    }
+
+    return makeVertices(t_tks, bs);
+}
+
+std::vector<TransientVertex> VertexReProducer::makeVertices(const std::vector<reco::TransientTrack> &t_tks, const reco::BeamSpot &bs) const
+{
+    bool validBS = true;
+    VertexState beamVertexState(bs);
+    if ((beamVertexState.error().cxx() <= 0.) ||
+        (beamVertexState.error().cyy() <= 0.) ||
+        (beamVertexState.error().czz() <= 0.))
+    {
+        validBS = false;
+        edm::LogError("UnusableBeamSpot") << "Beamspot with invalid errors " << beamVertexState.error().matrix();
     }
 
     std::vector<reco::TransientTrack> seltks = theTrackFilter_->select(t_tks);
@@ -78,10 +85,7 @@ std::vector<TransientVertex> VertexReProducer::makeVertices(const reco::TrackCol
 
 VertexReProducer::~VertexReProducer()
 {
-    if (theTrackFilter_)
-        delete theTrackFilter_;
-    if (theTrackClusterizer_)
-        delete theTrackClusterizer_;
-    if (vertexSelector_)
-        delete vertexSelector_;
+    delete theTrackFilter_;
+    delete theTrackClusterizer_;
+    delete vertexSelector_;
 }

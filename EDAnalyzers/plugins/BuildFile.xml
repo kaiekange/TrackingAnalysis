@@ -6,6 +6,8 @@
 <use   name="HLTrigger/HLTcore"/>
 <use   name="SimDataFormats/TrackingAnalysis"/>
 <use   name="DataFormats/VertexReco"/>
+<use   name="DataFormats/TrackReco"/>
+<use   name="DataFormats/SiPixelDetId"/>
 <use   name="TrackingTools/TrajectoryState"/>
 <use   name="TrackingTools/PatternTools"/>
 <use   name="CommonTools/UtilAlgos"/>

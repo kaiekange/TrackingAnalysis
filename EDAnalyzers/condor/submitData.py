@@ -30,7 +30,7 @@ LUMIMASK = "/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/
 
 GroupSize = 10
 
-EVENTSCALE = 2
+EVENTSCALE = 0
 EVENTMODULO = 0
 
 
@@ -66,7 +66,7 @@ def submitData():
     GoldenJSON = LUMIMASK
     Datasets = load_datasets(DatasetList)
 
-    ver = "Track-v20260210"
+    ver = "Track-v20261019"
     prodv = f"/eos/home-k/kakang/Run3TrackingAnalysis/Ntuple/{ver}"
 
     for dataset in Datasets:

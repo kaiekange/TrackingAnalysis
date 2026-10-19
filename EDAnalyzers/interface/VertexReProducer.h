@@ -34,20 +34,18 @@ public:
 											  const reco::BeamSpot &bs,
 											  const edm::EventSetup &iSetup) const;
 
-	/// Get the configuration used in the VertexProducer
-	const edm::ParameterSet &inputConfig() const { return config_; }
+	/// Make the vertices from already built transient tracks (beam spot set on each track)
+	std::vector<TransientVertex> makeVertices(const std::vector<reco::TransientTrack> &tracks,
+											  const reco::BeamSpot &bs) const;
 
 private:
-	TrackFilterForPVFindingBase *theTrackFilter_;
-	TrackClusterizerInZ *theTrackClusterizer_;
-	VertexCompatibleWithBeam *vertexSelector_;
+	TrackFilterForPVFindingBase *theTrackFilter_ = nullptr;
+	TrackClusterizerInZ *theTrackClusterizer_ = nullptr;
+	VertexCompatibleWithBeam *vertexSelector_ = nullptr;
 
 	edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> builder_token_;
 
 	double minNdof_;
-
-	edm::ParameterSet config_;
-	std::string beamSpotConfig_;
 };
 
 #endif

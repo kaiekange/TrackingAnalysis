@@ -33,12 +33,8 @@ process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(-1))
 process.source = source
 
 process.load("TrackingTools.TransientTrack.TransientTrackBuilder_cfi")
-process.load("RecoVertex.PrimaryVertexProducer.OfflinePrimaryVertices_cfi")
 
 process.load("TrackingAnalysis.EDAnalyzers.residuals_cfi")
-process.residuals.BeamSpotConfig = ""
-
-process.residuals.stageL1Trigger = cms.uint32(2)
 
 process.residuals.RunOnData = cms.bool(options.RunOnData)
 process.residuals.EventScale = cms.int32(options.EventScale)

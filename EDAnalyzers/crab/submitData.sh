@@ -28,11 +28,11 @@ LUMIMASK="JSON/Cert_Collisions2024_378981_386951_Golden.json"
 datasetlist="DatasetList/data_${YEAR}_${SAMPLETYPE}.txt"
 
 configtemplate="crabConfigTemplateData.py"
-ver="Track-v20260210"
+ver="Track-v20261019"
 # prodv="/store/group/phys_tracking/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
 prodv="/store/user/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
 pver="0"
-EVENTSCALE=30
+EVENTSCALE=0
 EVENTMODULO=0
 
 datasets=()

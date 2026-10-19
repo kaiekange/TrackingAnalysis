@@ -2,9 +2,6 @@ import FWCore.ParameterSet.Config as cms
 
 residuals = cms.EDAnalyzer("Residuals",
 
-        # Beam spot
-        BeamSpotConfig = cms.string(""),
-
         # https://github.com/cms-sw/cmssw/blob/master/RecoVertex/PrimaryVertexProducer/python/OfflinePrimaryVertices_cfi.py#L12
         TkFilterParameters = cms.PSet(algorithm=cms.string('filter'),
             maxNormalizedChi2 = cms.double(10.0),
