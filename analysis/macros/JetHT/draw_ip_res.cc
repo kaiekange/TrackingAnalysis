@@ -10,7 +10,7 @@
 #include <nlohmann/json.hpp>
 #include "../../functions/compare_gr.cc"
 
-const TString datatype_text = "High-q^{2} multi-jet events";
+const TString datatype_text = "Multi-jet events";
 const TString storage_dir = "/eos/home-k/kakang/IPres/analysis/JetHT";
 const Int_t nbins = 200;
 
@@ -34,7 +34,15 @@ Int_t draw_ip_res(TString period){
     setTDRStyle();
     TString period_title = period;
     period_title.ReplaceAll("_", " ");
-    lumi_sqrtS = "13.6 TeV, " + period_title;
+    std::map<TString, TString> lumi_map = {
+        {"2022",     "7.99 fb^{-1}"},
+        {"2022EE",   "5.81 fb^{-1}"},
+        {"2023",     "17.96 fb^{-1}"},
+        {"2023BPix", "9.68 fb^{-1}"},
+        {"2024",     "109.82 fb^{-1}"}
+    };
+    TString lumi = lumi_map.count(period) ? lumi_map[period] : period_title;
+    lumi_sqrtS = lumi + " (13.6 TeV)";
 
     Float_t reso_data_d0_pt_loeta[nbins];
     Float_t reso_data_dz_pt_loeta[nbins];

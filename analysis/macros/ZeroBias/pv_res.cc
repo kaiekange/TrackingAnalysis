@@ -23,7 +23,7 @@
 #include "../../functions/CMS_lumi.cc"
 #include "../../functions/draw_funcs.cc"
 
-const TString datatype_text = "Unbiased collision events";
+const TString datatype_text = "Zero-bias events";
 const TString storage_dir = "/eos/home-k/kakang/IPres/analysis/ZeroBias";
 
 const Int_t sample_mod = 1;
@@ -97,7 +97,7 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
         return -1.f;
 
     setTDRStyle();
-    lumi_sqrtS = "13.6 TeV, " + period;
+    lumi_sqrtS = period + " (13.6 TeV)";
 
     RooRealVar pv_var("pv_var", "pv_var", hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax());
     pv_var.setBins(hist->GetNbinsX());

@@ -10,7 +10,7 @@
 #include <nlohmann/json.hpp>
 #include "../../functions/compare_gr.cc"
 
-const TString datatype_text = "Unbiased collision events";
+const TString datatype_text = "Zero-bias events";
 const TString storage_dir = "/eos/home-k/kakang/IPres/analysis/ZeroBias";
 const Int_t nbins = 50;
 
@@ -32,7 +32,15 @@ Int_t draw_pv_res(TString period){
     TString figdir = storage_dir + "/figures/" + period + "/pv_res/";
 
     setTDRStyle();
-    lumi_sqrtS = "13.6 TeV, " + period;
+    std::map<TString, TString> lumi_map = {
+        {"2022",     "7.99 fb^{-1}"},
+        {"2022EE",   "5.81 fb^{-1}"},
+        {"2023",     "17.96 fb^{-1}"},
+        {"2023BPix", "9.68 fb^{-1}"},
+        {"2024",     "109.82 fb^{-1}"}
+    };
+    TString lumi = lumi_map.count(period) ? lumi_map[period] : period;
+    lumi_sqrtS = lumi + " (13.6 TeV)";
 
     Float_t reso_data_pullx[nbins];
     Float_t reso_data_pully[nbins];

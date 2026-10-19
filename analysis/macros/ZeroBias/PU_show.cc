@@ -13,13 +13,13 @@
 #include "../../functions/CMS_lumi.cc"
 #include "../../functions/draw_funcs.cc"
 
-const TString datatype_text = "Unbiased collision events";
+const TString datatype_text = "Zero-bias events";
 
 int PU_show(){
 
     TString era = "2022";
 
-    lumi_sqrtS = "13.6 TeV, 2022";
+    lumi_sqrtS = "2022 (13.6 TeV)";
 
     setTDRStyle();
 

@@ -19,7 +19,7 @@
 #include "../../functions/CMS_lumi.cc"
 #include "../../functions/draw_funcs.cc"
 
-const TString datatype_text = "Unbiased collision events";
+const TString datatype_text = "Zero-bias events";
 const TString storage_dir = "/eos/home-k/kakang/IPres/analysis/ZeroBias";
 const Int_t nbins = 50;
 
@@ -53,11 +53,11 @@ void draw_all_graphs(std::vector<TGraph> &graphs,
     }
     Float_t margin = 0.2f * (height - floor_val);
 
-    lumi_sqrtS = "13.6 TeV, Run 3";
+    lumi_sqrtS = "Run 3 (13.6 TeV)";
 
     TCanvas *canvas = new TCanvas("canvas", "canvas", 800, 600);
     canvas_setup(canvas);
-    canvas->SetBottomMargin(0.15);
+    canvas->SetBottomMargin(0.17);
     canvas->SetRightMargin(0.17);
 
     graphs[0].SetMarkerStyle(markers[0]);
@@ -69,6 +69,7 @@ void draw_all_graphs(std::vector<TGraph> &graphs,
     graphs[0].Draw("AP");
     graphs[0].GetYaxis()->SetTitle(ylabel);
     graphs[0].GetXaxis()->SetTitle("#sqrt{#sum #it{p_{T}}^{2}} [GeV]");
+    graphs[0].GetXaxis()->SetTitleOffset(1.1);
     graphs[0].SetMaximum(height + 1.5f * margin);
     graphs[0].SetMinimum(std::max(0.f, floor_val - margin));
     graphs[0].GetYaxis()->SetNdivisions(810);
@@ -92,7 +93,7 @@ void draw_all_graphs(std::vector<TGraph> &graphs,
     {
         TString tmp_period = periods[i];
         tmp_period.ReplaceAll("_", " ");
-        mylegend->AddEntry(const_cast<TGraph *>(&graphs[i]), tmp_period, "lp");
+        mylegend->AddEntry(const_cast<TGraph *>(&graphs[i]), tmp_period, "p");
     }
     mylegend->SetTextFont(42);
     mylegend->SetTextColor(kBlack);
@@ -132,7 +133,7 @@ Int_t compare_pv_res()
 
         TString period_title = period;
         period_title.ReplaceAll("_", " ");
-        lumi_sqrtS = "13.6 TeV, " + period_title;
+        lumi_sqrtS = period_title + " (13.6 TeV)";
 
         Float_t sumpt2_sqrt[nbins];
         Float_t reso_data_pvx[nbins];

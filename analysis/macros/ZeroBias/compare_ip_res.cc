@@ -19,7 +19,7 @@
 #include "../../functions/CMS_lumi.cc"
 #include "../../functions/draw_funcs.cc"
 
-const TString datatype_text = "Unbiased collision events";
+const TString datatype_text = "Zero-bias events";
 const TString storage_dir = "/eos/home-k/kakang/IPres/analysis/ZeroBias";
 const Int_t nbins = 200;
 
@@ -30,9 +30,9 @@ const std::vector<TString> periods = {
     "2023BPix",
     "2024"};
 
-const Color_t colors[]     = {kBlack, kRed+1, kAzure+7, kGreen+2, kOrange+7};
-const Style_t markers[]    = {20,     21,   22,    33,         23          };
-const Style_t linestyles[] = {1,      1,    1,     2,          1           };
+const Color_t colors[] = {kBlack, kRed + 1, kAzure + 7, kGreen + 2, kOrange + 7};
+const Style_t markers[] = {20, 21, 22, 33, 23};
+const Style_t linestyles[] = {1, 1, 1, 2, 1};
 
 void draw_all_graphs(std::vector<TGraph> &graphs,
                      Float_t height,
@@ -46,7 +46,8 @@ void draw_all_graphs(std::vector<TGraph> &graphs,
         return;
 
     Float_t floor_val = height;
-    for (auto &g : graphs) {
+    for (auto &g : graphs)
+    {
         Double_t *y_arr = g.GetY();
         for (Int_t i = 0; i < g.GetN(); ++i)
             if (y_arr[i] > 0.0 && Float_t(y_arr[i]) < floor_val)
@@ -54,7 +55,7 @@ void draw_all_graphs(std::vector<TGraph> &graphs,
     }
     Float_t margin = 0.2f * (height - floor_val);
 
-    lumi_sqrtS = "13.6 TeV, Run 3";
+    lumi_sqrtS = "Run 3 (13.6 TeV)";
 
     TCanvas *canvas = new TCanvas("canvas", "canvas", 800, 600);
     canvas_setup(canvas);
@@ -70,10 +71,13 @@ void draw_all_graphs(std::vector<TGraph> &graphs,
     graphs[0].Draw("AP");
     graphs[0].GetYaxis()->SetTitle(ylabel);
     graphs[0].GetXaxis()->SetTitle(xlabel);
-    if (dynamic_range) {
+    if (dynamic_range)
+    {
         graphs[0].SetMaximum(height + 1.5f * margin);
         graphs[0].SetMinimum(std::max(0.f, floor_val - margin));
-    } else {
+    }
+    else
+    {
         graphs[0].SetMaximum(height * 1.3f);
         graphs[0].SetMinimum(0.f);
     }
@@ -98,7 +102,7 @@ void draw_all_graphs(std::vector<TGraph> &graphs,
     {
         TString tmp_period = periods[i];
         tmp_period.ReplaceAll("_", " ");
-        mylegend->AddEntry(const_cast<TGraph *>(&graphs[i]), tmp_period, "lp");
+        mylegend->AddEntry(const_cast<TGraph *>(&graphs[i]), tmp_period, "p");
     }
     mylegend->SetTextFont(42);
     mylegend->SetTextColor(kBlack);
@@ -267,7 +271,6 @@ Int_t compare_ip_res()
             reso_data_dz_phi_allpt[i] = results["reso_data_dz_phi_allpt"];
         }
 
-
         std::vector<double> v_pt;
         std::vector<double> v_d0_pt_loeta, v_dz_pt_loeta;
         std::vector<double> v_d0_pt_hieta, v_dz_pt_hieta;
@@ -275,7 +278,8 @@ Int_t compare_ip_res()
 
         for (Int_t i = 0; i < nbins; ++i)
         {
-            if (pt[i] < 1.0) continue;  // 去掉 pt < 1 GeV 的点
+            if (pt[i] < 1.0)
+                continue; // 去掉 pt < 1 GeV 的点
 
             v_pt.push_back(pt[i]);
 

@@ -1,3 +1,4 @@
+#include <map>
 #include <TCanvas.h>
 #include <TLegend.h>
 #include "tdrStyle.cc"
@@ -12,9 +13,16 @@ void compare_gr(
     TString period, TString given_text,
     TString xlabel, TString ylabel,TString figpath)
 {
-    period.ReplaceAll("_", " "); 
-
-    lumi_sqrtS = "13.6 TeV, " + period;
+    std::map<TString, TString> lumi_map = {
+        {"2022",     "7.99 fb^{-1}"},
+        {"2022EE",   "5.81 fb^{-1}"},
+        {"2023",     "17.96 fb^{-1}"},
+        {"2023BPix", "9.68 fb^{-1}"},
+        {"2024",     "109.82 fb^{-1}"}
+    };
+    TString lumi = lumi_map.count(period) ? lumi_map[period] : period;
+    lumi_sqrtS = lumi + " (13.6 TeV)";
+    period.ReplaceAll("_", " ");
 
     TCanvas *canvas = new TCanvas("canvas", "canvas", 800, 700);
     canvas->Divide(1, 2);
@@ -22,7 +30,7 @@ void compare_gr(
     TVirtualPad *c1 = canvas->GetPad(1);
     canvas_setup_sub(c1);
     c1->SetPad(0, 0.3, 1, 1);
-    c1->SetBottomMargin(0.01);
+    c1->SetBottomMargin(0.02);
     c1->SetRightMargin(0.05);
     c1->SetLogy(0);
     c1->SetFillColor(0);
@@ -35,6 +43,7 @@ void compare_gr(
     gr1->Draw("AP");
     gr2->Draw("P SAME");
     gr1->GetYaxis()->SetTitle(ylabel);
+    gr1->GetXaxis()->SetLabelOffset(0.3);
     write_text(0.55, 0.85, given_text);
     gr1->SetMaximum(height * 1.5);
     gr1->SetMinimum(0.0);
@@ -43,8 +52,8 @@ void compare_gr(
     /* gr1->GetXaxis()->SetTitleOffset(1.5); */
     
     TLegend *leg = new TLegend(0.55, 0.65, 0.65, 0.75, NULL, "brNDC");
-    leg->AddEntry(gr1, "Data", "p");
-    leg->AddEntry(gr2, "Simulation", "p");
+    leg->AddEntry(gr1, period + " data", "p");
+    leg->AddEntry(gr2, period + " simulation", "p");
     leg->SetTextFont(42);
     leg->SetTextColor(kBlack);
     leg->SetBorderSize(0);
@@ -63,7 +72,7 @@ void compare_gr(
     div_gr->Draw("AP");
     div_gr->SetMarkerColor(kBlack);
     div_gr->SetMarkerSize(1);
-    div_gr->GetXaxis()->SetTitleOffset(1.0);
+    div_gr->GetXaxis()->SetTitleOffset(1.5);
     div_gr->GetYaxis()->SetTitleOffset(0.8);
     div_gr->GetXaxis()->SetTickLength(0.06);
     div_gr->GetYaxis()->SetNdivisions(504);

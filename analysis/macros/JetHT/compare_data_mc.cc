@@ -1,4 +1,5 @@
 #include <vector>
+#include <map>
 #include <iostream>
 #include <TTree.h>
 #include <TString.h>
@@ -13,14 +14,22 @@
 #include "../../functions/CMS_lumi.cc"
 #include "../../functions/draw_funcs.cc"
 
-const TString datatype_text = "High-q^{2} multi-jet events";
+const TString datatype_text = "Multi-jet events";
 const TString storage_dir = "/eos/home-k/kakang/IPres/analysis/JetHT";
 
 void compare_draw(TString period, TTree *datatree, TTree *mctree, TString myvar, TString xtitle, TString ytitle, int nbins, float varmin, float varmax, TString figpath){
 
     TString period_title = period;
     period_title.ReplaceAll("_", " ");
-    lumi_sqrtS = "13.6 TeV, " + period_title;
+    std::map<TString, TString> lumi_map = {
+        {"2022",     "7.99 fb^{-1}"},
+        {"2022EE",   "5.81 fb^{-1}"},
+        {"2023",     "17.96 fb^{-1}"},
+        {"2023BPix", "9.68 fb^{-1}"},
+        {"2024",     "109.82 fb^{-1}"}
+    };
+    TString lumi = lumi_map.count(period) ? lumi_map[period] : period_title;
+    lumi_sqrtS = lumi + " (13.6 TeV)";
 
     TH1F *h1 = new TH1F("h1", "", nbins, varmin, varmax);
     datatree->Project("h1", myvar);
@@ -50,8 +59,8 @@ void compare_draw(TString period, TTree *datatree, TTree *mctree, TString myvar,
     h1->Draw("ep same");
 
     TLegend * mylegend = new TLegend(0.55, 0.7, 0.65, 0.8, NULL, "brNDC");
-    mylegend->AddEntry(h1, "Data", "p");
-    mylegend->AddEntry(h2, "Simulation", "f");
+    mylegend->AddEntry(h1, period_title + " data", "p");
+    mylegend->AddEntry(h2, period_title + " simulation", "f");
     mylegend->SetTextFont(42);
     mylegend->SetTextColor(kBlack);
     mylegend->SetBorderSize(0);
@@ -70,26 +79,20 @@ void compare_draw(TString period, TTree *datatree, TTree *mctree, TString myvar,
     delete h2;
 }
 
-// int compare_data_mc(TString period){
-int compare_data_mc(){
+int compare_data_mc(TString period){
 
     setTDRStyle();
 
-    std::vector<TString> periods = {"2022_preEE", "2022_postEE"};
-    // std::vector<TString> periods = {"2023_preBPix", "2023_postBPix"};
+    TString figdir = storage_dir + "/figures/" + period + "/compare/";
 
-    for (const TString& period : periods) {
-        TString figdir = storage_dir + "/figures/" + period + "/compare/";
+    if(gSystem->AccessPathName(figdir)) gSystem->MakeDirectory(figdir);
 
-        if(gSystem->AccessPathName(figdir)) gSystem->MakeDirectory(figdir);
+    TFile *datafile = TFile::Open(storage_dir + "/tuples/" + period + "/data.root");
+    TTree *datatree = (TTree*)datafile->Get("mytree");
+    TFile *mcfile = TFile::Open(storage_dir + "/tuples/" + period + "/mc_corr_mask.root");
+    TTree *mctree = (TTree*)mcfile->Get("mytree");
 
-        TFile *datafile = TFile::Open(storage_dir + "/tuples/" + period + "/data.root");
-        TTree *datatree = (TTree*)datafile->Get("mytree");
-        TFile *mcfile = TFile::Open(storage_dir + "/tuples/" + period + "/mc_corr_mask.root");
-        TTree *mctree = (TTree*)mcfile->Get("mytree");
-
-        compare_draw(period, datatree, mctree, "sqrt(pv_SumTrackPt2)", "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "Normalised # events", 100, 0, 500, figdir+"sumPt2.png");
-    }
+    compare_draw(period, datatree, mctree, "sqrt(pv_SumTrackPt2)", "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "Normalised # events", 100, 0, 500, figdir+"sumPt2.png");
 
     // compare_draw(period, datatree, mctree, "ev_nPV", "# primary vertices", "Normalised # events", 82, 0.5, 82.5, figdir+"nPV_noPU.png");
     // compare_draw(period, datatree, mctree, "ev_nPV", "# primary vertices", "Normalised # events", 82, 0.5, 82.5, figdir+"nPV.png");

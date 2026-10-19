@@ -6,7 +6,7 @@ std::pair<float, float> fit_compare(TH1F * hist_data, TH1F * hist_mc, TString er
 
     setTDRStyle();
 
-    lumi_sqrtS = "13.6 TeV, 2022 " + era;
+    lumi_sqrtS = "2022" + era + " (13.6 TeV)";
 
     RooRealVar pv_var_data("pv_var_data", "pv_var_data", hist_data->GetXaxis()->GetXmin(), hist_data->GetXaxis()->GetXmax());
     pv_var_data.setBins(hist_data->GetNbinsX());
