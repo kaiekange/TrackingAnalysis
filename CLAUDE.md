@@ -139,10 +139,12 @@ At the end of each session, update the "Last Session" section below.
 - T2 `42f06fc`: deleted unused `find_res.cc`, `fit_res.cc`, `fit_compare.cc`, `list_ip_res.py`, `test/test.py`, `test/test2.py`, and the broken `submitData_rerun.py` → `run.sh` → `residuals_condor.py` chain
 - T3 `5f9a08e`: removed dead code (`trackSelection()` + `TkMin*`/`TkMax*` params, commented VtxError cuts, unused includes, `fixOverlay()`, commented PS_weight reads). 1000-event cmsRun check: 93/95 branches bit-identical, `pv_trk_d0Err/dzErr` differ by ≤1 float ULP
 - crab/ is still used (alongside condor) — keep it
+- T4a `a1413db`: plotting macros merged into shared `analysis/macros/plotting/` (sample as first arg), table-driven IP plots via `functions/plot_common.cc`; verified byte-identical PNGs (382 ROOT + 54 matplotlib)
+- T4b: `compare_gr` data/MC plots — ratio range args were passed swapped, so the lower bound floated with the max ratio and 120/51000 points (20 plots, mostly phi hipt) fell below it; range is now computed from the ratio graph (at least [0.9,1.5]); top/bottom pads share x range; ratio=1 line spans the axis; data drawn above MC. Only the 300 data/MC plots changed
 
 **Open items for next session:**
 - `ZeroBias/compare_data_mc.cc`: stale (old IIHE paths) and weights *data* with `PU_factor` — port from JetHT, delete, or keep?
 - `Residuals.cc` `pv_trk_pvunbiased_fracHighPurity`: numerator over `newPVTkCollection`, denominator `tracksSize()` of refit (same class as bug A; branch unread by analysis)
 - `binning.json` is built from a single era but used for all periods
 - `submitMC.py` now has no job cap (old code had commented 50/100 caps)
-- T4 refactor candidates: merge JetHT/ZeroBias macros that differ only by sample name; loop-ify the 24 variables in `draw_ip_res.cc`; move `fit_res`/`process_tree_tracks` into `functions/`; dedupe `lumi_map`; merge submit scripts / cmsRun cfgs; prune BuildFile deps
+- Remaining refactor candidates: share `fit_res`/`process_tree_tracks` between `ip_res.cc`/`pv_res.cc` (JetHT has extra prescale/xsec/mask weighting — physics, verify JSON numerically); merge condor submit scripts / cmsRun cfgs; prune BuildFile deps; `compare_data_mc.cc` still has its own `lumi_map`

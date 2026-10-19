@@ -22,8 +22,6 @@ Int_t draw_ip_res(TString sample, TString period, TString outdir = "")
 
         compare_gr(make_graph(x, data), make_graph(x, mc), make_graph(x, div),
                    std::max(valid_max(data), valid_max(mc)),
-                   x.front(), x.back(),
-                   valid_max(div), *std::min_element(div.begin(), div.end()),
                    period, add_region(cfg.datatype_text, p.region_text),
                    p.xlabel, p.ylabel, figdir + p.key);
     }

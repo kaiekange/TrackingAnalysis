@@ -29,9 +29,7 @@ Int_t draw_pv_res(TString sample, TString period, TString outdir = "")
         Float_t height = p.first.BeginsWith("pull") ? 1.5 : std::max(valid_max(data), valid_max(mc));
 
         compare_gr(make_graph(x, data), make_graph(x, mc), make_graph(x, div),
-                   height, x.front(), x.back(),
-                   valid_max(div), *std::min_element(div.begin(), div.end()),
-                   period, cfg.datatype_text, xlabel, p.second, figdir + p.first);
+                   height, period, cfg.datatype_text, xlabel, p.second, figdir + p.first);
     }
 
     return 0;
