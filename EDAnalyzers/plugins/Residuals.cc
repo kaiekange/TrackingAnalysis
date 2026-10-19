@@ -17,12 +17,9 @@
 #include "FWCore/Framework/interface/ESHandle.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "DataFormats/Common/interface/RefToPtr.h"
 
 #include "FWCore/Common/interface/TriggerNames.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
-#include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
-#include "HLTrigger/HLTcore/interface/HLTPrescaleProvider.h"
 
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
@@ -30,20 +27,14 @@
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 #include "RecoVertex/VertexPrimitives/interface/TransientVertex.h"
 
-#include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Utilities/interface/ESGetToken.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
-#include "DataFormats/TrackReco/interface/HitPattern.h"
 
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
-
-#include <TrackingTools/TrajectoryState/interface/PerigeeConversions.h>
-#include <TrackingTools/TrajectoryState/interface/TrajectoryStateClosestToPoint.h>
-#include <TrackingTools/PatternTools/interface/TSCPBuilderNoMaterial.h>
 
 #include "TrackingAnalysis/EDAnalyzers/interface/VertexReProducer.h"
 #include "TrackingAnalysis/EDAnalyzers/interface/Tree.h"
@@ -79,7 +70,6 @@ private:
     virtual void analyze(const edm::Event &, const edm::EventSetup &) override;
     virtual void endJob() override;
 
-    Bool_t trackSelection(const reco::Track &track) const;
     Bool_t vertexSelection(const reco::Vertex &vertex) const;
 
     class TrackEqualPFCands
@@ -113,16 +103,9 @@ private:
     edm::EDGetTokenT<pat::PackedCandidateCollection> PFCandToken_;
     edm::EDGetTokenT<std::vector<PileupSummaryInfo>> PileupToken_;
 
-    // --- track selection variables
-    Double_t tkMinPt;
-    Int_t tkMinXLayers, tkMaxMissedOuterLayers, tkMaxMissedInnerLayers;
-
     // --- vertex selection variables
     UInt_t vtxTracksSizeMin;
     UInt_t vtxTracksSizeMax;
-    //   Double_t vtxErrorXMin,vtxErrorXMax;
-    //   Double_t vtxErrorYMin,vtxErrorYMax;
-    //   Double_t vtxErrorZMin,vtxErrorZMax;
 
     VertexReProducer *revertex;
 
@@ -161,19 +144,8 @@ Residuals::Residuals(const edm::ParameterSet &pset)
     edm::InputTag PileupTag_("slimmedAddPileupInfo");
     PileupToken_ = consumes<std::vector<PileupSummaryInfo>>(PileupTag_);
 
-    tkMinPt = pset.getParameter<Double_t>("TkMinPt");
-    tkMinXLayers = pset.getParameter<Int_t>("TkMinXLayers");
-    tkMaxMissedOuterLayers = pset.getParameter<Int_t>("TkMaxMissedOuterLayers");
-    tkMaxMissedInnerLayers = pset.getParameter<Int_t>("TkMaxMissedInnerLayers");
-
     vtxTracksSizeMin = pset.getParameter<Int_t>("VtxTracksSizeMin");
     vtxTracksSizeMax = pset.getParameter<Int_t>("VtxTracksSizeMax");
-    // vtxErrorXMin     = pset.getParameter<Double_t>("VtxErrorXMin");
-    // vtxErrorXMax     = pset.getParameter<Double_t>("VtxErrorXMax");
-    // vtxErrorYMin     = pset.getParameter<Double_t>("VtxErrorYMin");
-    // vtxErrorYMax     = pset.getParameter<Double_t>("VtxErrorYMax");
-    // vtxErrorZMin     = pset.getParameter<Double_t>("VtxErrorZMin");
-    // vtxErrorZMax     = pset.getParameter<Double_t>("VtxErrorZMax");
 
     edm::ConsumesCollector c{consumesCollector()};
     revertex = new VertexReProducer(pset, c);
@@ -330,7 +302,6 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
     // PV refitting
     std::vector<TransientVertex> refitted_tPVs = revertex->makeVertices(tracks, *beamspotHandle, iSetup);
 
-    // edm::LogPrint("Residuals") << "Primary vertices = " << primvtxHandle->size() << ", refitted vertices = " << refitted_tPVs.size() << ", tracks = " << tracks.size();
     if (refitted_tPVs.empty())
         return;
 
@@ -592,30 +563,10 @@ void Residuals::endJob()
     InfoTree->Fill();
 }
 
-Bool_t Residuals::trackSelection(const reco::Track &track) const
-{
-    using namespace reco;
-
-    if (track.pt() < tkMinPt)
-        return false;
-    //   if( track.hitPattern().trackerLayersWithMeasurement() < tkMinXLayers ) return false;
-    //   if( track.trackerExpectedHitsOuter().numberOfLostHits() > tkMaxMissedOuterLayers ) return false;
-    //   if( track.trackerExpectedHitsInner().numberOfLostHits() > tkMaxMissedInnerLayers ) return false;
-    if (!track.quality(reco::TrackBase::highPurity))
-        return false;
-    //   if( ! (track.hitPattern().hasValidHitInPixelLayer(PixelSubdetector::PixelBarrel, 1) ||
-    //	  track.hitPattern().hasValidHitInPixelLayer(PixelSubdetector::PixelEndcap, 1)) ) return false;
-
-    return true;
-}
-
 Bool_t Residuals::vertexSelection(const reco::Vertex &vertex) const
 {
     if (vertex.tracksSize() > vtxTracksSizeMax || vertex.tracksSize() < vtxTracksSizeMin)
         return false;
-    //   if( vertex.xError() < vtxErrorXMin || vertex.xError() > vtxErrorXMax ) return false;
-    //   if( vertex.yError() < vtxErrorYMin || vertex.yError() > vtxErrorYMax ) return false;
-    //   if( vertex.zError() < vtxErrorZMin || vertex.zError() > vtxErrorZMax ) return false;
 
     return true;
 }

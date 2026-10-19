@@ -97,7 +97,6 @@ int compare_data_mc(TString period){
     // compare_draw(period, datatree, mctree, "ev_nPV", "# primary vertices", "Normalised # events", 82, 0.5, 82.5, figdir+"nPV_noPU.png");
     // compare_draw(period, datatree, mctree, "ev_nPV", "# primary vertices", "Normalised # events", 82, 0.5, 82.5, figdir+"nPV.png");
     // compare_draw(period, datatree, mctree, "pv_SumTrackPt", "#sum#it{p_{T}} [GeV]", "Normalised # events", 100, 0, 2000, figdir+"sumPt.png");
-    // compare_draw(period, datatree, mctree, "sqrt(pv_SumTrackPt2)", "#sqrt{#sum#it{p_{T}}^{2}} [GeV]", "Normalised # events", 100, 0, 500, figdir+"sumPt2.png");
     // compare_draw(period, datatree, mctree, "pv_NTracks", "# tracks", "Normalised # events", 50, 0, 250, figdir+"ntracks.png");
     // compare_draw(period, datatree, mctree, "pv_chi2", "#chi^{2}", "Normalised # events", 100, 0, 500, figdir+"chi2.png");
     // compare_draw(period, datatree, mctree, "pv_ndof", "NDOF", "Normalised # events", 100, 0, 500, figdir+"ndof.png");

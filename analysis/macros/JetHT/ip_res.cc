@@ -341,11 +341,6 @@ Int_t ip_res(TString period, Int_t idx)
     xsec_file >> xsec_json;
     xsec_file.close();
 
-    // std::ifstream ps_file(storage_dir + "/pileup/" + period + "/PS_weight.json");
-    // nlohmann::json ps_json;
-    // ps_file >> ps_json;
-    // ps_file.close();
-
     std::ifstream mask_file(storage_dir + "/pileup/" + period + "/trigger_mask.json");
     nlohmann::json mask_json;
     mask_file >> mask_json;

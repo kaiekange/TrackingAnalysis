@@ -276,7 +276,6 @@ Int_t pv_res(TString period, Int_t idx)
     tuplelist_file.close();
 
     std::ifstream infile(storage_dir + "/json/binning.json");
-    // std::ifstream infile(storage_dir + "/json/binning_mc.json");
     nlohmann::json binning;
     infile >> binning;
     infile.close();
@@ -290,11 +289,6 @@ Int_t pv_res(TString period, Int_t idx)
     nlohmann::json xsec_json;
     xsec_file >> xsec_json;
     xsec_file.close();
-
-    // std::ifstream ps_file(storage_dir + "/pileup/" + period + "/PS_weight.json");
-    // nlohmann::json ps_json;
-    // ps_file >> ps_json;
-    // ps_file.close();
 
     std::ifstream mask_file(storage_dir + "/pileup/" + period + "/trigger_mask.json");
     nlohmann::json mask_json;

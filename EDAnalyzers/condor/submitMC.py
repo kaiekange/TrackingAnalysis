@@ -1,6 +1,5 @@
 import sys
 import subprocess
-import json
 import os
 import datetime
 from pathlib import Path
