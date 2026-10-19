@@ -60,7 +60,7 @@ The grid proxy must exist at `/afs/cern.ch/user/k/kakang/tmp/x509up_u158898`.
 Parallel macro directories exist for `JetHT` and `ZeroBias` under `analysis/macros/`. Run from the respective macro directory.
 
 ### IP resolution (`ip_res.cc`)
-Fits unbiased IP distributions per pT/η/φ bin using double-Gaussian RooFit models. Writes results to JSON files in `/eos/home-k/kakang/IPres/analysis/<sample>/json/<period>/ip_res/`.
+Fits unbiased IP distributions per pT/η/φ bin using a symmetric double-sided Crystal Ball (`RooCrystalBall`) fit. Writes results to JSON files in `/eos/home-k/kakang/IPres/analysis/<sample>/json/<period>/ip_res/`.
 
 ```bash
 # Single job locally
@@ -114,7 +114,7 @@ The PV refitting uses `VertexReProducer` (DA clustering + AVF fitter), which wra
 
 - `tdrStyle.cc` / `CMS_lumi.cc` — CMS plot style and luminosity labels
 - `draw_funcs.cc` — canvas setup helpers
-- `find_res.cc` / `fit_res.cc` — core Gaussian/double-Gaussian fitting logic used by `ip_res.cc` and `pv_res.cc`
+- The resolution fit (`fit_res`) and track loop (`process_tree_tracks`) are **not** shared: each `ip_res.cc` / `pv_res.cc` defines its own copy
 - `compare_gr.cc` — two-panel data/MC overlay with ratio pad, used by `compare_ip_res.cc` and `compare_pv_res.cc`
 
 ### Output/storage paths

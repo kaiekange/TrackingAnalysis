@@ -9,7 +9,6 @@ InputList=$6
 OutputDir=$7
 GroupSize=$8
 Process=$9
-Process=$((Process + 20))
 GoldenJSON=${10}
 
 StartLine=$(( Process * GroupSize + 1 ))

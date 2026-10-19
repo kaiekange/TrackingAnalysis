@@ -84,15 +84,10 @@ def submitMC():
 
         InputList = f"/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/EDAnalyzers/condor/InputList/{YEAR}_{SAMPLETYPE}_{title}.txt"
 
-        # njobs = save_das_files(dataset, InputList)
-        # ngroup = min(njobs, 50)
-        # ngroup = (njobs + GroupSize - 1) // GroupSize
-        # ngroup = min(ngroup, 100)
-        ngroup = 20
+        njobs = save_das_files(dataset, InputList)
+        ngroup = (njobs + GroupSize - 1) // GroupSize
 
         outdir = convert(dataset, prodv, EVENTSCALE, EVENTMODULO)
-
-        # print(njobs)
 
         os.makedirs(f"{outdir}/log", exist_ok=True)
 

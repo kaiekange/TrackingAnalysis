@@ -210,7 +210,7 @@ void Residuals::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
 {
     nEventsProcessed_++;
 
-    if ((nEventsProcessed_ - 1) % eventScale != static_cast<ULong_t>(eventModulo) && eventScale > 0)
+    if (eventScale > 0 && (nEventsProcessed_ - 1) % eventScale != static_cast<ULong_t>(eventModulo))
         return;
 
     nEventsScaled_++;

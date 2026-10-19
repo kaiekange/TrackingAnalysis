@@ -33,6 +33,6 @@ def weight_xsec(period: str) -> int:
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python official_PU_weight.py <period>  # e.g. 2022 or 2022EE")
+        print("Usage: python weight_xsec.py <period>  # e.g. 2022 or 2022EE")
         sys.exit(1)
     sys.exit(weight_xsec(sys.argv[1]))

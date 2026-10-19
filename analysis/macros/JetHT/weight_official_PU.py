@@ -50,6 +50,6 @@ def weight_official_PU(period: str) -> int:
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python official_PU_weight.py <period>  # e.g. 2022 or 2022EE")
+        print("Usage: python weight_official_PU.py <period>  # e.g. 2022 or 2022EE")
         sys.exit(1)
     sys.exit(weight_official_PU(sys.argv[1]))

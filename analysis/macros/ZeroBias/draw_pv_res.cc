@@ -32,6 +32,8 @@ Int_t draw_pv_res(TString period){
     TString figdir = storage_dir + "/figures/" + period + "/pv_res/";
 
     setTDRStyle();
+    TString period_title = period;
+    period_title.ReplaceAll("_", " ");
     std::map<TString, TString> lumi_map = {
         {"2022",     "7.99 fb^{-1}"},
         {"2022EE",   "5.81 fb^{-1}"},
@@ -39,7 +41,7 @@ Int_t draw_pv_res(TString period){
         {"2023BPix", "9.68 fb^{-1}"},
         {"2024",     "109.82 fb^{-1}"}
     };
-    TString lumi = lumi_map.count(period) ? lumi_map[period] : period;
+    TString lumi = lumi_map.count(period) ? lumi_map[period] : period_title;
     lumi_sqrtS = lumi + " (13.6 TeV)";
 
     Float_t reso_data_pullx[nbins];
