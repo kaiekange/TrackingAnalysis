@@ -133,20 +133,18 @@ At the end of each session, update the "Last Session" section below.
 
 ### Last Session
 
-**Date:** 2026-05-18
+**Date:** 2026-10-19
 
-**What was done:**
-- Fixed bugs A, B, C, G, H, I, K (and ZeroBias equivalents L) from the audit plan:
-  - **A** (`Residuals.cc:536-539`): `pv_fracHighPurity_p1/p2` now divide by their own partition sizes instead of `nTracks`
-  - **B** (`Tree.cc`, `Residuals.cc`): `ev_run` / `ev_id` initialized in `Tree::Init()` and set from `iEvent.id()` in `analyze()`
-  - **C** (`residuals_cfi.py`): corrected `maxEta` comment (value 5.0 is intentional); unknown `SampleType` now exits silently (no analysis needed per user)
-  - **G** (`draw_ip_res.cc`, `draw_pv_res.cc`): introduced `make_graph` (skips y ≤ 0) and `valid_max` (ignores negatives) to prevent inf/nan in ratio plots
-  - **H** (`ip_res.cc`, `pv_res.cc`): RooFit convergence status checked; sparse histograms return `-1.f` sentinel instead of `0.f`
-  - **I** (`ip_res.cc`, `pv_res.cc`): `mask_json` access guarded with `.contains()` / `.value()` to prevent crashes on missing keys
-  - **K** (`list_ip_results.py`, `list_pv_result.py`): all JSON reads use `.get(key, float('nan'))` to avoid `KeyError`
-- Improved `compare_ip_res.cc` and `compare_pv_res.cc` plots:
-  - Distinct marker shapes per era (circle, square, triangle-up, diamond, triangle-down)
-  - Better colors (`kRed+1`, `kAzure+7`, `kGreen+2`, `kOrange+7`)
-  - Dynamic y-axis zooming to data range for pt/eta plots
-  - Fixed wide y-axis (`0` to `height * 1.3`) for phi plots via `dynamic_range=false` parameter
-- All changes committed and pushed to `origin/master` (commit `551638b`)
+**What was done** (cleanup pass, commits `bcccfa9`..`5f9a08e`, local only, not pushed):
+- `bcccfa9`: snapshot of previously uncommitted work (incl. new `compare_polar_ip_res.cc`, `ZeroBias/polar_ip_res.py`)
+- T1 `8c6a8cf`: fixed `EventScale=0` div-by-zero (`Residuals.cc`); removed leftover `Process+20` in `run_group.sh`; `submitMC.py` computes `ngroup` from DAS file count (no cap); `ip_res.py`/`pv_res.py` restored to full 200/50-job submission; ZeroBias `draw_pv_res.cc` got the `period_title` fix
+- T2 `42f06fc`: deleted unused `find_res.cc`, `fit_res.cc`, `fit_compare.cc`, `list_ip_res.py`, `test/test.py`, `test/test2.py`, and the broken `submitData_rerun.py` → `run.sh` → `residuals_condor.py` chain
+- T3 `5f9a08e`: removed dead code (`trackSelection()` + `TkMin*`/`TkMax*` params, commented VtxError cuts, unused includes, `fixOverlay()`, commented PS_weight reads). 1000-event cmsRun check: 93/95 branches bit-identical, `pv_trk_d0Err/dzErr` differ by ≤1 float ULP
+- crab/ is still used (alongside condor) — keep it
+
+**Open items for next session:**
+- `ZeroBias/compare_data_mc.cc`: stale (old IIHE paths) and weights *data* with `PU_factor` — port from JetHT, delete, or keep?
+- `Residuals.cc` `pv_trk_pvunbiased_fracHighPurity`: numerator over `newPVTkCollection`, denominator `tracksSize()` of refit (same class as bug A; branch unread by analysis)
+- `binning.json` is built from a single era but used for all periods
+- `submitMC.py` now has no job cap (old code had commented 50/100 caps)
+- T4 refactor candidates: merge JetHT/ZeroBias macros that differ only by sample name; loop-ify the 24 variables in `draw_ip_res.cc`; move `fit_res`/`process_tree_tracks` into `functions/`; dedupe `lumi_map`; merge submit scripts / cmsRun cfgs; prune BuildFile deps
