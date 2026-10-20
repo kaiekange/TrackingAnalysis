@@ -2,15 +2,15 @@
 
 source /cvmfs/cms.cern.ch/crab3/crab.sh
 
-# SAMPLETYPE="ZeroBias"
-SAMPLETYPE="JetHT"
+SAMPLETYPE="ZeroBias"
+# SAMPLETYPE="JetHT"
 
-# YEAR="2022"
-# GLOBALTAG="124X_dataRun3_v15"
-# LUMIMASK="JSON/Cert_Collisions2022_355100_362760_Golden.json"
+YEAR="2022"
+GLOBALTAG="130X_dataRun3_v2"  # 22Sep2023 ReReco (CMSSW_13_0_X); check PdmV recommendation
+LUMIMASK="JSON/Cert_Collisions2022_355100_362760_Golden.json"
 
 # YEAR="2022EE"
-# GLOBALTAG="124X_dataRun3_v15"
+# GLOBALTAG="130X_dataRun3_v2"  # 22Sep2023 ReReco (CMSSW_13_0_X); check PdmV recommendation
 # LUMIMASK="JSON/Cert_Collisions2022_355100_362760_Golden.json"
 
 # YEAR="2023"
@@ -21,9 +21,9 @@ SAMPLETYPE="JetHT"
 # GLOBALTAG="130X_dataRun3_PromptAnalysis_v1"
 # LUMIMASK="JSON/Cert_Collisions2023_366442_370790_Golden.json"
 
-YEAR="2024"
-GLOBALTAG="150X_dataRun3_v2"
-LUMIMASK="JSON/Cert_Collisions2024_378981_386951_Golden.json"
+# YEAR="2024"
+# GLOBALTAG="150X_dataRun3_v2"
+# LUMIMASK="JSON/Cert_Collisions2024_378981_386951_Golden.json"
 
 datasetlist="DatasetList/data_${YEAR}_${SAMPLETYPE}.txt"
 
@@ -34,6 +34,7 @@ prodv="/store/user/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
 pver="0"
 EVENTSCALE=0
 EVENTMODULO=0
+UNITSPERJOB=150  # lumis per job; ~100 for JetMET, ~150 for ZeroBias at EventScale=0
 
 datasets=()
 while read -r name; do
@@ -69,6 +70,7 @@ for i in "${!datasets[@]}"; do
         | sed "s|EVENTMODULO|${EVENTMODULO}|g" \
         | sed "s|SAMPLETYPE|${SAMPLETYPE}|g" \
         | sed "s|LUMIMASK|${LUMIMASK}|g" \
+        | sed "s|UNITSPERJOB|${UNITSPERJOB}|g" \
         > "crabConfig.py"
 
     # crab submit -c crabConfig.py --dryrun

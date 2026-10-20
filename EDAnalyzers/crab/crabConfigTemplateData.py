@@ -15,7 +15,7 @@ config.JobType.maxJobRuntimeMin = 3000 # min
 config.section_('Data')
 config.Data.splitting='LumiBased'
 config.Data.totalUnits = -1
-config.Data.unitsPerJob = 150
+config.Data.unitsPerJob = UNITSPERJOB
 
 #config.Data.allowNonValidInputDataset = True
 config.Data.lumiMask = "LUMIMASK"

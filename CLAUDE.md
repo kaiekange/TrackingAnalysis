@@ -27,6 +27,8 @@ cmsenv
 scram b -j8
 ```
 
+**Build only on an el8 host** (lxplus8 or inside `cmssw-el8`): the release is `el8_amd64_gcc12` and grid/condor jobs run on el8. Building on el9 (scram warns "SCRAM architecture 'el8' on host with operating system 'el9'") links GLIBC ≥ 2.29 symbols and every crab job then fails with exit 8001 `PluginLibraryLoadError ... GLIBC_2.29 not found`. Check after building: `objdump -T ../lib/el8_amd64_gcc12/*TrackingAnalysis*.so | grep -o 'GLIBC_2\.[0-9]*' | sort -uV | tail -1` must be ≤ `GLIBC_2.28`.
+
 ## Running the EDAnalyzer
 
 ### Local test run
@@ -133,7 +135,7 @@ At the end of each session, update the "Last Session" section below.
 
 ### Last Session
 
-**Date:** 2026-10-19
+**Date:** 2026-10-19 / 2026-10-20
 
 **What was done** (cleanup pass `bcccfa9`..`be364f1`, then the tuplizer update below; all pushed):
 - `bcccfa9`: snapshot of previously uncommitted work (incl. new `compare_polar_ip_res.cc`, `ZeroBias/polar_ip_res.py`)
@@ -145,10 +147,14 @@ At the end of each session, update the "Last Session" section below.
 - T4b: `compare_gr` data/MC plots — ratio range args were passed swapped, so the lower bound floated with the max ratio and 120/51000 points (20 plots, mostly phi hipt) fell below it; range is now computed from the ratio graph (at least [0.9,1.5]); top/bottom pads share x range; ratio=1 line spans the axis; data drawn above MC. Only the 300 data/MC plots changed
 - Tuplizer `Track-v20261019` (data only; see Architecture above): added unbiased-PV and split-vertex covariances, beam spot, hit info, charge, `ev_lumi`; dropped unused branches (incl. `fracHighPurity`, `trig_PFHT350_pass`); split seed from run/lumi/event; refit transient tracks reused; `pvAssociationQuality` via lookup; `VertexReProducer` cleanup. Production settings: `EventScale=0`, crab storage `T2_BE_IIHE`. Verified on 1000 Run2022C JetMET events (59 retained branches identical except split ones; seed reproducible across EventScale; Jacobian checked; file −49%, wall −15%, memory unchanged)
 - Physics plan agreed with the user (T4, not implemented yet): subtract the per-track vertex uncertainty from the IP resolution. Per track: pull-correct the unbiased-PV errors (err × pull, pull binned in the **half-vertex** √ΣpT², looked up with `pv_trk_pvunbiased_SumTrackPt2`), project to d0/dz with the full covariance, sub-bin each (pT,η,φ) bin by err_PV, fit σ_meas,k, then σ_meas,k² = σ_IP² + ⟨err²⟩_k (simultaneous fit, later maybe unbinned). Validate err_PV with split-vertex pulls and the beam-spot method (transverse only, BS width² + ⟨err²⟩). No beam-spot constraint anywhere
+- crab production setup for 2022 preEE (2026-10-20): switched data to the **22Sep2023** ReReco (CMSSW_13_0_13, matches the 130X Run3Summer22 MC; covers C–G) — local `crab/DatasetList/data_2022*.txt` updated (gitignored), 2022/2022EE GT set to `130X_dataRun3_v2` (**not verified** against PdmV; `conddb` did not work here); `crab/submitData.sh` got a `UNITSPERJOB` variable (JetMET 100, ZeroBias 150 lumis/job at EventScale=0). `crab checkwrite --site=T2_BE_IIHE` succeeded. The user submits crab tasks themselves (needs their myproxy delegation)
+- First 22Sep2023 submission (JetMET + ZeroBias 2022C/D) failed 100% with exit 8001 `GLIBC_2.29 not found`: the plugin had been rebuilt on an el9 host. Clean rebuild on el8 (max GLIBC_2.14, plugin loads); failed task dirs removed; **tasks still to be resubmitted by the user**
 
 **Open items for next session:**
-- Tuplizer checks not yet done: ZeroBias file (few-track vertices → refit-failure `-777` path, vector lengths) and the condor cfg `residuals_condor_group.py`; real per-event timing (startup excluded)
-- Before production (only on user request): crab `unitsPerJob=150` and condor `GroupSize=10` were tuned for EventScale 30 / 2 — rescale for EventScale=0; condor `request_memory=1G` but cmsRun RSS is 1.33 GB; condor still writes to EOS (only crab goes to T2_BE_IIHE); run `crab checkwrite --site=T2_BE_IIHE` first; afterwards `tuplelist.json` needs the new (xrootd) paths
+- Resubmit the four 2022C/D 22Sep2023 crab tasks (user); then 2022EE (E/F/G lists already prepared). Confirm GT `130X_dataRun3_v2`
+- Tuplizer: ZeroBias input and condor cfg checked (200 events, no vector-length mismatch, ~0.3 s per triggered ZB event); the refit-failure `-777` branch was never hit in tests (code-reviewed only)
+- Condor path (if used again): `GroupSize=10` tuned for EventScale 2, `request_memory=1G` vs 1.33 GB RSS, output still to EOS
+- After production: `tuplelist.json` needs the T2_BE_IIHE (xrootd) paths
 - `pv_res`: bin the pulls in half-vertex √ΣpT² (`pv_SumTrackPt2_p1/p2`) instead of full-PV ΣpT²
 - Era-wise comparisons (per data era) — plotting side later
 - `ZeroBias/compare_data_mc.cc`: stale (old IIHE paths) and weights *data* with `PU_factor` — port from JetHT, delete, or keep?
