@@ -22,6 +22,7 @@ executable = pv_res.sh
 arguments = {period} $(Process)
 log = ./condor_logs/pvres_{period}.log
 JobBatchName = IPres_JetHT_pvres_{period}
+MY.WantOS = "el8"
 request_cpus = 1
 request_memory = 8G
 request_disk = 10M
@@ -30,7 +31,7 @@ notify_user = kai.kang@cern.ch
 notification = error
 max_retries = 1
 should_transfer_files = NO
-queue 50
+queue 56
 """
     subprocess.run(["condor_submit"], input=submit_description.encode())
 

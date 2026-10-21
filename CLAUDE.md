@@ -12,7 +12,7 @@ The workflow has two stages:
 
 ## Environment Setup
 
-All `cmsRun` and `scram` commands require the CMSSW environment:
+All commands, including the ROOT analysis macros, run in the CMSSW_15_0_16 environment (ROOT 6.32.13, xrootd 5.7.2). The system ROOT 6.30 / xrootd 5.9.8 fails the GSI handshake with T2_BE_IIHE (`kXGS_cert`). The condor job scripts set this up themselves and request `MY.WantOS = "el8"`. Interactively:
 
 ```bash
 source /cvmfs/cms.cern.ch/cmsset_default.sh
@@ -116,7 +116,7 @@ Since `Track-v20261019` the tree also stores, per track, the unbiased-PV covaria
 - `tdrStyle.cc` / `CMS_lumi.cc` — CMS plot style and luminosity labels
 - `draw_funcs.cc` — canvas setup helpers
 - `plot_common.cc` — shared plotting config: sample → storage dir / label, period list, lumi labels, colors/markers, `load_fits()` (reads `fit_<i>.json`), the 24-entry IP plot table `ip_plots()`, and the multi-era overlay `draw_period_overlay()`
-- The resolution fit (`fit_res`) and track loop (`process_tree_tracks`) are **not** shared: each `ip_res.cc` / `pv_res.cc` defines its own copy
+- The resolution fit (`fit_res`) is **not** shared: each `ip_res.cc` / `pv_res.cc` defines its own copy. JetHT (since 2026-10-21): the track loop lives only in `macros/JetHT/fill_hists.cc` (see Last Session); ZeroBias still has the old per-bin loops
 - `compare_gr.cc` — two-panel data/MC overlay with ratio pad, used by `draw_ip_res.cc` and `draw_pv_res.cc`
 
 ### Output/storage paths
@@ -135,29 +135,23 @@ At the end of each session, update the "Last Session" section below.
 
 ### Last Session
 
-**Date:** 2026-10-19 / 2026-10-20
+**Date:** 2026-10-21 (nothing committed; all changes below are uncommitted in the working tree)
 
-**What was done** (cleanup pass `bcccfa9`..`be364f1`, then the tuplizer update below; all pushed):
-- `bcccfa9`: snapshot of previously uncommitted work (incl. new `compare_polar_ip_res.cc`, `ZeroBias/polar_ip_res.py`)
-- T1 `8c6a8cf`: fixed `EventScale=0` div-by-zero (`Residuals.cc`); removed leftover `Process+20` in `run_group.sh`; `submitMC.py` computes `ngroup` from DAS file count (no cap); `ip_res.py`/`pv_res.py` restored to full 200/50-job submission; ZeroBias `draw_pv_res.cc` got the `period_title` fix
-- T2 `42f06fc`: deleted unused `find_res.cc`, `fit_res.cc`, `fit_compare.cc`, `list_ip_res.py`, `test/test.py`, `test/test2.py`, and the broken `submitData_rerun.py` → `run.sh` → `residuals_condor.py` chain
-- T3 `5f9a08e`: removed dead code (`trackSelection()` + `TkMin*`/`TkMax*` params, commented VtxError cuts, unused includes, `fixOverlay()`, commented PS_weight reads). 1000-event cmsRun check: 93/95 branches bit-identical, `pv_trk_d0Err/dzErr` differ by ≤1 float ULP
-- crab/ is still used (alongside condor) — keep it
-- T4a `a1413db`: plotting macros merged into shared `analysis/macros/plotting/` (sample as first arg), table-driven IP plots via `functions/plot_common.cc`; verified byte-identical PNGs (382 ROOT + 54 matplotlib)
-- T4b: `compare_gr` data/MC plots — ratio range args were passed swapped, so the lower bound floated with the max ratio and 120/51000 points (20 plots, mostly phi hipt) fell below it; range is now computed from the ratio graph (at least [0.9,1.5]); top/bottom pads share x range; ratio=1 line spans the axis; data drawn above MC. Only the 300 data/MC plots changed
-- Tuplizer `Track-v20261019` (data only; see Architecture above): added unbiased-PV and split-vertex covariances, beam spot, hit info, charge, `ev_lumi`; dropped unused branches (incl. `fracHighPurity`, `trig_PFHT350_pass`); split seed from run/lumi/event; refit transient tracks reused; `pvAssociationQuality` via lookup; `VertexReProducer` cleanup. Production settings: `EventScale=0`, crab storage `T2_BE_IIHE`. Verified on 1000 Run2022C JetMET events (59 retained branches identical except split ones; seed reproducible across EventScale; Jacobian checked; file −49%, wall −15%, memory unchanged)
-- Physics plan agreed with the user (T4, not implemented yet): subtract the per-track vertex uncertainty from the IP resolution. Per track: pull-correct the unbiased-PV errors (err × pull, pull binned in the **half-vertex** √ΣpT², looked up with `pv_trk_pvunbiased_SumTrackPt2`), project to d0/dz with the full covariance, sub-bin each (pT,η,φ) bin by err_PV, fit σ_meas,k, then σ_meas,k² = σ_IP² + ⟨err²⟩_k (simultaneous fit, later maybe unbinned). Validate err_PV with split-vertex pulls and the beam-spot method (transverse only, BS width² + ⟨err²⟩). No beam-spot constraint anywhere
-- crab production setup for 2022 preEE (2026-10-20): switched data to the **22Sep2023** ReReco (CMSSW_13_0_13, matches the 130X Run3Summer22 MC; covers C–G) — local `crab/DatasetList/data_2022*.txt` updated (gitignored), 2022/2022EE GT set to `130X_dataRun3_v2` (**not verified** against PdmV; `conddb` did not work here); `crab/submitData.sh` got a `UNITSPERJOB` variable (JetMET 100, ZeroBias 150 lumis/job at EventScale=0). `crab checkwrite --site=T2_BE_IIHE` succeeded. The user submits crab tasks themselves (needs their myproxy delegation)
-- First 22Sep2023 submission (JetMET + ZeroBias 2022C/D) failed 100% with exit 8001 `GLIBC_2.29 not found`: the plugin had been rebuilt on an el9 host. Clean rebuild on el8 (max GLIBC_2.14, plugin loads); failed task dirs removed; **tasks still to be resubmitted by the user**
+**What was done:**
+- Old results (all periods, JetHT + ZeroBias, Track-v20260210) moved to `/eos/home-k/kakang/IPres/analysis_Track-v20260210/` (read-only); `analysis/<sample>/` restarted (only `binning.json` copied back). The user decided: **no more MC** (data only); new ntuples stay on T2_BE_IIHE (no EOS copy). JetHT `tuplelist.json` now holds only `2022_22Sep` (C+D) and `2022C`, with LFN paths `root://maite.iihe.ac.be//store/user/kakang/...`
+- **IIHE access**: the system xrootd 5.9.8 (system ROOT 6.30) fails the IIHE GSI handshake (`malformed random tag ... kXGS_cert`), CMSSW's 5.7.2 works. **All macros now run in the CMSSW_15_0_16 env** (ROOT 6.32.13; fits checked identical to 6.30); condor job scripts source cmsenv and request `MY.WantOS = "el8"`. Also `X509_CERT_DIR` = CVMFS CA dir. A TChain silently skips unreadable files → `fill_hists.cc` now exits non-zero on any unread file/entry
+- **JetHT pipeline rewritten** (`analysis/macros/JetHT/`; usage in the `fill_hists.py` docstring): `python3 fill_hists.py range|fill|merge <period>` (10 files/job: range = mergeable n/Σx/Σx² for the mean ± 8 RMS histogram ranges + PV-error distributions; fill = all PV-split and IP histograms in one pass, written to `hists/<period>/fill.root`), then `python3 pv_res.py <period>` (56 jobs; pull table) and `python3 ip_res.py <period>` (200 jobs). `pv_res.cc`/`ip_res.cc` are fit-only and MC-free now
+- PV: binned in **full-PV** √ΣpT², 56 bins 10–600 GeV (JetHT `binning.json` extended); validity cuts on both halves. Pulls (C+D): x/y 1.045→1.097, z 0.98–1.00
+- IP: per track the unbiased-PV covariance is pull-corrected (pull looked up with the track's **unbiased-PV** √ΣpT²) and projected on d0/dz (J = (sinφ, −cosφ, 0) / (cosφ sinhη, sinφ sinhη, −1)); per bin σ_IP = √(σ_meas² − ⟨σ²_PV⟩). Tracks with non-finite/non-positive PV error dropped. C+D result (before the per-track pull lookup and grouping): σ_meas matches the old 2022 results within ±1 %; subtraction lowers d0 by 0.37 % (median), dz by 0.63 % (max 8.9 %)
+- **PV-error groups** (the quoted plan: "group vertices in bins of equal uncertainty"): each IP histogram also split into 4 groups at its own quartiles of the projected σ_PV (no pull); json keys `*_g0..g3`, `ntrk_*`, `sigpv_edges_*`. Test: groups agree in bins narrow in pT and η, but in wide bins (`*_allpt`, `pt_alleta`, …) σ_PV correlates with pT/η, so the groups differ by population, not by PV
+- Fit-model checks: the IP shape is not Gaussian even in the core (CB χ²/ndf 2–8 vs core-Gauss 20–100); the user chose to keep CB. Quadratic subtraction of 68 % half-widths is biased for CB shapes: κ = Δ(σ_meas²)/σ²_PV ≈ 1.2 (toy), i.e. ~20 % of the PV term is under-subtracted — grouping does not fix this
+- **Running when the session ended**: 2022C (191 files) pipeline in the background on lxplus (`/afs/cern.ch/work/k/kakang/IPres/pipeline/pipeline_2022C.sh`, log `/eos/home-k/kakang/IPres/analysis/JetHT/logs/2022C/pipeline.log`): fill → merge → PV fits (condor) → IP fits (condor). Check the log ends with `DONE` and "200/200"
 
 **Open items for next session:**
-- Resubmit the four 2022C/D 22Sep2023 crab tasks (user); then 2022EE (E/F/G lists already prepared). Confirm GT `130X_dataRun3_v2`
-- Tuplizer: ZeroBias input and condor cfg checked (200 events, no vector-length mismatch, ~0.3 s per triggered ZB event); the refit-failure `-777` branch was never hit in tests (code-reviewed only)
-- Condor path (if used again): `GroupSize=10` tuned for EventScale 2, `request_memory=1G` vs 1.33 GB RSS, output still to EOS
-- After production: `tuplelist.json` needs the T2_BE_IIHE (xrootd) paths
-- `pv_res`: bin the pulls in half-vertex √ΣpT² (`pv_SumTrackPt2_p1/p2`) instead of full-PV ΣpT²
-- Era-wise comparisons (per data era) — plotting side later
-- `ZeroBias/compare_data_mc.cc`: stale (old IIHE paths) and weights *data* with `PU_factor` — port from JetHT, delete, or keep?
-- `binning.json` is built from a single era but used for all periods
-- `submitMC.py` now has no job cap (old code had commented 50/100 caps)
-- Remaining refactor candidates: share `fit_res`/`process_tree_tracks` between `ip_res.cc`/`pv_res.cc` (JetHT has extra prescale/xsec/mask weighting — physics, verify JSON numerically); merge condor submit scripts / cmsRun cfgs; prune BuildFile deps; `compare_data_mc.cc` still has its own `lumi_map`
+- Check the 2022C outputs (`json/2022C/{pv_res,ip_res}`), the group consistency in narrow bins, and the 57-ish CB non-convergence warnings
+- Step 3 (decided "later"): combine the groups — preferred a simultaneous deconvolution fit (shared CB ⊗ Gauss(σ_PV,j)) rather than quadratic subtraction (κ ≈ 1.2); only meaningful in bins narrow in pT and η
+- Beam-spot cross-check of the transverse PV errors (`bs_*` branches) — not done
+- Plotting: `draw_*` still expect data/MC (`reso_mc_*`), `plot_common.cc` `nbins_pv = 50` (JetHT now 56); ZeroBias not migrated to the new pipeline
+- Legacy MC-only scripts in `JetHT/` (`compare_data_mc.cc`, `weight_*.py`, `binning.py`) reference removed tuplelist keys
+- Probe-track quality cuts (highPurity, first pixel layer) postponed by the user
+- 2022EE crab production (user); GT `130X_dataRun3_v2` still unverified

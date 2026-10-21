@@ -18,6 +18,7 @@ executable = ip_res.sh
 arguments = {period} $(Process)
 log = ./condor_logs/ipres_{period}.log
 JobBatchName = IPres_ZeroBias_ipres_{period}
+MY.WantOS = "el8"
 request_cpus = 1
 request_memory = 8G
 request_disk = 10M
