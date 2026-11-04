@@ -190,8 +190,6 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
     bind("pv_trk_pvunbiased_xError", &u_ex); bind("pv_trk_pvunbiased_yError", &u_ey); bind("pv_trk_pvunbiased_zError", &u_ez);
     // the covariance gives the PV error per track, used for the grouping in both steps
     bind("pv_trk_pvunbiased_covXY", &u_cxy); bind("pv_trk_pvunbiased_covXZ", &u_cxz); bind("pv_trk_pvunbiased_covYZ", &u_cyz);
-    // the unbiased-PV SumPt2 (pull lookup) is only needed in the fill step
-    chain->SetBranchAddress("pv_trk_pvunbiased_SumTrackPt2", &u_spt2);
 
     // ---------- Event loop ----------
     // Calls pv_action(k, comb, value) for the PV split and
@@ -506,7 +504,10 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
     }
 
     // ---------- Fill ----------
-    chain->SetBranchStatus("pv_trk_pvunbiased_SumTrackPt2", 1);
+    // the unbiased-PV SumPt2 (pull lookup) is only needed in the fill step. Enable the branch before
+    // setting its address: an address set on a disabled branch is lost if the chain never switches
+    // trees (one-file chunk), leaving u_spt2 null
+    bind("pv_trk_pvunbiased_SumTrackPt2", &u_spt2);
 
     // adds the unbiased-PV covariance of track `it`, projected with Jacobian J, to `e` in the bin k of
     // sqrt(SumPt2) of the track's unbiased PV (clamped to the binning range) -- the pull applied later
