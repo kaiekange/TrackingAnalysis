@@ -57,8 +57,12 @@ namespace fill
 
     enum CovTerm { XX = 0, YY, ZZ, XY, XZ, YZ, NTRK, N_TERM };
 
-    // Groups in the track's own PV error projected on d0/dz (no pull): every IP histogram is
-    // also split into N_GRP groups at its own quantiles of that error, from the range step.
+    // Groups in the track's own PV error projected on d0/dz (no pull). Each IP histogram is also split
+    // into groups [edge_j, edge_j+1). d0: fixed ranges, the same in every histogram, inside the central
+    // 90 % of the 2022C error distribution (5 %: 2.82, 95 %: 7.40 um); tracks outside are in no group.
+    // dz: N_GRP groups at the histogram's own quantiles of that error, from the range step.
+    const std::vector<Double_t> D0_GRP_EDGES = {2.8, 3.5, 4.0, 4.5, 5.0, 6.0, 7.4};  // um
+    const Double_t GRP_OPEN = 1e9;  // upper edge of an open-ended last group
     const Int_t N_GRP = 4;
     const Double_t GRP_Q[N_GRP - 1] = {0.25, 0.50, 0.75};
     const Int_t SIG_NBINS[2] = {400, 1000};       // d0, dz
@@ -351,7 +355,8 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
         return 0;
     }
 
-    std::vector<std::vector<Double_t>> grp_edges[2];   // [var][idx * N_IP + comb] -> N_GRP - 1 edges (empty: no grouping)
+    // [var][idx * N_IP + comb] -> group edges, lower and upper included: n groups = size - 1 (empty: no grouping)
+    std::vector<std::vector<Double_t>> grp_edges[2];
 
     // ---------- Step "fill": ranges from the merged range.root ----------
     {
@@ -378,8 +383,9 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
                 st_at(w, i).sum2 = hs2->GetBinContent(i + 1);
             }
         }
-        // group edges: quantiles GRP_Q of the projected PV error of each IP histogram (linear
-        // interpolation inside the 0.1 / 0.2 um bins; overflow counted). Empty if not strictly increasing.
+        // group edges. d0: the fixed D0_GRP_EDGES. dz: {0, quantiles GRP_Q, GRP_OPEN} of the projected PV
+        // error of each IP histogram (linear interpolation inside the 0.2 um bins; overflow counted),
+        // empty if not strictly increasing. Both only for histograms with entries.
         for (Int_t v = 0; v < 2; ++v)
         {
             TH2F *hs = (TH2F *)rf->Get(Form("sig_%s", VAR[v]));
@@ -397,6 +403,11 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
                     tot += hs->GetBinContent(x + 1, y);
                 if (tot <= 0)
                     continue;
+                if (v == 0)
+                {
+                    grp_edges[v][x] = D0_GRP_EDGES;
+                    continue;
+                }
                 std::vector<Double_t> e;
                 Double_t cum = 0;
                 Int_t q = 0;
@@ -415,7 +426,11 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
                 for (size_t j = 1; ok && j < e.size(); ++j)
                     ok = e[j] > e[j - 1];
                 if (ok)
+                {
+                    e.insert(e.begin(), 0.0);
+                    e.push_back(GRP_OPEN);
                     grp_edges[v][x] = e;
+                }
             }
         }
         rf->Close();
@@ -454,8 +469,9 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
     std::vector<std::vector<std::vector<Double_t>>> e_grp[2];
     for (Int_t v = 0; v < 2; ++v)
     {
-        h_grp[v].assign(n_ip * N_IP, std::vector<TH1F *>(N_GRP, nullptr));
-        e_grp[v].assign(n_ip * N_IP, std::vector<std::vector<Double_t>>(N_GRP));
+        // sized per histogram from its edges when booked
+        h_grp[v].assign(n_ip * N_IP, std::vector<TH1F *>());
+        e_grp[v].assign(n_ip * N_IP, std::vector<std::vector<Double_t>>());
     }
     for (Int_t i = 0; i < n_ip; ++i)
     {
@@ -490,10 +506,13 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
                 if (edges.empty())
                     continue;
                 TH1F *base = v == 0 ? h_d0[i][c] : h_dz[i][c];
-                for (Int_t g = 0; g < N_GRP; ++g)
+                const Int_t ng = edges.size() - 1;
+                h_grp[v][i * N_IP + c].assign(ng, nullptr);
+                e_grp[v][i * N_IP + c].assign(ng, std::vector<Double_t>());
+                for (Int_t g = 0; g < ng; ++g)
                 {
-                    const Double_t glo = g == 0 ? 0.0 : edges[g - 1], ghi = g == N_GRP - 1 ? -1.0 : edges[g];
-                    TString gcut = ghi < 0 ? Form("#sigma_{PV}>%.1f #mum", glo) : Form("%.1f<#sigma_{PV}<%.1f #mum", glo, ghi);
+                    const Double_t glo = edges[g], ghi = edges[g + 1];
+                    TString gcut = ghi >= GRP_OPEN ? Form("#sigma_{PV}>%.1f #mum", glo) : Form("%.1f<#sigma_{PV}<%.1f #mum", glo, ghi);
                     TH1F *h = (TH1F *)base->Clone(Form("ip_%s_%d_%s_g%d", VAR[v], i, IP_SUFFIX[c], g));
                     h->SetTitle("#splitline{" + title[c] + "}{" + gcut + "}");
                     h_grp[v][i * N_IP + c][g] = h;
@@ -555,7 +574,10 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
                  const auto &edges = grp_edges[v][i * N_IP + c];
                  if (edges.empty())
                      continue;
-                 const Int_t g = Int_t(std::upper_bound(edges.begin(), edges.end(), sig_pv[v]) - edges.begin());
+                 // group [edge_g, edge_g+1); none outside the edges (d0: outside the central 90 %)
+                 const Int_t g = Int_t(std::upper_bound(edges.begin(), edges.end(), sig_pv[v]) - edges.begin()) - 1;
+                 if (g < 0 || g >= (Int_t)edges.size() - 1)
+                     continue;
                  h_grp[v][i * N_IP + c][g]->Fill(val[v]);
                  if (in[v])
                      add_cov(e_grp[v][i * N_IP + c][g], jac[v][0], jac[v][1], jac[v][2], it);
@@ -591,13 +613,13 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
                     // the edges are the same in every chunk: write them once, or hadd would add them up
                     if (chunk == 0)
                     {
-                        TH1D he(Form("grpedges_%s_%d_%s", VAR[v], i, IP_SUFFIX[c]), "PV error group edges [um] (no pull)",
-                                N_GRP - 1, 0, N_GRP - 1);
-                        for (Int_t j = 0; j < N_GRP - 1; ++j)
+                        TH1D he(Form("grpedges_%s_%d_%s", VAR[v], i, IP_SUFFIX[c]),
+                                "PV error group edges [um] (no pull), lower and upper included", edges.size(), 0, edges.size());
+                        for (size_t j = 0; j < edges.size(); ++j)
                             he.SetBinContent(j + 1, edges[j]);
                         he.Write();
                     }
-                    for (Int_t g = 0; g < N_GRP; ++g)
+                    for (Int_t g = 0; g < (Int_t)edges.size() - 1; ++g)
                     {
                         h_grp[v][i * N_IP + c][g]->Write();
                         write_sums(e_grp[v][i * N_IP + c][g], Form("pverr_%s_%d_%s_g%d", VAR[v], i, IP_SUFFIX[c], g));

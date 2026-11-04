@@ -63,8 +63,11 @@ const char *COMB_SUFFIX[NCOMB] = {
     "phi_ulpt",
     "phi_allpt"};
 
-Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath, Float_t tolerance = 1e-4)
+// status (if given): RooFit fit status (0 = converged), or -1 if not fitted (too few filled bins)
+Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath, Float_t tolerance = 1e-4, Int_t *status = nullptr)
 {
+    if (status)
+        *status = -1;
     Int_t filledBins = 0;
     for (Int_t i = 1; i <= hist->GetNbinsX(); i++)
     {
@@ -91,6 +94,8 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
 
     RooDataHist hdatahist("hdatahist", "", ip_var, hist);
     RooFitResult *fitResult = model.fitTo(hdatahist, RooFit::Save(true));
+    if (status)
+        *status = fitResult->status();
     if (fitResult->status() != 0)
         std::cerr << "[WARN] fit_res: RooFit did not converge (status=" << fitResult->status() << ") for " << hist->GetName() << std::endl;
     fitResult->Print();
@@ -234,19 +239,22 @@ Int_t ip_res(TString period, Int_t idx)
 
     const char *VAR[2] = {"d0", "dz"};
     const char *FIGSUB[2] = {"ippv_xy_fit", "ippv_z_fit"};
-    const Int_t N_GRP = 4;  // PV-error groups per histogram, as in fill_hists.cc
+    const Double_t GRP_MIN_ENTRIES = 2000;  // PV-error groups with fewer tracks are not fitted
 
     // Fit one histogram, subtract its mean (pull-corrected) PV error^2 in quadrature, write
-    // reso_data_<tag>, reso_data_<tag>_pvsub, pverr2_data_<tag>, pverr2nopull_data_<tag>, ntrk_data_<tag>.
-    auto measure = [&](const char *var, Int_t v, TString tag, TString figname)
+    // reso_data_<tag>, reso_data_<tag>_pvsub, pverr2_data_<tag>, pverr2nopull_data_<tag>, ntrk_data_<tag>,
+    // fitstatus_data_<tag> (RooFit status, 0 = converged; -1: too few filled bins; -2: not fitted,
+    // no histogram or fewer than min_entries entries).
+    auto measure = [&](const char *var, Int_t v, TString tag, TString figname, Double_t min_entries = 1)
     {
         TH1F *h = (TH1F *)histfile->Get(Form("ip_%s_%d_%s", var, idx, tag.Data()));
         TH2D *e = (TH2D *)histfile->Get(Form("pverr_%s_%d_%s", var, idx, tag.Data()));
 
         // measured resolution (68% half-width of the double-sided CB fit), as before
         Float_t reso = 0.0;
-        if (h && h->GetEntries() > 0)
-            reso = fit_res(h, period, "Data", figdir + FIGSUB[v] + "/" + figname, 0.1);
+        Int_t status = -2;
+        if (h && h->GetEntries() >= min_entries)
+            reso = fit_res(h, period, "Data", figdir + FIGSUB[v] + "/" + figname, 0.1, &status);
 
         Double_t pverr2 = e ? mean_pverr2(e, kTRUE) : 0.0;
         Double_t pverr2_nopull = e ? mean_pverr2(e, kFALSE) : 0.0;
@@ -266,6 +274,7 @@ Int_t ip_res(TString period, Int_t idx)
         resojson["pverr2_data_" + std::string(key.Data())] = pverr2;
         resojson["pverr2nopull_data_" + std::string(key.Data())] = pverr2_nopull;
         resojson["ntrk_data_" + std::string(key.Data())] = ntrk;
+        resojson["fitstatus_data_" + std::string(key.Data())] = status;
     };
 
     for (Int_t cid = 0; cid < NCOMB; ++cid)
@@ -276,9 +285,11 @@ Int_t ip_res(TString period, Int_t idx)
             // all tracks of the bin
             measure(VAR[v], v, suffix, Form("data_%s_%d", suffix.Data(), idx));
 
-            // the same bin split into groups of the track's own PV error (edges: no pull, from fill_hists.cc)
+            // the same bin split into groups of the track's own PV error (edges: no pull, lower and upper
+            // included, from fill_hists.cc; n groups = n edges - 1)
             TH1D *edges = (TH1D *)histfile->Get(Form("grpedges_%s_%d_%s", VAR[v], idx, suffix.Data()));
-            resojson[Form("ngroups_data_%s_%s", VAR[v], suffix.Data())] = edges ? N_GRP : 0;
+            const Int_t ngroups = edges ? edges->GetNbinsX() - 1 : 0;
+            resojson[Form("ngroups_data_%s_%s", VAR[v], suffix.Data())] = ngroups;
             if (!edges)
             {
                 std::cerr << "[WARN] ip_res: no PV-error groups for " << VAR[v] << " " << suffix << " bin " << idx << std::endl;
@@ -288,8 +299,8 @@ Int_t ip_res(TString period, Int_t idx)
             for (Int_t j = 1; j <= edges->GetNbinsX(); ++j)
                 ev.push_back(edges->GetBinContent(j));
             resojson[Form("sigpv_edges_%s_%s", VAR[v], suffix.Data())] = ev;
-            for (Int_t g = 0; g < N_GRP; ++g)
-                measure(VAR[v], v, suffix + Form("_g%d", g), Form("data_%s_g%d_%d", suffix.Data(), g, idx));
+            for (Int_t g = 0; g < ngroups; ++g)
+                measure(VAR[v], v, suffix + Form("_g%d", g), Form("data_%s_g%d_%d", suffix.Data(), g, idx), GRP_MIN_ENTRIES);
         }
     }
 

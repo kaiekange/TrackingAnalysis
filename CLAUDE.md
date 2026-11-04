@@ -135,37 +135,23 @@ At the end of each session, update the "Last Session" section below.
 
 ### Last Session
 
-**Date:** 2026-10-22 (pipeline of 2026-10-21 committed in `4716ef7`; only the `fill_hists.cc` fix below is uncommitted)
+**Date:** 2026-11-04 (chunk-19 fix + CLAUDE.md pushed in `40d9701`; the fixed-range d0 groups in `fill_hists.cc` / `ip_res.cc` are **uncommitted**)
 
 **What was done:**
-- **2022C chunk 19 crashed, and the pipeline missed it.** Cause: `fill_hists.cc` called `SetBranchAddress` on `pv_trk_pvunbiased_SumTrackPt2` while that branch was still disabled. A one-file TChain never switches trees, so the address was never applied, `u_spt2` stayed null, and the job segfaulted (exit 129, all 3 retries). Chunk 19 is the only one-file chunk (191 files, 10 per job).
-  - Fixed: the branch is now enabled before its address is set, in the fill section (uncommitted).
-  - Chunk 19 was refilled with the fix: cluster 19159833, `fill_19.root` 81 MB.
-  - The pipeline still reported 20/20 outputs and `DONE`: the crash left a 757 B output file, the log says `segmentation violation` (no `ERROR`), and the event counts are printed before the loop. `pipeline_2022C.sh` should count `fill_hists: wrote` lines instead. **Not changed yet.**
-- **Current 2022C results = chunks 0–18 only** (6,119,192 events). Snapshot of `fill.root` and `json/` in `/eos/home-k/kakang/IPres/analysis/JetHT/snapshots/2022C_19chunks/`, with test figures in `test_figures/`. The 20 chunks are **not merged** and the fits are **not rerun**. Merging would overwrite `hists/2022C/fill.root` and `figures/2022C/`.
-- 19-chunk test results:
-  - **PV:** only 2 non-converged fits (bin 41 pully/pullz), consistent with bins 40 and 42. Pulls x/y 1.05→1.10, z 1.00–1.03.
-  - **IP:** 267 fits with MINIMIZE≠0 (231 of them grouped, mostly dz `phi_*_g3`; 71 end at α = 0.5, 43 at n = 10). None is an outlier against its neighbours. `fit_res` writes reso regardless of fit status.
-  - **2022D is worse than C** (same C+D fill, C chunks 0–18 vs D chunks 20–29, 68 % quantile widths): PV x/y ×1.13, z ×1.17; IP ≈1.0 at low pT, up to 1.14 (d0) / 1.17 (dz) at 3–5 GeV.
-  - IP resolution vs φ has a strong periodic structure (also in C+D).
-- **PV-error groups do NOT agree after subtraction.** This corrects the earlier "groups agree in narrow bins" note.
-  - Per-group √⟨σ²_PV⟩: d0 3–8 µm (g0..g3); dz 5–13 µm at |η|<1.3, 10–32 µm at 1.3–2.5, 23–53 µm at 2.5–3.0.
-  - σ_IP after subtraction is the same for all groups where the bin is narrow in η (d0/dz vs pT 2.5–3.0, dz vs η). It differs strongly for dz vs φ (e.g. low pT: g3 ≈ 700 µm, g0 ≈ 130 µm) and dz vs pT at |η| < 2.5. The dz projection contains sinhη, so grouping in σ_PV is grouping in |η| (population).
-  - Not explained by population: d0 vs pT at |η|<1.3 (g3 > g0 by up to ~4 % at 10 GeV) and d0 vs η at low pT (up to ~9 % at η≈0, where the subtraction itself is ~0.1 %).
-- Still valid from 2026-10-21 (details in commit `4716ef7`):
-  - JetHT pipeline: `python3 fill_hists.py range|fill|merge <period>`, then `pv_res.py` (56 jobs) and `ip_res.py` (200 jobs).
-  - `fill_hists.py fill` deletes **all** fill outputs before resubmitting. To redo one chunk, submit `fill_hists.sh <period> fill <chunk> 10` by hand.
-  - σ_IP = √(σ_meas² − ⟨σ²_PV⟩), using the unbiased-PV covariance with the pull applied.
-  - The user chose to keep the CB fit model.
-  - Quadratic subtraction of CB half-widths under-subtracts (κ ≈ 1.2, from a toy).
-- 2022_22Sep (C+D): all 30 range and 30 fill logs have `wrote` (no hidden crash). Its IP jsons predate the per-track pull lookup and grouping (no `_g*` keys).
+- **Chunk-19 bug confirmed and fixed** (committed `40d9701`, pushed to GitHub): `fill.root` of 10-21 minus chunks 0–18 is zero, so the old 2022C results are chunks 0–18 only (snapshot `/eos/home-k/kakang/IPres/analysis/JetHT/snapshots/2022C_19chunks/`, quartile-group jsons included).
+- **Per-track σ_PV with and without pull** (all 2022C, 590 M probe tracks, `eta_allpt` selection): separate condor job `/afs/cern.ch/work/k/kakang/IPres/pipeline/sigpv_pull/` (`sigpv_pull.cc`, `submit.sh <period> [check]`) → `hists/2022C/sigpv_pull.root`. The no-pull histograms equal the `range.root` ones bin by bin (closure). d0: median 4.1 µm, mean 4.50 → 4.89 µm with pull (+8.7 %); dz: median 8.6 µm, mean 11.06 → 11.61 µm (+5.0 %).
+- **Groups, current (quartile per fine bin) results**: after subtraction the groups still differ (d0 |η|<1.3 at 10 GeV: g3/g0 ≈ 1.03; d0 low pT, η≈0: +9.7 %; dz up to +20–28 %, and at large |η| the sign flips), while the PV term is ≤ ~1 %. So the group differences come from the track population, not from the PV error. The old scheme had 200 edge sets per category (one per fine bin).
+- **New grouping (user decision)**: d0 in **fixed σ_PV ranges** (no pull), the same for all tracks, inside the central 90 % of the 2022C distribution (5 %: 2.82, 95 %: 7.40 µm): edges **2.8 / 3.5 / 4.0 / 4.5 / 5.0 / 6.0 / 7.4 µm** (6 groups; tracks outside are in no group). dz unchanged (quartiles). Groups with < 2000 tracks are not fitted (so `pt_uleta` has no d0 groups). The ungrouped σ_IP still uses all tracks.
+  - `fill_hists.cc`: `grp_edges` now hold lower and upper edges (n groups = size − 1; dz = {0, q1, q2, q3, 1e9}); `grpedges_*` TH1D likewise. `ip_res.cc`: groups from the edges, `GRP_MIN_ENTRIES = 2000`, `fitstatus_data_*` in the json (0 = converged, −1 too few filled bins, −2 not fitted); `fit_res` has an optional `status` argument.
+  - Local closure on chunk 19: d0 group counts equal the `range_19.root` counts in all 2400 histograms; dz groups add up to the ungrouped histogram.
+- **Plot style** (memory `feedback_plot_style.md`): mplhep `hep.style.CMS`, data as error-bar points, `figsize=(8.5, 7)`, PNG only, no medians/notes on the plot, 2022C = 5.02 fb⁻¹. The cmsenv mplhep (0.3.47) has no `text=`, so the scripts use `label="Preliminary"`. Plot scripts: `/afs/cern.ch/work/k/kakang/IPres/pipeline/plots/` (`plot_groups.py`, `plot_groups_detail.py` for the old quartile jsons, `plot_groups_range.py` for the new ones) and `sigpv_pull/plot_sigpv*.py`. Figures: `/eos/home-k/kakang/IPres/analysis/JetHT/test_figures/2022C/`.
+- **Running when the session ended**: full 2022C rerun with the new groups, `nohup` on lxplus802: `/afs/cern.ch/work/k/kakang/IPres/pipeline/pipeline_2022C_v2.sh`, log `/eos/home-k/kakang/IPres/analysis/JetHT/logs/2022C/pipeline_v2.log`. Steps: fill (cluster 19346534) → merge → PV fits → local IP test (bin 100: 6 d0 groups, edges, 4 dz groups) → IP fits. Each step only counts files newer than its stamp (`pipeline/stamps_2022C/`) and requires `fill_hists: wrote` in all 20 fill logs. Check that the log ends with `DONE` (or find the `STOP` line). It overwrites `hists/2022C/fill.root`, `json/2022C/`, `figures/2022C/`.
+- Still valid: pipeline `python3 fill_hists.py range|fill|merge <period>`, then `pv_res.py` (56) and `ip_res.py` (200); `fill_hists.py fill` deletes all fill outputs; σ_IP = √(σ_meas² − ⟨σ²_PV⟩) with pull; CB fit model kept; κ ≈ 1.2 under-subtraction for CB half-widths; 2022_22Sep jsons are from older code (no groups).
 
 **Open items for next session:**
-- Merge the 20 chunks of 2022C and rerun the PV (56) and IP (200) fits; harden `pipeline_2022C.sh` (count `wrote`). Wait for the user's go.
-- Groups: decide whether to test in bins narrow in both pT and η (needs code change and a condor fill). Step 3 (combining the groups with a deconvolution fit, CB ⊗ Gauss(σ_PV,j)) only makes sense after this.
-- Outliers after subtraction from a few g3 bins with huge ⟨σ²_PV⟩ (d0 up to 39 µm, dz up to 122 µm); the outermost η bin (|η|≈2.65) is low at 1–10 GeV. Neither checked yet.
-- Beam-spot cross-check of the transverse PV errors (`bs_*` branches) — not done
-- Plotting: `draw_*` still expect data/MC (`reso_mc_*`), `plot_common.cc` `nbins_pv = 50` (JetHT now 56); ZeroBias not migrated to the new pipeline
-- Legacy MC-only scripts in `JetHT/` (`compare_data_mc.cc`, `weight_*.py`, `binning.py`) reference removed tuplelist keys
-- Probe-track quality cuts (highPurity, first pixel layer) postponed by the user
-- 2022EE crab production (user); GT `130X_dataRun3_v2` still unverified
+- Check `pipeline_v2.log` (`DONE`, d0 group fit-status counts), then draw `python3 plots/plot_groups_range.py 2022C <category> d0` and compare the six fixed-range groups after subtraction.
+- If the groups still disagree: test σ_meas,g² vs ⟨σ²_PV⟩_g per bin (slope ≈ 1, or κ), and look for the population effect (e.g. highPurity, hit pattern of the probe tracks).
+- dz grouping: decide between per-η-region ranges and grouping in the vertex σ_z (no projection).
+- Commit the group changes once the user is happy (not before they ask).
+- Possible pull-lookup mismatch (my hypothesis, unverified): pulls are measured on half-track sub-vertices binned in the full-PV √ΣpT², applied with the unbiased-PV √ΣpT².
+- From before: outermost η bin low at 1–10 GeV; beam-spot cross-check; `draw_*` still expect MC and `nbins_pv = 50`; ZeroBias not migrated; legacy MC scripts; probe-track quality cuts postponed; 2022EE crab production; GT `130X_dataRun3_v2` unverified.
