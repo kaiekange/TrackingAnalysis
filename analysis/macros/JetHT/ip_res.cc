@@ -285,7 +285,7 @@ Int_t ip_res(TString period, Int_t idx)
             // all tracks of the bin
             measure(VAR[v], v, suffix, Form("data_%s_%d", suffix.Data(), idx));
 
-            // the same bin split into groups of the track's own PV error (edges: no pull, lower and upper
+            // the same bin split into groups of the track's own PV error (edges: with pull, lower and upper
             // included, from fill_hists.cc; n groups = n edges - 1)
             TH1D *edges = (TH1D *)histfile->Get(Form("grpedges_%s_%d_%s", VAR[v], idx, suffix.Data()));
             const Int_t ngroups = edges ? edges->GetNbinsX() - 1 : 0;

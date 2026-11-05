@@ -57,14 +57,13 @@ namespace fill
 
     enum CovTerm { XX = 0, YY, ZZ, XY, XZ, YZ, NTRK, N_TERM };
 
-    // Groups in the track's own PV error projected on d0/dz (no pull). Each IP histogram is also split
-    // into groups [edge_j, edge_j+1). d0: fixed ranges, the same in every histogram, inside the central
-    // 90 % of the 2022C error distribution (5 %: 2.82, 95 %: 7.40 um); tracks outside are in no group.
-    // dz: N_GRP groups at the histogram's own quantiles of that error, from the range step.
-    const std::vector<Double_t> D0_GRP_EDGES = {2.8, 3.5, 4.0, 4.5, 5.0, 6.0, 7.4};  // um
-    const Double_t GRP_OPEN = 1e9;  // upper edge of an open-ended last group
-    const Int_t N_GRP = 4;
-    const Double_t GRP_Q[N_GRP - 1] = {0.25, 0.50, 0.75};
+    // Groups in the track's own PV error projected on d0/dz, with the PV pulls (pv_res jsons of the period,
+    // looked up in sqrt(SumPt2) of the track's unbiased PV, as in ip_res.cc). Each IP histogram is also split
+    // into groups [edge_j, edge_j+1): fixed ranges, the same in every histogram, inside the central 90 %
+    // of the 2022C distribution (eta_allpt tracks; d0 5 %: 3.07, 95 %: 8.01 um; dz 5 %: 5.01, 95 %: 26.95 um).
+    // Tracks outside are in no group.
+    const std::vector<Double_t> GRP_EDGES[2] = {{3.1, 3.8, 4.3, 4.8, 5.4, 6.5, 8.0},       // d0, um
+                                                {5.0, 6.5, 8.0, 10.0, 13.0, 18.0, 27.0}};  // dz, um
     const Int_t SIG_NBINS[2] = {400, 1000};       // d0, dz
     const Double_t SIG_MAX[2] = {40.0, 200.0};    // um
 
@@ -383,57 +382,34 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
                 st_at(w, i).sum2 = hs2->GetBinContent(i + 1);
             }
         }
-        // group edges. d0: the fixed D0_GRP_EDGES. dz: {0, quantiles GRP_Q, GRP_OPEN} of the projected PV
-        // error of each IP histogram (linear interpolation inside the 0.2 um bins; overflow counted),
-        // empty if not strictly increasing. Both only for histograms with entries.
+        // group edges: the fixed GRP_EDGES (booked only for histograms with entries)
         for (Int_t v = 0; v < 2; ++v)
+            grp_edges[v].assign(n_ip * N_IP, GRP_EDGES[v]);
+        rf->Close();
+    }
+
+    // PV pulls per sqrt(SumPt2) bin, for the grouping (pv_res.cc output of this period, as in ip_res.cc)
+    std::vector<Double_t> pull_x(n_pv), pull_y(n_pv), pull_z(n_pv);
+    for (Int_t k = 0; k < n_pv; ++k)
+    {
+        std::ifstream pvfile(storage_dir + "/json/" + period + Form("/pv_res/fit_%d.json", k));
+        if (!pvfile)
         {
-            TH2F *hs = (TH2F *)rf->Get(Form("sig_%s", VAR[v]));
-            if (!hs || hs->GetNbinsX() != n_ip * N_IP)
+            std::cerr << "[ERROR] fill_hists: missing PV result " << storage_dir + "/json/" + period + Form("/pv_res/fit_%d.json", k)
+                      << " (the grouping needs the pulls: run pv_res first)" << std::endl;
+            gSystem->Exit(1);
+        }
+        nlohmann::json pv;
+        pvfile >> pv;
+        pull_x[k] = pv["reso_data_pullx"];
+        pull_y[k] = pv["reso_data_pully"];
+        pull_z[k] = pv["reso_data_pullz"];
+        for (Double_t p : {pull_x[k], pull_y[k], pull_z[k]})
+            if (p < 0.5 || p > 2.0)
             {
-                std::cerr << "[ERROR] fill_hists: range.root has no matching sig_" << VAR[v] << std::endl;
+                std::cerr << "[ERROR] fill_hists: implausible PV pull " << p << " in sqrt(SumPt2) bin " << k << std::endl;
                 gSystem->Exit(1);
             }
-            grp_edges[v].assign(n_ip * N_IP, std::vector<Double_t>());
-            for (Int_t x = 0; x < n_ip * N_IP; ++x)
-            {
-                const Int_t ny = hs->GetNbinsY();
-                Double_t tot = 0;
-                for (Int_t y = 1; y <= ny + 1; ++y)
-                    tot += hs->GetBinContent(x + 1, y);
-                if (tot <= 0)
-                    continue;
-                if (v == 0)
-                {
-                    grp_edges[v][x] = D0_GRP_EDGES;
-                    continue;
-                }
-                std::vector<Double_t> e;
-                Double_t cum = 0;
-                Int_t q = 0;
-                for (Int_t y = 1; y <= ny && q < N_GRP - 1; ++y)
-                {
-                    const Double_t c = hs->GetBinContent(x + 1, y);
-                    while (q < N_GRP - 1 && cum + c >= GRP_Q[q] * tot && c > 0)
-                    {
-                        const Double_t frac = (GRP_Q[q] * tot - cum) / c;
-                        e.push_back(hs->GetYaxis()->GetBinLowEdge(y) + frac * hs->GetYaxis()->GetBinWidth(y));
-                        q++;
-                    }
-                    cum += c;
-                }
-                Bool_t ok = ((Int_t)e.size() == N_GRP - 1);
-                for (size_t j = 1; ok && j < e.size(); ++j)
-                    ok = e[j] > e[j - 1];
-                if (ok)
-                {
-                    e.insert(e.begin(), 0.0);
-                    e.push_back(GRP_OPEN);
-                    grp_edges[v][x] = e;
-                }
-            }
-        }
-        rf->Close();
     }
 
     // ---------- Book histograms ----------
@@ -512,7 +488,7 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
                 for (Int_t g = 0; g < ng; ++g)
                 {
                     const Double_t glo = edges[g], ghi = edges[g + 1];
-                    TString gcut = ghi >= GRP_OPEN ? Form("#sigma_{PV}>%.1f #mum", glo) : Form("%.1f<#sigma_{PV}<%.1f #mum", glo, ghi);
+                    TString gcut = Form("%.1f<#sigma_{PV}<%.1f #mum", glo, ghi);
                     TH1F *h = (TH1F *)base->Clone(Form("ip_%s_%d_%s_g%d", VAR[v], i, IP_SUFFIX[c], g));
                     h->SetTitle("#splitline{" + title[c] + "}{" + gcut + "}");
                     h_grp[v][i * N_IP + c][g] = h;
@@ -531,13 +507,17 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
     // adds the unbiased-PV covariance of track `it`, projected with Jacobian J, to `e` in the bin k of
     // sqrt(SumPt2) of the track's unbiased PV (clamped to the binning range) -- the pull applied later
     // (J for d0: (sin phi, -cos phi, 0); for dz: (cos phi sinh eta, sin phi sinh eta, -1))
+    auto pv_bin = [&](size_t it)
+    {
+        const Float_t r = std::sqrt((*u_spt2)[it]);
+        return r <= pv_edges.front() ? 0
+             : r >= pv_edges.back() ? n_pv - 1
+             : Int_t(std::upper_bound(pv_edges.begin(), pv_edges.end(), r) - pv_edges.begin()) - 1;
+    };
     auto add_cov = [&](std::vector<Double_t> &e, Double_t jx, Double_t jy, Double_t jz, size_t it)
     {
         const Double_t cxx = (*u_ex)[it] * (*u_ex)[it], cyy = (*u_ey)[it] * (*u_ey)[it], czz = (*u_ez)[it] * (*u_ez)[it];
-        const Float_t r = std::sqrt((*u_spt2)[it]);
-        const Int_t k = r <= pv_edges.front() ? 0
-                      : r >= pv_edges.back() ? n_pv - 1
-                      : Int_t(std::upper_bound(pv_edges.begin(), pv_edges.end(), r) - pv_edges.begin()) - 1;
+        const Int_t k = pv_bin(it);
         Double_t *s = &e[k * N_TERM];
         s[XX] += jx * jx * cxx;
         s[YY] += jy * jy * cyy;
@@ -546,6 +526,17 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
         s[XZ] += 2 * jx * jz * (*u_cxz)[it];
         s[YZ] += 2 * jy * jz * (*u_cyz)[it];
         s[NTRK] += 1.0;
+    };
+    // the track's PV error projected with Jacobian J, with the pulls of its unbiased PV (C_ij -> p_i p_j C_ij);
+    // -1 if not positive (then in no group)
+    auto sig_pull = [&](Double_t jx, Double_t jy, Double_t jz, size_t it)
+    {
+        const Int_t k = pv_bin(it);
+        const Double_t ax = jx * pull_x[k], ay = jy * pull_y[k], az = jz * pull_z[k];
+        const Double_t w = ax * ax * (*u_ex)[it] * (*u_ex)[it] + ay * ay * (*u_ey)[it] * (*u_ey)[it] +
+                           az * az * (*u_ez)[it] * (*u_ez)[it] +
+                           2 * ax * ay * (*u_cxy)[it] + 2 * ax * az * (*u_cxz)[it] + 2 * ay * az * (*u_cyz)[it];
+        return w > 0 ? std::sqrt(w) : -1.0;
     };
 
     loop([&](Int_t k, Int_t c, Double_t v)
@@ -574,8 +565,9 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
                  const auto &edges = grp_edges[v][i * N_IP + c];
                  if (edges.empty())
                      continue;
-                 // group [edge_g, edge_g+1); none outside the edges (d0: outside the central 90 %)
-                 const Int_t g = Int_t(std::upper_bound(edges.begin(), edges.end(), sig_pv[v]) - edges.begin()) - 1;
+                 // group [edge_g, edge_g+1) in the PV error with pull; none outside the edges (central 90 %)
+                 const Double_t sp = sig_pull(jac[v][0], jac[v][1], jac[v][2], it);
+                 const Int_t g = Int_t(std::upper_bound(edges.begin(), edges.end(), sp) - edges.begin()) - 1;
                  if (g < 0 || g >= (Int_t)edges.size() - 1)
                      continue;
                  h_grp[v][i * N_IP + c][g]->Fill(val[v]);
@@ -614,7 +606,7 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
                     if (chunk == 0)
                     {
                         TH1D he(Form("grpedges_%s_%d_%s", VAR[v], i, IP_SUFFIX[c]),
-                                "PV error group edges [um] (no pull), lower and upper included", edges.size(), 0, edges.size());
+                                "PV error group edges [um] (with pull), lower and upper included", edges.size(), 0, edges.size());
                         for (size_t j = 0; j < edges.size(); ++j)
                             he.SetBinContent(j + 1, edges[j]);
                         he.Write();
