@@ -135,29 +135,26 @@ At the end of each session, update the "Last Session" section below.
 
 ### Last Session
 
-**Date:** 2026-11-05. Grouping in σ_PV with pull (d0 and dz) committed together with this file; the prototype scripts are outside the repo (`/afs/cern.ch/work/k/kakang/IPres/pipeline/convfit/`).
+**Date:** 2026-11-06. Convolution-fit scan rerun with the current groups, all categories. No repo code changed: the scripts are outside the repo (`/afs/cern.ch/work/k/kakang/IPres/pipeline/convfit/`).
 
 **What was done:**
-- **Quadrature subtraction is biased, a convolution fit is not** (prototype `convfit/convfit.py`, `checks.py`, `scan.py`, `dzcheck.py`; nothing in `ip_res.cc` yet):
-  - Model: DSCB(μ, σ, α, n) ⊗ Gauss(0, s) with s = √⟨σ²_PV⟩ (with pull) of the histogram, fixed; σ_IP = 68 % half-width of the DSCB alone (same bisection as `fit_res`, tolerance 1e-3). `RooFFTConvPdf`, cache 8192 bins (16384 gives the same result). It reproduces the json `reso_data_*` exactly when the convolution is switched off.
-  - Asimov toys: quadrature over-estimates σ_IP by +0.37 % (s = 3.5 µm) and +1.52 % (s = 7.1 µm) at pT ≈ 10 GeV, +0.13/+0.59 % at 3 GeV, ≤ 0.1 % at 1 GeV. The conv fit closes.
-  - One Gaussian is enough: generating with the measured σ_PV mixture (from `sig_*` of range.root) or with the split-pull shape (tails) and fitting with one Gaussian gives ≤ 0.14 % bias (d0 ≤ 0.02 %). The PV split pulls are close to Gaussian (68 % width/core 1.02–1.05, 0.4–0.7 % beyond 3σ).
-  - Effect in data: whole bin, conv/quadrature ≈ 0.993 (d0 and dz, pT ≈ 10 GeV), → 1 at low pT. d0 |η|<1.3 groups: the top group's +1.1 % excess (pT > 6 GeV) drops to +0.2 %; the lowest group stays ~1 % low (not the method).
-  - Stat error of a DSCB half-width (Poisson toys) is ≈ 1.6 × σ/√(2N); the plots still use σ/√(2N). The json half-widths use tolerance 0.1 µm (≈ 0.25 % quantisation).
-- **σ_PV,dz ≈ √(σ_z² + sinh²η σ_T²)**: 7 µm at η = 0, ~32 µm at |η| = 2.4; σ_PV,d0 is 4.3–5.8 µm, flat in η, larger for low-pT tracks. So dz groups in wide-η categories sort tracks by |η| (group spreads 14–68 %); only narrow-η bins (`eta_*` categories) test the subtraction.
-- **Outlier tracks**: in a few η bins (e.g. η ≈ −2.19, −1.26, −0.20), 10–130 tracks of ~10⁶ with σ_PV > 40 µm raise √⟨σ²_PV⟩ by up to 2.5× (d0 and dz). Not yet removed. A conv fit with s = √⟨σ²_PV⟩ would be wrong there.
-- **New grouping (user decision: same method for d0 and dz, with pull)**: `fill_hists.cc` reads the pulls of `json/<period>/pv_res/` (fails if missing or outside 0.5–2) and groups each track by its σ_PV with pull (C_ij → p_i p_j C_ij, pull bin from the unbiased-PV √ΣpT², as in `ip_res.cc`). Fixed edges inside the central 90 % of 2022C (with pull): d0 3.1/3.8/4.3/4.8/5.4/6.5/8.0 µm, dz 5.0/6.5/8.0/10/13/18/27 µm (6 groups each); the dz quartile code was removed. **The fill now depends on the period's pv_res jsons**: a new period needs fill → pv_res first, then the grouped fill.
-  - Closure (chunk 19): with the same pulls, group counts equal `sigpv_pull` exactly (±1 edge track).
-  - 2022C rerun: fill cluster 19382782 (20/20), merged by me on request (`hadd -j 8` via /tmp, 137 s, validated), `pipeline/pipeline_2022C_v4.sh` (fill.root check → local IP test → IP fits; no PV refit, the pv_res jsons are the ones the fill used): DONE. Fit status d0 {0: 13130, 1/3: 70, −2: 1200}, dz {0: 12181, 1/3: 132, −2: 2087}.
-- **Results with the new groups** (`pipeline/plots/plot_groups_range.py <period> <cat> both`, ratios to the middle group = third of 6; figures `test_figures/2022C/groups_range/`; conv-fit figures `test_figures/2022C/convfit/`):
-  - d0 |η|<1.3 (quadrature): lowest group 0.996 (pT<1) to 0.988 (pT>6), highest 1.004 to 1.012.
-  - d0 narrow η (`eta_*`): lowest 0.96–0.98, highest 1.02–1.04 at |η|<1, shrinking to ~1 at |η|>2 for 0.1–1 GeV.
-  - dz narrow η, 3–10 GeV: groups ordered by σ_PV, 0.95–1.07 (wider than with quartiles, because the fixed ranges reach the σ_PV tails at each η). **At η ≈ 0 all dz groups converge to ~1** (there σ_PV,dz = σ_z only). The 8–10 µm reference group is empty at |η| ≳ 1.7.
-  - Hypothesis for the remaining monotonic spread (unverified): probe-pT composition inside wide pT ranges (σ_PV correlates with track pT). It does not explain the ~1 % low lowest d0 group in narrow-pT bins.
+- **Conv scan with the current grouping** (6 fixed σ_PV ranges with pull, same edges in every bin; no fill rerun needed):
+  - `scan.py <period> <cat> <var> <outdir> [bins]`: now identical for d0 and dz (each group + the whole bin "all"); fixed the x axis of `pt_uleta`. Condor: `scan_submit.py <period>` → 24 jobs (12 categories × d0/dz, `scan.sh`, ~10 min each, cluster 19384237, all done). Output `json/2022C/convfit/scan_<var>_<cat>.json`, logs `logs/2022C/convfit/`.
+  - Pre-flight: the scan's measured half-width (tolerance 1e-3) agrees with the json `reso_data_*` within 0.05 µm.
+  - Old-grouping scans moved to `convfit/old_grouping_20261105/`; old figures `test_figures/2022C/convfit/` and `groups_perbin/` deleted (user request).
+- **Plots** (`convfit/plot_scan.py <period> [cats]`): `test_figures/2022C/groups_range/<cat>/<var>_{meas,pvsub,conv}.png` (+ `_ptgt3` for pT categories) and `_ratio.png` (to the middle group; the three ratio plots share the y range). meas/pvsub/conv all from the scan; points dropped where the plain or the conv fit failed. `*_sigpv.png` (from ip_res json) kept; old `*_measured*` deleted.
+- **σ_PV subtracted per group** = √⟨σ²_PV⟩ with pull over the group's tracks inside the fit range (`fill_hists.cc` `add_cov` sums the projected covariance per √ΣpT² bin; `ip_res.cc` `mean_pverr2` applies the pulls). Mean of the squares, because the variance of the mixture is σ²_IP + ⟨σ²_PV⟩.
+- **Results: conv is better than quadrature in every category, but only slightly** (group spread = N-weighted RMS of σ_g/mean − 1, median over bins; stat ≈ 1.6σ/√(2N) ≈ 0.2–0.4 %):
+  - d0 `eta_ulpt` 1.20 → 1.05 %, dz `eta_ulpt` 1.54 → 1.32 % (largest; at |η|<0.5: 1.31 → 1.06 %), d0 `pt_loeta` 0.43 → 0.38 % (pT > 3: −0.10), pT < 3 GeV categories −0.02 to −0.07.
+  - The group ordering is unchanged (d0 `eta_ulpt`: lowest ≈ 0.98, highest ≈ 1.03; dz: still converges only at η ≈ 0). The remaining spread (3–5× stat) is not the subtraction method.
+  - quad/conv − 1 depends only on s/σ_IP, the same for d0 and dz: +0.2 % at 0.10–0.15, +0.4 % at 0.15–0.2, +0.7 % at 0.2–0.3, +1.4–1.6 % at 0.3–0.5. dz improves more in `eta_ulpt` only because its groups span 5–27 µm (d0 3.1–8 µm).
+  - Not usable as a subtraction test: φ categories (d0 spread 3–4 %, dz 45–64 %) and dz pT categories, which sort tracks by |η|.
+  - `pt_uleta`: no d0 group ≥ 2000 tracks, dz only the top group → no group plots. `*_allpt`: 20–25 % of points dropped, the conv fit fails (Minuit status 1/3) while the plain fit converges; other categories lose 1–5 %.
+- From 2026-11-05 (still valid): Asimov toys: quadrature over-estimates σ_IP by up to +1.5 % at pT ≈ 10 GeV, conv closes; one Gaussian is enough (≤ 0.14 % bias); σ_PV,dz ≈ √(σ_z² + sinh²η σ_T²) (7 µm at η = 0, ~32 µm at |η| = 2.4); σ_PV outlier tracks (> 40 µm) in a few η bins raise √⟨σ²_PV⟩ up to 2.5×. Grouping: `fill_hists.cc` reads the pv_res pulls (a new period needs fill → pv_res → grouped fill); edges d0 3.1/3.8/4.3/4.8/5.4/6.5/8.0 µm, dz 5.0/6.5/8.0/10/13/18/27 µm; the dz 8–10 µm reference group is empty at |η| ≳ 1.7. 2022C fill/IP fits with these groups are done.
 
 **Open items for next session:**
-- Put the conv fit into `ip_res.cc` (one Gaussian, s = √⟨σ²_PV⟩ with pull; keep the quadrature result in the json for comparison; bisection tolerance 1e-3), then IP fits only. Needs the user's go-ahead.
-- Remove σ_PV outlier tracks in `fill_hists.cc` (e.g. σ_PV,d0 > 40 µm / σ_PV,dz > 200 µm, ~10⁻⁵ of tracks); add 2D (pT, η) categories to separate pT composition from η. Both need a fill rerun.
+- The remaining group spread is the main question: remove σ_PV outlier tracks in `fill_hists.cc` (e.g. σ_PV,d0 > 40 µm / σ_PV,dz > 200 µm); add 2D (pT, η) categories (hypothesis: probe-pT composition). Both need a fill rerun.
+- Put the conv fit into `ip_res.cc` (one Gaussian, s = √⟨σ²_PV⟩ with pull, keep the quadrature result, tolerance 1e-3), then IP fits only. Worth it (removes a known bias up to ~1.5 %), but it does not make the groups agree. Needs the user's go-ahead. Check the conv-fit failures of the `*_allpt` categories first.
 - Why dz groups agree only at η ≈ 0 (σ_z vs transverse part of σ_PV,dz).
 - Outlier: one |η|<1.3 dz bin at pT ≈ 1.3 GeV with conv/quadrature 0.97 (not checked).
 - From before: residual slope of the lowest d0 group; pull-lookup mismatch hypothesis; outermost η bin low at 1–10 GeV; beam-spot cross-check; `draw_*` still expect MC and `nbins_pv = 50`; ZeroBias not migrated; legacy MC scripts; probe-track quality cuts; 2022EE crab production; GT `130X_dataRun3_v2` unverified.
