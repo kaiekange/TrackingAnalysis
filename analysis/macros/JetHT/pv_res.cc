@@ -70,7 +70,9 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
     RooRealVar mu("mu", "mu", hist_mean, hist_mean - hist_rms, hist_mean + hist_rms);
     RooRealVar sigma("sigma", "sigma", 0.5 * hist_rms, 0.1 * hist_rms, hist_rms);
     RooRealVar alpha("alpha", "alpha", 2.0, 0.5, 5.0);
-    RooRealVar n("n", "n", 2.0, 0.5, 10.0);
+    // n up to 100 (as ip_res.cc): with the old limit 10, 252/336 fits of 2022C stopped at n = 10, which biased
+    // the pull widths by +0.1-0.3 % (checked 2026-11-13); beyond 100 the half-width changes by < 0.04 %
+    RooRealVar n("n", "n", 2.0, 0.5, 100.0);
     RooCrystalBall model("model", "Double Crystal Ball", pv_var, mu, sigma, alpha, n, alpha, n);
 
     RooDataHist hdatahist("hdatahist", "", pv_var, hist);

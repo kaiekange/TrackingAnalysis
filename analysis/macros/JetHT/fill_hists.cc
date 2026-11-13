@@ -3,9 +3,16 @@
 // (written by fill_hists.py):
 //
 //   fill_hists.cc+("2022_22Sep", "range", <chunk>, 10)  -> hists/<period>/range/range_<chunk>.root
-//       n / sum / sum2 of every histogram variable inside its initial window; hadd -> range.root
+//       n / sum / sum2 of every histogram variable inside its initial window, and the projected PV error
+//       (no pull) of every IP histogram's tracks (log bins); hadd -> range.root
 //   fill_hists.cc+("2022_22Sep", "fill", <chunk>, 10)   -> hists/<period>/fill/fill_<chunk>.root
 //       histograms with ranges mean +- 8 RMS from range.root; hadd -> fill.root
+//
+// Probe tracks: 1 < pT < 15 GeV, |eta| < 2.5 (pt/eta/phi binnings of binning.json). In every IP histogram,
+// separately for d0 and dz, the 1 % of tracks with the largest PV error (no pull; 99 % quantile of the
+// histogram's distribution in range.root) are dropped from the histogram, the PV error sums and the groups.
+// This removes the rare outliers from poorly constrained, low-multiplicity PVs (sigma_PV up to mm; < 0.1 % per
+// histogram in 2022C) with a robust cut. A track dropped in dz is still used in d0.
 //
 // fill.root contains
 //   pv_<k>_<suffix>             PV split histograms, k = sqrt(SumPt2) bin
@@ -15,6 +22,8 @@
 //                               unbiased PV (x axis; the pull lookup) and
 //                               covariance term (y bins: xx yy zz xy xz yz, 7 = track count).
 //                               ip_res.cc applies the PV pulls to these sums.
+//   sigclip_<d0|dz>             PV-error cut per IP histogram (x: idx * N_IP + comb) [um], written by chunk 0
+//   nclip_<d0|dz>, nall_<d0|dz> tracks dropped by that cut / all tracks, per IP histogram (summed by hadd)
 
 #include <vector>
 #include <string>
@@ -46,26 +55,41 @@ namespace fill
     const Double_t pv_init_min[N_PV] = {-300, -300, -300, -10, -10, -10};
     const Double_t pv_init_max[N_PV] = {300, 300, 300, 10, 10, 10};
 
-    enum IpComb { PT_LOETA = 0, PT_HIETA, PT_ULETA, PT_ALLETA, ETA_LOPT, ETA_HIPT, ETA_ULPT, ETA_ALLPT,
-                  PHI_LOPT, PHI_HIPT, PHI_ULPT, PHI_ALLPT, N_IP };
-    const char *IP_SUFFIX[N_IP] = {"pt_loeta", "pt_hieta", "pt_uleta", "pt_alleta", "eta_lopt", "eta_hipt",
-                                   "eta_ulpt", "eta_allpt", "phi_lopt", "phi_hipt", "phi_ulpt", "phi_allpt"};
-    const Double_t init_d0_min[N_IP] = {-2000, -4000, -6000, -4000, -2000, -1000, -400, -2000, -2000, -500, -400, -1500};
-    const Double_t init_d0_max[N_IP] = {2000, 4000, 6000, 4000, 2000, 1000, 400, 2000, 2000, 500, 400, 1500};
-    const Double_t init_dz_min[N_IP] = {-2000, -10000, -10000, -10000, -8000, -4000, -2000, -5000, -3000, -1500, -600, -2000};
-    const Double_t init_dz_max[N_IP] = {2000, 10000, 10000, 10000, 8000, 4000, 2000, 5000, 3000, 1500, 600, 2000};
+    // vs pT: one category per |eta| slice (pv_trk_abseta_slices of binning.json, N_SLICE slices) + all |eta| < 2.5;
+    // vs eta and vs phi: 1 < pT < 3 GeV (hipt) and 3 < pT < 10 GeV (ulpt)
+    const Int_t N_SLICE = 9;
+    enum IpComb { PT_SLICE0 = 0, PT_ALLETA = N_SLICE, ETA_HIPT, ETA_ULPT, PHI_HIPT, PHI_ULPT, N_IP };
+    const char *IP_SUFFIX[N_IP] = {"pt_eta0", "pt_eta1", "pt_eta2", "pt_eta3", "pt_eta4", "pt_eta5", "pt_eta6",
+                                   "pt_eta7", "pt_eta8", "pt_alleta", "eta_hipt", "eta_ulpt", "phi_hipt", "phi_ulpt"};
+    const Double_t init_d0_min[N_IP] = {-2000, -2000, -2000, -2000, -2000, -2000, -2000, -2000, -2000, -2000, -1000, -400, -500, -400};
+    const Double_t init_d0_max[N_IP] = {2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 1000, 400, 500, 400};
+    const Double_t init_dz_min[N_IP] = {-4000, -4000, -4000, -4000, -4000, -4000, -4000, -4000, -4000, -4000, -4000, -2000, -1500, -600};
+    const Double_t init_dz_max[N_IP] = {4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 2000, 1500, 600};
 
     enum CovTerm { XX = 0, YY, ZZ, XY, XZ, YZ, NTRK, N_TERM };
 
     // Groups in the track's own PV error projected on d0/dz, with the PV pulls (pv_res jsons of the period,
     // looked up in sqrt(SumPt2) of the track's unbiased PV, as in ip_res.cc). Each IP histogram is also split
-    // into groups [edge_j, edge_j+1): fixed ranges, the same in every histogram, inside the central 90 %
-    // of the 2022C distribution (eta_allpt tracks; d0 5 %: 3.07, 95 %: 8.01 um; dz 5 %: 5.01, 95 %: 26.95 um).
-    // Tracks outside are in no group.
-    const std::vector<Double_t> GRP_EDGES[2] = {{3.1, 3.8, 4.3, 4.8, 5.4, 6.5, 8.0},       // d0, um
-                                                {5.0, 6.5, 8.0, 10.0, 13.0, 18.0, 27.0}};  // dz, um
-    const Int_t SIG_NBINS[2] = {400, 1000};       // d0, dz
-    const Double_t SIG_MAX[2] = {40.0, 200.0};    // um
+    // into groups [edge_j, edge_j+1) with edge_j+1 / edge_j = GRP_RATIO (sigma_PV nearly the same inside a group,
+    // as for the |eta| slices), the same edges in every histogram. They span the 0.1 % - 99.99 % quantiles of
+    // the 2022C distribution (1-10 GeV, no pull: d0 2.2-20 um, dz 3.7-86 um); tracks outside are in no group.
+    // Groups with too few tracks are not fitted (ip_res.cc).
+    const Double_t GRP_RATIO = 1.15;
+    const Double_t GRP_FIRST[2] = {2.2, 3.6};  // d0, dz [um]
+    const Int_t GRP_N[2] = {16, 24};           // up to 20.2 / 103 um
+    std::vector<Double_t> grp_edges_of(Int_t v)
+    {
+        std::vector<Double_t> e(1, GRP_FIRST[v]);
+        for (Int_t g = 0; g < GRP_N[v]; ++g)
+            e.push_back(e.back() * GRP_RATIO);
+        return e;
+    }
+
+    // PV-error distribution per IP histogram (range step): log bins from SIG_MIN to SIG_MAX um;
+    // overflow (> 10 cm) is always cut
+    const Int_t SIG_NBINS = 1500;
+    const Double_t SIG_MIN = 0.1, SIG_MAX = 1e5;
+    const Double_t CLIP_QUANTILE = 0.99;  // tracks above this quantile of sigma_PV are dropped
 
     struct Stat
     {
@@ -104,6 +128,31 @@ namespace fill
             return -1;
         return (x > edges[i] && x < edges[i + 1]) ? i : -1;
     }
+
+    // PV-error cut of one IP histogram: the CLIP_QUANTILE quantile of its sigma_PV distribution (column xb of
+    // the range-step TH2D, under- and overflow counted; log-interpolated inside the log bin).
+    // SIG_MAX if the histogram has no tracks.
+    Double_t clip_threshold(const TH2D *h, Int_t xb)
+    {
+        const Int_t ny = h->GetNbinsY();
+        Double_t n = 0;
+        for (Int_t j = 0; j <= ny + 1; ++j)
+            n += h->GetBinContent(xb, j);
+        if (n <= 0)
+            return SIG_MAX;
+        Double_t cum = h->GetBinContent(xb, 0);
+        for (Int_t j = 1; j <= ny; ++j)
+        {
+            const Double_t w = h->GetBinContent(xb, j);
+            if (w > 0 && cum + w >= CLIP_QUANTILE * n)
+            {
+                const Double_t lo = h->GetYaxis()->GetBinLowEdge(j), hi = h->GetYaxis()->GetBinUpEdge(j);
+                return lo * std::pow(hi / lo, (CLIP_QUANTILE * n - cum) / w);
+            }
+            cum += w;
+        }
+        return SIG_MAX;
+    }
 }
 
 Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
@@ -125,16 +174,22 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
 
     const auto pv_edges = binning["pv_SumTrackPt2_sqrt"].get<std::vector<Float_t>>();
     const auto pt_edges = binning["pv_trk_pt"].get<std::vector<Float_t>>();
-    const auto pt_uleta_edges = binning["pv_trk_pt_uleta"].get<std::vector<Float_t>>();
     const auto eta_edges = binning["pv_trk_eta"].get<std::vector<Float_t>>();
     const auto phi_edges = binning["pv_trk_phi"].get<std::vector<Float_t>>();
+    const auto slice_edges = binning["pv_trk_abseta_slices"].get<std::vector<Float_t>>();
     const Int_t n_pv = pv_edges.size() - 1;
     const Int_t n_ip = pt_edges.size() - 1;
-    if ((Int_t)pt_uleta_edges.size() - 1 != n_ip || (Int_t)eta_edges.size() - 1 != n_ip || (Int_t)phi_edges.size() - 1 != n_ip)
+    if ((Int_t)eta_edges.size() - 1 != n_ip || (Int_t)phi_edges.size() - 1 != n_ip)
     {
-        std::cerr << "[ERROR] fill_hists: pt/pt_uleta/eta/phi binnings must have the same number of bins" << std::endl;
+        std::cerr << "[ERROR] fill_hists: pt/eta/phi binnings must have the same number of bins" << std::endl;
         gSystem->Exit(1);
     }
+    if ((Int_t)slice_edges.size() - 1 != N_SLICE)
+    {
+        std::cerr << "[ERROR] fill_hists: binning.json has " << slice_edges.size() - 1 << " |eta| slices, the code " << N_SLICE << std::endl;
+        gSystem->Exit(1);
+    }
+    const Float_t eta_max = slice_edges.back();
 
     // this job's files: lines [chunk * files_per_job, (chunk + 1) * files_per_job) of files.txt,
     // which fill_hists.py lists on the submit host (no directory listing on the worker)
@@ -247,19 +302,17 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
                     continue;
 
                 const Float_t tpt = (*pt)[it], teta = (*eta)[it], aeta = std::fabs(teta);
+                // probe tracks: |eta| < 2.5 (pT: the pt binning, 1-15 GeV, and the hipt/ulpt ranges)
+                if (!(aeta < eta_max))
+                    continue;
                 const Int_t i_pt = find_bin(pt_edges, tpt);
-                const Int_t i_ptul = find_bin(pt_uleta_edges, tpt);
                 const Int_t i_eta = find_bin(eta_edges, teta);
                 const Int_t i_phi = find_bin(phi_edges, (*phi)[it]);
+                // |eta| slice: [edge_s, edge_s+1)
+                const Int_t i_slice = Int_t(std::upper_bound(slice_edges.begin(), slice_edges.end(), aeta) - slice_edges.begin()) - 1;
 
-                const Bool_t loeta = (aeta < 1.3);
-                const Bool_t hieta = (aeta > 1.3 && aeta < 2.5);
-                const Bool_t uleta = (aeta > 2.5 && aeta < 3.0);
-                const Bool_t alleta = (aeta < 10.0);
-                const Bool_t lopt = (tpt > 0.1 && tpt < 1.0);
                 const Bool_t hipt = (tpt > 1.0 && tpt < 3.0);
                 const Bool_t ulpt = (tpt > 3.0 && tpt < 10.0);
-                const Bool_t allpt = (tpt > 0);
 
                 s_phi = std::sin((*phi)[it]);
                 c_phi = std::cos((*phi)[it]);
@@ -280,20 +333,14 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
                     sig_pv[1] = std::sqrt(v_dz);
                 }
 
-                if (i_pt >= 0 && loeta) ip_action(i_pt, PT_LOETA, it);
-                if (i_pt >= 0 && hieta) ip_action(i_pt, PT_HIETA, it);
-                if (i_ptul >= 0 && uleta) ip_action(i_ptul, PT_ULETA, it);
-                if (i_pt >= 0 && alleta) ip_action(i_pt, PT_ALLETA, it);
+                if (i_pt >= 0 && i_slice >= 0 && i_slice < N_SLICE) ip_action(i_pt, PT_SLICE0 + i_slice, it);
+                if (i_pt >= 0) ip_action(i_pt, PT_ALLETA, it);
 
-                if (i_eta >= 0 && lopt) ip_action(i_eta, ETA_LOPT, it);
                 if (i_eta >= 0 && hipt) ip_action(i_eta, ETA_HIPT, it);
                 if (i_eta >= 0 && ulpt) ip_action(i_eta, ETA_ULPT, it);
-                if (i_eta >= 0 && allpt) ip_action(i_eta, ETA_ALLPT, it);
 
-                if (i_phi >= 0 && lopt) ip_action(i_phi, PHI_LOPT, it);
                 if (i_phi >= 0 && hipt) ip_action(i_phi, PHI_HIPT, it);
                 if (i_phi >= 0 && ulpt) ip_action(i_phi, PHI_ULPT, it);
-                if (i_phi >= 0 && allpt) ip_action(i_phi, PHI_ALLPT, it);
             }
         }
     };
@@ -313,12 +360,19 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
     const char *VAR[2] = {"d0", "dz"};
     if (step == "range")
     {
-        // projected PV error distribution of every IP histogram (x: idx * N_IP + comb), for the group edges
+        // projected PV error distribution (no pull) of every IP histogram (x: idx * N_IP + comb), log bins,
+        // for the PV-error cut of the fill step
         TH1::AddDirectory(kFALSE);
-        TH2F *h_sig[2];
+        std::vector<Double_t> sig_bins(SIG_NBINS + 1);
+        for (Int_t j = 0; j <= SIG_NBINS; ++j)
+            sig_bins[j] = SIG_MIN * std::pow(SIG_MAX / SIG_MIN, Double_t(j) / SIG_NBINS);
+        std::vector<Double_t> x_bins(n_ip * N_IP + 1);
+        for (Int_t j = 0; j <= n_ip * N_IP; ++j)
+            x_bins[j] = j;
+        TH2D *h_sig[2];
         for (Int_t v = 0; v < 2; ++v)
-            h_sig[v] = new TH2F(Form("sig_%s", VAR[v]), ";IP histogram (idx*N_IP+comb);PV error [um]",
-                                n_ip * N_IP, 0, n_ip * N_IP, SIG_NBINS[v], 0, SIG_MAX[v]);
+            h_sig[v] = new TH2D(Form("sig_%s", VAR[v]), ";IP histogram (idx*N_IP+comb);PV error (no pull) [um]",
+                                n_ip * N_IP, x_bins.data(), SIG_NBINS, sig_bins.data());
         loop([&](Int_t k, Int_t c, Double_t v)
              { if (v >= pv_init_min[c] && v <= pv_init_max[c]) st_pv[k][c].Fill(v); },
              [&](Int_t i, Int_t c, size_t it)
@@ -356,6 +410,9 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
 
     // [var][idx * N_IP + comb] -> group edges, lower and upper included: n groups = size - 1 (empty: no grouping)
     std::vector<std::vector<Double_t>> grp_edges[2];
+    // [var][idx * N_IP + comb] -> PV-error cut [um] (no pull); tracks dropped by it / all tracks
+    std::vector<Double_t> sig_clip[2];
+    std::vector<Double_t> n_clip[2], n_all[2];
 
     // ---------- Step "fill": ranges from the merged range.root ----------
     {
@@ -382,9 +439,22 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
                 st_at(w, i).sum2 = hs2->GetBinContent(i + 1);
             }
         }
-        // group edges: the fixed GRP_EDGES (booked only for histograms with entries)
+        // group edges: the same geometric edges everywhere (booked only for histograms with entries)
         for (Int_t v = 0; v < 2; ++v)
-            grp_edges[v].assign(n_ip * N_IP, GRP_EDGES[v]);
+            grp_edges[v].assign(n_ip * N_IP, grp_edges_of(v));
+        // PV-error cut per IP histogram
+        for (Int_t v = 0; v < 2; ++v)
+        {
+            TH2D *hs = (TH2D *)rf->Get(Form("sig_%s", VAR[v]));
+            if (!hs || hs->GetNbinsX() != n_ip * N_IP || hs->GetNbinsY() != SIG_NBINS)
+            {
+                std::cerr << "[ERROR] fill_hists: sig_" << VAR[v] << " of range.root does not match" << std::endl;
+                gSystem->Exit(1);
+            }
+            sig_clip[v].resize(n_ip * N_IP);
+            for (Int_t i = 0; i < n_ip * N_IP; ++i)
+                sig_clip[v][i] = clip_threshold(hs, i + 1);
+        }
         rf->Close();
     }
 
@@ -452,15 +522,18 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
     for (Int_t i = 0; i < n_ip; ++i)
     {
         TString ptcut = Form("%.3f<#it{p_{T}}<%.3f GeV", pt_edges[i], pt_edges[i + 1]);
-        TString ptulcut = Form("%.3f<#it{p_{T}}<%.3f GeV", pt_uleta_edges[i], pt_uleta_edges[i + 1]);
         TString etacut = Form("%.2f<#it{#eta}<%.2f", eta_edges[i], eta_edges[i + 1]);
         TString phicut = Form("%.2f<#it{#phi}<%.2f", phi_edges[i], phi_edges[i + 1]);
         auto two = [](TString a, TString b) { return "#splitline{" + a + "}{" + b + "}"; };
-        const TString lopt = "0.1<#it{p_{T}}<1 GeV", hipt = "1<#it{p_{T}}<3 GeV", ulpt = "3<#it{p_{T}}<10 GeV";
-        const TString loeta = "|#it{#eta}|<1.3", hieta = "1.3<|#it{#eta}|<2.5", uleta = "2.5<|#it{#eta}|<3.0";
-        const TString title[N_IP] = {two(ptcut, loeta), two(ptcut, hieta), two(ptulcut, uleta), ptcut,
-                                     two(etacut, lopt), two(etacut, hipt), two(etacut, ulpt), etacut,
-                                     two(phicut, lopt), two(phicut, hipt), two(phicut, ulpt), phicut};
+        const TString hipt = "1<#it{p_{T}}<3 GeV", ulpt = "3<#it{p_{T}}<10 GeV";
+        TString title[N_IP];
+        for (Int_t s = 0; s < N_SLICE; ++s)
+            title[PT_SLICE0 + s] = two(ptcut, Form("%.1f<|#it{#eta}|<%.1f", slice_edges[s], slice_edges[s + 1]));
+        title[PT_ALLETA] = two(ptcut, Form("|#it{#eta}|<%.1f", eta_max));
+        title[ETA_HIPT] = two(etacut, hipt);
+        title[ETA_ULPT] = two(etacut, ulpt);
+        title[PHI_HIPT] = two(phicut, two(hipt, Form("|#it{#eta}|<%.1f", eta_max)));
+        title[PHI_ULPT] = two(phicut, two(ulpt, Form("|#it{#eta}|<%.1f", eta_max)));
         for (Int_t c = 0; c < N_IP; ++c)
         {
             // as before: no histogram (fit result 0) unless both d0 and dz have entries
@@ -539,39 +612,46 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
         return w > 0 ? std::sqrt(w) : -1.0;
     };
 
+    for (Int_t v = 0; v < 2; ++v)
+    {
+        n_clip[v].assign(n_ip * N_IP, 0.0);
+        n_all[v].assign(n_ip * N_IP, 0.0);
+    }
     loop([&](Int_t k, Int_t c, Double_t v)
          { if (h_pv[k][c]) h_pv[k][c]->Fill(v); },
          [&](Int_t i, Int_t c, size_t it)
          {
-             TH1F *hd0 = h_d0[i][c], *hdz = h_dz[i][c];
-             if (!hd0)
+             if (!h_d0[i][c])
                  return;
-             const Float_t vd0 = (*d0)[it], vdz = (*dz)[it];
-             hd0->Fill(vd0);
-             hdz->Fill(vdz);
-             // PV error sums only over the tracks inside the fitted range
-             const Bool_t in_d0 = vd0 >= hd0->GetXaxis()->GetXmin() && vd0 < hd0->GetXaxis()->GetXmax();
-             const Bool_t in_dz = vdz >= hdz->GetXaxis()->GetXmin() && vdz < hdz->GetXaxis()->GetXmax();
-             if (in_d0)
-                 add_cov(e_d0[i][c], s_phi, -c_phi, 0.0, it);
-             if (in_dz)
-                 add_cov(e_dz[i][c], c_phi * sh_eta, s_phi * sh_eta, -1.0, it);
-             // the same in the track's PV-error group
-             const Float_t val[2] = {vd0, vdz};
-             const Bool_t in[2] = {in_d0, in_dz};
+             TH1F *hist[2] = {h_d0[i][c], h_dz[i][c]};
+             std::vector<Double_t> *esum[2] = {&e_d0[i][c], &e_dz[i][c]};
+             const Float_t val[2] = {(*d0)[it], (*dz)[it]};
              const Double_t jac[2][3] = {{s_phi, -c_phi, 0.0}, {c_phi * sh_eta, s_phi * sh_eta, -1.0}};
              for (Int_t v = 0; v < 2; ++v)
              {
+                 // outlying PV error (no pull): dropped from this variable's histogram, sums and groups
+                 n_all[v][i * N_IP + c] += 1;
+                 if (!(sig_pv[v] <= sig_clip[v][i * N_IP + c]))
+                 {
+                     n_clip[v][i * N_IP + c] += 1;
+                     continue;
+                 }
+                 hist[v]->Fill(val[v]);
+                 // PV error sums only over the tracks inside the fitted range
+                 const Bool_t in = val[v] >= hist[v]->GetXaxis()->GetXmin() && val[v] < hist[v]->GetXaxis()->GetXmax();
+                 if (in)
+                     add_cov(*esum[v], jac[v][0], jac[v][1], jac[v][2], it);
+                 // the same in the track's PV-error group
                  const auto &edges = grp_edges[v][i * N_IP + c];
                  if (edges.empty())
                      continue;
-                 // group [edge_g, edge_g+1) in the PV error with pull; none outside the edges (central 90 %)
+                 // group [edge_g, edge_g+1) in the PV error with pull; none outside the edges
                  const Double_t sp = sig_pull(jac[v][0], jac[v][1], jac[v][2], it);
                  const Int_t g = Int_t(std::upper_bound(edges.begin(), edges.end(), sp) - edges.begin()) - 1;
                  if (g < 0 || g >= (Int_t)edges.size() - 1)
                      continue;
                  h_grp[v][i * N_IP + c][g]->Fill(val[v]);
-                 if (in[v])
+                 if (in)
                      add_cov(e_grp[v][i * N_IP + c][g], jac[v][0], jac[v][1], jac[v][2], it);
              }
          });
@@ -588,6 +668,30 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
         h.Write();
     };
     outfile->cd();
+    for (Int_t v = 0; v < 2; ++v)
+    {
+        Double_t nc = 0, na = 0;
+        TH1D hc(Form("nclip_%s", VAR[v]), "tracks dropped by the PV-error cut;idx*N_IP+comb", n_ip * N_IP, 0, n_ip * N_IP);
+        TH1D ha(Form("nall_%s", VAR[v]), "all tracks;idx*N_IP+comb", n_ip * N_IP, 0, n_ip * N_IP);
+        for (Int_t j = 0; j < n_ip * N_IP; ++j)
+        {
+            hc.SetBinContent(j + 1, n_clip[v][j]);
+            ha.SetBinContent(j + 1, n_all[v][j]);
+            nc += n_clip[v][j];
+            na += n_all[v][j];
+        }
+        hc.Write();
+        ha.Write();
+        std::cout << "[INFO] fill_hists: PV-error cut " << VAR[v] << ": dropped " << nc << " of " << na << " track entries" << std::endl;
+        // the cuts are the same in every chunk: write them once, or hadd would add them up
+        if (chunk == 0)
+        {
+            TH1D ht(Form("sigclip_%s", VAR[v]), "PV-error cut (no pull) [um];idx*N_IP+comb", n_ip * N_IP, 0, n_ip * N_IP);
+            for (Int_t j = 0; j < n_ip * N_IP; ++j)
+                ht.SetBinContent(j + 1, sig_clip[v][j]);
+            ht.Write();
+        }
+    }
     for (auto &v : h_pv) for (auto *h : v) if (h) h->Write();
     for (Int_t i = 0; i < n_ip; ++i)
         for (Int_t c = 0; c < N_IP; ++c)

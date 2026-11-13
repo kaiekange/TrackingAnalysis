@@ -62,13 +62,13 @@ The grid proxy must exist at `/afs/cern.ch/user/k/kakang/tmp/x509up_u158898`.
 Fitting and sample-specific scripts live in `analysis/macros/JetHT/` and `analysis/macros/ZeroBias/` (run from the respective directory). All plotting macros are shared in `analysis/macros/plotting/` and take the sample as first argument (run from `plotting/`).
 
 ### IP resolution (`ip_res.cc`)
-Fits unbiased IP distributions per pT/η/φ bin using a symmetric double-sided Crystal Ball (`RooCrystalBall`) fit. Writes results to JSON files in `/eos/home-k/kakang/IPres/analysis/<sample>/json/<period>/ip_res/`.
+JetHT (since 2026-11-13): fits each unbiased IP histogram with a symmetric double-sided Crystal Ball (`RooCrystalBall`, n ≤ 100) and with a sum of 3 Gaussians (json suffix `_3g`), each also convolved with the mean PV error (`_conv`), plus quadrature subtraction (`_pvsub`), stat. errors (`_err`) and the model-free counted half-width (`_counted`). Categories: vs pT in 9 |η| slices (`pt_eta0..8`, edges in binning.json) + `pt_alleta`; vs η / φ for 1–3 and 3–10 GeV; probe tracks 1 < pT < 15 GeV, |η| < 2.5. Writes results to JSON files in `/eos/home-k/kakang/IPres/analysis/<sample>/json/<period>/ip_res/`.
 
 ```bash
 # Single job locally
 root -b -q 'ip_res.cc("<period>", <job_number>)'   # e.g. ip_res.cc("2023", 0)
 
-# Condor batch (submits 200 jobs)
+# Condor batch (one job per pt/eta/phi bin: 50 for JetHT)
 python ip_res.py <period>    # e.g. python ip_res.py 2023
 ```
 
@@ -135,20 +135,22 @@ At the end of each session, update the "Last Session" section below.
 
 ### Last Session
 
-**Date:** 2026-11-10. Diagnostics only (no pipeline code changed, no rerun): σ_PV vs pT/η plots, origin of the σ_PV outliers, why the dz group ratios in pT categories are large, error bars. New study scripts in `analysis/macros/JetHT/studies/`.
+**Date:** 2026-11-13. JetHT category redesign implemented and run on full 2022C (code uncommitted). Details in memory `project_category_redesign.md`.
 
 **What was done:**
-- **σ_PV vs η and vs pT** (√⟨σ²_PV⟩ with pull, from the ip_res json, 2022C): `pipeline/convfit/plot_sigpv_eta.py` (rerun) and new `studies/plot_sigpv_pt.py` → `test_figures/2022C/convfit/sigpv_{d0,dz}_vs_{eta,pt}.png`. d0: ~5 µm flat in η, plateau 4.2/4.7/5.3 µm (|η| < 1.3 / 1.3–2.5 / 2.5–3.0) above pT ≈ 5 GeV, ~6 µm at low pT. dz: 7.5/18/36 µm plateaus; σ_PV,dz = √(σ_z² + sinh²η σ_T²) checked: implied σ_T = 4.4–5.6 µm for 1 < |η| < 2.7 (= σ_PV,d0). No error bars (json has only ⟨σ²_PV⟩).
-- **σ_PV outliers come from low-multiplicity PVs** (`studies/outliers.C`, 2 ntuple files = 48k events, 4.65 M tracks): 339 tracks (σ_PV,d0 > 40 or σ_PV,dz > 200 µm, no pull) from 82 events; 93 % from PVs with < 20 tracks (0.03 % of all tracks; 20–100 % of their tracks are outliers): 5–17 tracks, √ΣpT² 3–11 GeV, full-PV error 30–90 µm (xy), 50–450 µm (z). Cause: `residuals_cfi.py` `VtxTracksSizeMin = 2`, AVF `minNdof = 0`, no PV-quality cut anywhere. Jet tracks share η → spikes in single η bins. Estimated from range.root/json: in the spiky bins 3–50 tracks with σ_PV ~1–15 mm. Note: `pv_ndof` is `Int_t` in the tree.
-- **dz group ratios in pT categories (up to 4×) are η composition** (`studies/groups_eta.C`): |η| median per σ_PV,dz group 0.5/0.7/1.0/1.4/1.8/2.1 (3–10 GeV, |η| < 3; same at lower pT), and σ_dz rises steeply with |η| (3–10 GeV: 33 µm at η 0.6, 47 at 1.0, 121 at 2.0; 0.1–1 GeV: 190 → 750 µm), so the ratio ≈ σ_dz(|η|≈2.1)/σ_dz(|η|≈1), larger at low pT (multiple scattering). In narrow η bins the spread is 0.95–1.07. In |η| < 1.3 the 13–27 µm groups are 1–3 % of the tracks, still sorted by |η|, only 0.4–0.9 % from PVs with < 20 tracks.
-- **Missing points**: groups with < 2000 tracks are not fitted (`ip_res.cc` `GRP_MIN_ENTRIES`, fitstatus −2); e.g. dz 18–27 µm at |η| < 1 has 300–1400 tracks per bin.
-- **Error bars**: the json has no error; plot scripts use half-width/√(2N) (relative error 1/√(2N)). The 1.6× factor comes from one bin only (`convfit/checks.py` A, d0 `pt_loeta` bin 191, 30 Poisson toys: 1.44× at N = 767k, 1.62× at N = 54k, ±13 % from the toy count). Not included: fit-model, PV-subtraction and 0.1 µm quantisation (≈ 0.25 %) uncertainties.
-- From 2026-11-06 (still valid): conv scan with the current groups (`convfit/scan.py`, `scan_submit.py`, `plot_scan.py`; output `json/2022C/convfit/scan_<var>_<cat>.json`, figures `test_figures/2022C/groups_range/<cat>/`). Conv is better than quadrature in every category but only slightly (group spread d0 `eta_ulpt` 1.20 → 1.05 %, dz `eta_ulpt` 1.54 → 1.32 %); ordering unchanged; quad/conv − 1 depends only on s/σ_IP (+0.2 % at 0.1–0.15 up to +1.5 % at 0.3–0.5). Not usable as subtraction tests: φ categories and dz pT categories. `*_allpt`: conv fit fails in 20–25 % of bins. σ_PV subtracted per group = √⟨σ²_PV⟩ with pull (mean of squares). Asimov toys: quadrature over-estimates σ_IP by up to 1.5 % at pT ≈ 10 GeV, conv closes, one Gaussian is enough. Grouping edges d0 3.1/3.8/4.3/4.8/5.4/6.5/8.0 µm, dz 5.0/6.5/8.0/10/13/18/27 µm, with pull (a new period needs fill → pv_res → grouped fill).
+- **Categories/binning** (`binning.py`, `fill_hists.cc`): probe tracks 1 < pT < 15 GeV, |η| < 2.5; 50 quantile bins in pT/η/φ (from 10 2022C files; PV √ΣpT² edges kept, so pv_res binning unchanged); vs pT in 9 |η| slices 0/0.8/1.1/1.3/1.5/1.7/1.9/2.1/2.3/2.5 (σ_PV,dz max/min ≤ 1.15 inside a slice) + all; vs η/φ for 1–3 and 3–10 GeV. σ_PV groups: geometric edges, ratio 1.15 (d0 2.2 µm × 16, dz 3.6 µm × 24); 8–17 fittable groups per bin.
+- **σ_PV outlier cut**: per IP histogram and per var, the top 1 % of σ_PV (no pull, 99 % quantile from range.root) is dropped from histogram, PV-error sums and groups (mean+5σ cut the natural tail: σ_PV skew +2..+3.5). 2022C: 1.000 % dropped.
+- **Fits** (`ip_res.cc`, `pv_res.cc`): DSCB n limit 10 → 100 (with n ≤ 10 most dz fits sat at the limit: half-width bias −1.5 % … +0.6 %, pulls +0.1–0.3 %); DSCB and 3 Gaussians both fitted, each with conv fit; per-bin errors by covariance propagation (toys: plain 1.00 ± 0.06, conv 0.90–0.95); tolerance 1e-3. 3G fits better (χ²/ndf 1.6–4 vs 5–11) and is closer to the counted half-width (−0.2 % vs −0.6 %).
+- **2022C rerun**: range → fill → pv_res → ip_res (50 jobs), all OK. Old results in `snapshots/2022C_200bins/`. Model comparison: 3G/DSCB − 1 ≈ +0.4 % (d0), −0.3…+0.8 % (dz slices), −2…−3 % (dz pt_alleta, phi_hipt: wide |η| mixtures). Figures `test_figures/2022C/models/` (`studies/plot_models.py`, `fit_examples.py`), n-limit study `test_figures/2022C/nlimit/`.
+
+- **σ_PV-group closure** (`studies/plot_vs_sigpv.py`, figures `test_figures/2022C/models/vs_sigpv_*`): after PV removal the groups still rise with σ_PV (3–14 % lowest → highest group); the rise sits at the low-σ_PV end where the PV correction is only ~0.3 µm, so it is not a subtraction problem but an intrinsic difference of low-σ_PV tracks (cause unknown); central slice flat above ~median σ_PV, 1.5–1.7 dz keeps rising. The plotted ungrouped result = N-weighted mean of the groups. User: fine for now.
+- **2022D** (same binning.json as 2022C, rule: never rerun binning.py per era): tuplelist entry `2022D`; range → fill (2022C pulls as placeholder) → pv_res 2022D → fill again with 2022D pulls → ip_res submitted (cluster 19903853, 50 jobs; result not yet checked at session end). 2022D PV resolution is 13–17 % worse than 2022C in the same √ΣpT² bins, pulls 1–3 % lower (cause unknown).
+- Data ntuples ready (Track-v20261019, IIHE): JetMET 2022C (191/191), 2022D (109/109); ZeroBias 2022C (170, 3 failed jobs not resubmitted), 2022D (72, 1 failed). No production yet for 2022EE/2023/2023BPix/2024.
 
 **Open items for next session:**
-- **PV-quality / outlier cut (user decision pending)**: event cut pv_NTracks ≥ 20 in `fill_hists.cc` (removes 93 % of outliers, 0.03 % of tracks) plus a per-track σ_PV cut (d0 40 µm, dz 200 µm) as backstop; it also affects the PV split resolution. Then 2D (pT, η) categories. Both need fill → pv_res → IP rerun.
-- Put the conv fit into `ip_res.cc` (one Gaussian, s = √⟨σ²_PV⟩ with pull, keep quadrature, tolerance 1e-3); store a per-bin error in the json at the same time (bootstrap or DSCB covariance propagated to the half-width). Needs the user's go-ahead; check the `*_allpt` conv-fit failures first.
-- The remaining ±5 % group spread in narrow η bins; why dz groups agree only at η ≈ 0.
-- Outlier: one |η|<1.3 dz bin at pT ≈ 1.3 GeV with conv/quadrature 0.97 (not checked).
-- From before: residual slope of the lowest d0 group; pull-lookup mismatch hypothesis; outermost η bin low at 1–10 GeV; beam-spot cross-check; `draw_*` still expect MC and `nbins_pv = 50`; ZeroBias not migrated; legacy MC scripts; probe-track quality cuts; 2022EE crab production; GT `130X_dataRun3_v2` unverified.
-- Still valid: pipeline `fill_hists.py range|fill|merge` (merges by the user; `fill_hists.py fill` re-hadds range.root, so submit with `python3 -c "import fill_hists; fill_hists.submit(P, 'fill')"` if range.root exists), then `pv_res.py` (56) and `ip_res.py` (200); old 19-chunk results in `snapshots/2022C_19chunks/`; per-track σ_PV with/without pull in `hists/2022C/sigpv_pull.root`; plot style in memory `feedback_plot_style.md`.
+- Check the 2022D ip_res output (50 json, statuses), then the same plots as 2022C (`studies/plot_models.py 2022D ...`, `plot_vs_sigpv.py`) and a C vs D comparison.
+- DSCB errors invalid where n hits 100 (high-|η| slices at low pT, 117/1400 ungrouped): proposal: treat n as fixed in the error when at its limit (needs ip_res rerun).
+- Choose the main model (DSCB vs 3G) from the comparison; then group-closure plots per slice with the new groups.
+- Plot scripts broken by the new category names / moved inputs: `plotting/plot_common.cc`, `compare_*`, `list_ip_results.py`, `pipeline/plots/*`, `pipeline/convfit/*`, `studies/plot_sigpv_pt.py`.
+- fill used the old (n ≤ 10) pulls for the group assignment (≤ 0.3 % off; ip_res uses the new ones).
+- Event-level PV cut (pv_NTracks ≥ 20) not done; ZeroBias not migrated; from before: beam-spot cross-check, legacy MC scripts, 2022EE production, GT unverified.
