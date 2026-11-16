@@ -135,22 +135,20 @@ At the end of each session, update the "Last Session" section below.
 
 ### Last Session
 
-**Date:** 2026-11-13. JetHT category redesign implemented and run on full 2022C (code uncommitted). Details in memory `project_category_redesign.md`.
+**Date:** 2026-11-16. 2022D checked, 2022C vs 2022D comparison, conditions check, 2022EE crab production submitted. Details in memories `project_category_redesign.md`, `project_ntuples_on_iihe.md`. (2022C redesign of 2026-11-13: commit edaf4c4.)
 
 **What was done:**
-- **Categories/binning** (`binning.py`, `fill_hists.cc`): probe tracks 1 < pT < 15 GeV, |η| < 2.5; 50 quantile bins in pT/η/φ (from 10 2022C files; PV √ΣpT² edges kept, so pv_res binning unchanged); vs pT in 9 |η| slices 0/0.8/1.1/1.3/1.5/1.7/1.9/2.1/2.3/2.5 (σ_PV,dz max/min ≤ 1.15 inside a slice) + all; vs η/φ for 1–3 and 3–10 GeV. σ_PV groups: geometric edges, ratio 1.15 (d0 2.2 µm × 16, dz 3.6 µm × 24); 8–17 fittable groups per bin.
-- **σ_PV outlier cut**: per IP histogram and per var, the top 1 % of σ_PV (no pull, 99 % quantile from range.root) is dropped from histogram, PV-error sums and groups (mean+5σ cut the natural tail: σ_PV skew +2..+3.5). 2022C: 1.000 % dropped.
-- **Fits** (`ip_res.cc`, `pv_res.cc`): DSCB n limit 10 → 100 (with n ≤ 10 most dz fits sat at the limit: half-width bias −1.5 % … +0.6 %, pulls +0.1–0.3 %); DSCB and 3 Gaussians both fitted, each with conv fit; per-bin errors by covariance propagation (toys: plain 1.00 ± 0.06, conv 0.90–0.95); tolerance 1e-3. 3G fits better (χ²/ndf 1.6–4 vs 5–11) and is closer to the counted half-width (−0.2 % vs −0.6 %).
-- **2022C rerun**: range → fill → pv_res → ip_res (50 jobs), all OK. Old results in `snapshots/2022C_200bins/`. Model comparison: 3G/DSCB − 1 ≈ +0.4 % (d0), −0.3…+0.8 % (dz slices), −2…−3 % (dz pt_alleta, phi_hipt: wide |η| mixtures). Figures `test_figures/2022C/models/` (`studies/plot_models.py`, `fit_examples.py`), n-limit study `test_figures/2022C/nlimit/`.
-
-- **σ_PV-group closure** (`studies/plot_vs_sigpv.py`, figures `test_figures/2022C/models/vs_sigpv_*`): after PV removal the groups still rise with σ_PV (3–14 % lowest → highest group); the rise sits at the low-σ_PV end where the PV correction is only ~0.3 µm, so it is not a subtraction problem but an intrinsic difference of low-σ_PV tracks (cause unknown); central slice flat above ~median σ_PV, 1.5–1.7 dz keeps rising. The plotted ungrouped result = N-weighted mean of the groups. User: fine for now.
-- **2022D** (same binning.json as 2022C, rule: never rerun binning.py per era): tuplelist entry `2022D`; range → fill (2022C pulls as placeholder) → pv_res 2022D → fill again with 2022D pulls → ip_res submitted (cluster 19903853, 50 jobs; result not yet checked at session end). 2022D PV resolution is 13–17 % worse than 2022C in the same √ΣpT² bins, pulls 1–3 % lower (cause unknown).
-- Data ntuples ready (Track-v20261019, IIHE): JetMET 2022C (191/191), 2022D (109/109); ZeroBias 2022C (170, 3 failed jobs not resubmitted), 2022D (72, 1 failed). No production yet for 2022EE/2023/2023BPix/2024.
+- **2022D ip_res** (cluster 19903853): 50/50 OK, fit statuses like 2022C; DSCB conv errors invalid 204/1400 (C 117). Figures `test_figures/2022D/models/` (lumi 2.97 fb⁻¹).
+- **Model: DSCB is the default** (user choice). 3G medians agree within ~1 %, but 3G fits with status ≠ 0 can be off by up to 23 % vs the counted half-width (DSCB failures < 0.8 %).
+- **C vs D** (`studies/compare_eras.py <era1> <lumi1> <era2> <lumi2> <3g|dscb> <outdir>`, figures `test_figures/2022C_vs_2022D/`): 2022D is worse by +5…+17 % (median per category), identical measured vs PV-removed (not the PV error); D/C rises with pT (≈1.02–1.10 at 1 GeV → 1.15–1.22 above 5 GeV), φ-dependent at 3–10 GeV. Cause unknown.
+- **Conditions**: analysis GT 130X_dataRun3_v2 for both; tracks come from RECO 12_4_14_patch1 with GT 124X_dataRun3_v15 (22Sep2023 is only a re-MiniAOD). Pixel templates/GenError/LA change IOV exactly at run 357538 (first 2022D run), again at 357883, and at 356478 in C. User hypothesis: aging / radiation damage. 2022F/G MiniAOD are Prompt reco (other conditions than C/D/E). conddb needs `PYTHONNOUSERSITE=1`.
+- **crab production (Track-v20261019, IIHE)**, submitted 2026-11-16 (`submitData.sh` now on the 2022EE block): JetMET 2022E/F/G (100 lumis/job), ZeroBias 2022E/F/G (150 lumis/job), and recovery tasks `..._ver0_recovery` for the failed ZeroBias 2022C/D lumis (lumiMask = `results/notFinishedLumis.json`, 50 lumis/job; `crab resubmit` refused with < 7 days task life left). Recovery output lands in a NEW timestamp dir under the same era dir. State at 12:21 UTC: no failures, D recovery 2/3 done, rest running (JetMET F 88 % idle).
 
 **Open items for next session:**
-- Check the 2022D ip_res output (50 json, statuses), then the same plots as 2022C (`studies/plot_models.py 2022D ...`, `plot_vs_sigpv.py`) and a C vs D comparison.
-- DSCB errors invalid where n hits 100 (high-|η| slices at low pT, 117/1400 ungrouped): proposal: treat n as fixed in the error when at its limit (needs ip_res rerun).
-- Choose the main model (DSCB vs 3G) from the comparison; then group-closure plots per slice with the new groups.
+- crab status of the 8 tasks; for the recovery tasks `crab report` must show no notFinishedLumis. Then tuplelist entries (ZeroBias C/D: both timestamp dirs; suggested E, F, G as separate periods) and range → fill → pv_res → fill → ip_res with the same binning.json (never rerun binning.py).
+- Run-split test (early/late C, early/late D around runs 356478 / 357538 / 357883; `ev_run` in the tree) to tell a step from a gradual change.
+- DSCB errors invalid where n hits 100: proposal: treat n as fixed in the error when at its limit (needs ip_res rerun).
+- Group-closure plots per slice with the new groups.
 - Plot scripts broken by the new category names / moved inputs: `plotting/plot_common.cc`, `compare_*`, `list_ip_results.py`, `pipeline/plots/*`, `pipeline/convfit/*`, `studies/plot_sigpv_pt.py`.
-- fill used the old (n ≤ 10) pulls for the group assignment (≤ 0.3 % off; ip_res uses the new ones).
-- Event-level PV cut (pv_NTracks ≥ 20) not done; ZeroBias not migrated; from before: beam-spot cross-check, legacy MC scripts, 2022EE production, GT unverified.
+- 2022C fill used the old (n ≤ 10) pulls for the group assignment (≤ 0.3 % off).
+- Event-level PV cut (pv_NTracks ≥ 20) not done; ZeroBias analysis not migrated; beam-spot cross-check, legacy MC scripts; 2023/2023BPix/2024 production.

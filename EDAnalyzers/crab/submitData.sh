@@ -5,13 +5,13 @@ source /cvmfs/cms.cern.ch/crab3/crab.sh
 SAMPLETYPE="ZeroBias"
 # SAMPLETYPE="JetHT"
 
-YEAR="2022"
-GLOBALTAG="130X_dataRun3_v2"  # 22Sep2023 ReReco (CMSSW_13_0_X); check PdmV recommendation
-LUMIMASK="JSON/Cert_Collisions2022_355100_362760_Golden.json"
-
-# YEAR="2022EE"
+# YEAR="2022"
 # GLOBALTAG="130X_dataRun3_v2"  # 22Sep2023 ReReco (CMSSW_13_0_X); check PdmV recommendation
 # LUMIMASK="JSON/Cert_Collisions2022_355100_362760_Golden.json"
+
+YEAR="2022EE"
+GLOBALTAG="130X_dataRun3_v2"  # 22Sep2023 ReReco (CMSSW_13_0_X); check PdmV recommendation
+LUMIMASK="JSON/Cert_Collisions2022_355100_362760_Golden.json"
 
 # YEAR="2023"
 # GLOBALTAG="130X_dataRun3_PromptAnalysis_v1"
