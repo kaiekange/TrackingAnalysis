@@ -135,17 +135,17 @@ At the end of each session, update the "Last Session" section below.
 
 ### Last Session
 
-**Date:** 2026-11-16. 2022D checked, 2022C vs 2022D comparison, conditions check, 2022EE crab production submitted. Details in memories `project_category_redesign.md`, `project_ntuples_on_iihe.md`. (2022C redesign of 2026-11-13: commit edaf4c4.)
+**Date:** 2026-11-16 (crab status 2026-11-17). 2022D checked, 2022C vs 2022D comparison, conditions check, 2022EE crab production submitted. Details in memories `project_category_redesign.md`, `project_ntuples_on_iihe.md`. (2022C redesign of 2026-11-13: commit edaf4c4.)
 
 **What was done:**
 - **2022D ip_res** (cluster 19903853): 50/50 OK, fit statuses like 2022C; DSCB conv errors invalid 204/1400 (C 117). Figures `test_figures/2022D/models/` (lumi 2.97 fb⁻¹).
 - **Model: DSCB is the default** (user choice). 3G medians agree within ~1 %, but 3G fits with status ≠ 0 can be off by up to 23 % vs the counted half-width (DSCB failures < 0.8 %).
 - **C vs D** (`studies/compare_eras.py <era1> <lumi1> <era2> <lumi2> <3g|dscb> <outdir>`, figures `test_figures/2022C_vs_2022D/`): 2022D is worse by +5…+17 % (median per category), identical measured vs PV-removed (not the PV error); D/C rises with pT (≈1.02–1.10 at 1 GeV → 1.15–1.22 above 5 GeV), φ-dependent at 3–10 GeV. Cause unknown.
 - **Conditions**: analysis GT 130X_dataRun3_v2 for both; tracks come from RECO 12_4_14_patch1 with GT 124X_dataRun3_v15 (22Sep2023 is only a re-MiniAOD). Pixel templates/GenError/LA change IOV exactly at run 357538 (first 2022D run), again at 357883, and at 356478 in C. User hypothesis: aging / radiation damage. 2022F/G MiniAOD are Prompt reco (other conditions than C/D/E). conddb needs `PYTHONNOUSERSITE=1`.
-- **crab production (Track-v20261019, IIHE)**, submitted 2026-11-16 (`submitData.sh` now on the 2022EE block): JetMET 2022E/F/G (100 lumis/job), ZeroBias 2022E/F/G (150 lumis/job), and recovery tasks `..._ver0_recovery` for the failed ZeroBias 2022C/D lumis (lumiMask = `results/notFinishedLumis.json`, 50 lumis/job; `crab resubmit` refused with < 7 days task life left). Recovery output lands in a NEW timestamp dir under the same era dir. State at 12:21 UTC: no failures, D recovery 2/3 done, rest running (JetMET F 88 % idle).
+- **crab production (Track-v20261019, IIHE)**, submitted 2026-11-16 (`submitData.sh` now on the 2022EE block): JetMET 2022E/F/G (100 lumis/job), ZeroBias 2022E/F/G (150 lumis/job), and recovery tasks `..._ver0_recovery` for the failed ZeroBias 2022C/D lumis (lumiMask = `results/notFinishedLumis.json`, 50 lumis/job; `crab resubmit` refused with < 7 days task life left). Recovery output lands in a NEW timestamp dir under the same era dir. State 2026-11-17: ZeroBias 2022 complete (E/F/G 100 %; C/D recovery 450/450 and 150/150 lumis, no notFinishedLumis); JetMET E 216/217, F 349/515, G 44/83 running; 3 failed F jobs (2× 8901, 1× 50660) resubmitted by the user.
 
 **Open items for next session:**
-- crab status of the 8 tasks; for the recovery tasks `crab report` must show no notFinishedLumis. Then tuplelist entries (ZeroBias C/D: both timestamp dirs; suggested E, F, G as separate periods) and range → fill → pv_res → fill → ip_res with the same binning.json (never rerun binning.py).
+- crab status of JetMET 2022E/F/G; when done, `crab report` must show no notFinishedLumis. Then tuplelist entries (ZeroBias C/D: both timestamp dirs; suggested E, F, G as separate periods) and range → fill → pv_res → fill → ip_res with the same binning.json (never rerun binning.py).
 - Run-split test (early/late C, early/late D around runs 356478 / 357538 / 357883; `ev_run` in the tree) to tell a step from a gradual change.
 - DSCB errors invalid where n hits 100: proposal: treat n as fixed in the error when at its limit (needs ip_res rerun).
 - Group-closure plots per slice with the new groups.
