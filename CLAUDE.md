@@ -62,13 +62,13 @@ The grid proxy must exist at `/afs/cern.ch/user/k/kakang/tmp/x509up_u158898`.
 Fitting and sample-specific scripts live in `analysis/macros/JetHT/` and `analysis/macros/ZeroBias/` (run from the respective directory). All plotting macros are shared in `analysis/macros/plotting/` and take the sample as first argument (run from `plotting/`).
 
 ### IP resolution (`ip_res.cc`)
-JetHT (since 2026-11-13): fits each unbiased IP histogram with a symmetric double-sided Crystal Ball (`RooCrystalBall`, n ≤ 100) and with a sum of 3 Gaussians (json suffix `_3g`), each also convolved with the mean PV error (`_conv`), plus quadrature subtraction (`_pvsub`), stat. errors (`_err`) and the model-free counted half-width (`_counted`). Categories: vs pT in 9 |η| slices (`pt_eta0..8`, edges in binning.json) + `pt_alleta`; vs η / φ for 1–3 and 3–10 GeV; probe tracks 1 < pT < 15 GeV, |η| < 2.5. Writes results to JSON files in `/eos/home-k/kakang/IPres/analysis/<sample>/json/<period>/ip_res/`.
+JetHT and ZeroBias (same pipeline since 2026-11-17; ZeroBias is a copy of the JetHT macros with its own paths): fits each unbiased IP histogram with a symmetric double-sided Crystal Ball (`RooCrystalBall`, n ≤ 100) and with a sum of 3 Gaussians (json suffix `_3g`), each also convolved with the mean PV error (`_conv`), plus quadrature subtraction (`_pvsub`), stat. errors (`_err`; a parameter at its limit is treated as fixed) and the model-free counted half-width (`_counted`). Categories: vs pT in 9 |η| slices (`pt_eta0..8`, edges in binning.json) + `pt_alleta`, fixed pT bins 1–3 GeV in 0.1, 3–5 in 0.25, then JetHT 5–10 in 0.5 and 10–15 in 1 (43 bins), ZeroBias 5–10 in 1 (33 bins); vs η (and vs φ, JetHT only; 50 quantile bins each) for 0.1–1 (`lopt`), 1–3 (`hipt`), 3–10 (`ulpt`) and, JetHT only, 10–15 GeV (`vhpt`); |η| < 2.5. The job index runs to the largest binning (50); a json has the `pt`/`eta`/`phi` key and the categories only where that binning has the bin. Writes results to JSON files in `/eos/home-k/kakang/IPres/analysis/<sample>/json/<period>/ip_res/`.
 
 ```bash
 # Single job locally
 root -b -q 'ip_res.cc("<period>", <job_number>)'   # e.g. ip_res.cc("2023", 0)
 
-# Condor batch (one job per pt/eta/phi bin: 50 for JetHT)
+# Condor batch (one job per bin index: 50)
 python ip_res.py <period>    # e.g. python ip_res.py 2023
 ```
 
@@ -116,7 +116,7 @@ Since `Track-v20261019` the tree also stores, per track, the unbiased-PV covaria
 - `tdrStyle.cc` / `CMS_lumi.cc` — CMS plot style and luminosity labels
 - `draw_funcs.cc` — canvas setup helpers
 - `plot_common.cc` — shared plotting config: sample → storage dir / label, period list, lumi labels, colors/markers, `load_fits()` (reads `fit_<i>.json`), the 24-entry IP plot table `ip_plots()`, and the multi-era overlay `draw_period_overlay()`
-- The resolution fit (`fit_res`) is **not** shared: each `ip_res.cc` / `pv_res.cc` defines its own copy. JetHT (since 2026-10-21): the track loop lives only in `macros/JetHT/fill_hists.cc` (see Last Session); ZeroBias still has the old per-bin loops
+- The resolution fit (`fit_res`) is **not** shared: each `ip_res.cc` / `pv_res.cc` defines its own copy. The track loop lives only in `macros/<sample>/fill_hists.cc` (JetHT since 2026-10-21, ZeroBias since 2026-11-17). ZeroBias specifics: no vs-φ, no 10–15 GeV, own σ_PV group edges, PV √ΣpT² bins 3–25 GeV, and the first fill of a period runs with pull = 1 placeholders (fill.root `pull_source`; ip_res refuses it) before pv_res exists
 - `compare_gr.cc` — two-panel data/MC overlay with ratio pad, used by `draw_ip_res.cc` and `draw_pv_res.cc`
 
 ### Output/storage paths
@@ -135,20 +135,21 @@ At the end of each session, update the "Last Session" section below.
 
 ### Last Session
 
-**Date:** 2026-11-16 (crab status 2026-11-17). 2022D checked, 2022C vs 2022D comparison, conditions check, 2022EE crab production submitted. Details in memories `project_category_redesign.md`, `project_ntuples_on_iihe.md`. (2022C redesign of 2026-11-13: commit edaf4c4.)
+**Date:** 2026-11-17. ZeroBias moved onto the JetHT pipeline, JetHT pT rebinned + new η/φ pT ranges, 2022C rerun for both samples. Details in memory `project_zerobias_migration.md` (decisions, numbers), also `project_stat_errors.md`, `feedback_hadd_by_user.md`. Previous session (2026-11-16: 2022D, C vs D, conditions, 2022EE crab) is in `project_category_redesign.md` / `project_ntuples_on_iihe.md`.
 
 **What was done:**
-- **2022D ip_res** (cluster 19903853): 50/50 OK, fit statuses like 2022C; DSCB conv errors invalid 204/1400 (C 117). Figures `test_figures/2022D/models/` (lumi 2.97 fb⁻¹).
-- **Model: DSCB is the default** (user choice). 3G medians agree within ~1 %, but 3G fits with status ≠ 0 can be off by up to 23 % vs the counted half-width (DSCB failures < 0.8 %).
-- **C vs D** (`studies/compare_eras.py <era1> <lumi1> <era2> <lumi2> <3g|dscb> <outdir>`, figures `test_figures/2022C_vs_2022D/`): 2022D is worse by +5…+17 % (median per category), identical measured vs PV-removed (not the PV error); D/C rises with pT (≈1.02–1.10 at 1 GeV → 1.15–1.22 above 5 GeV), φ-dependent at 3–10 GeV. Cause unknown.
-- **Conditions**: analysis GT 130X_dataRun3_v2 for both; tracks come from RECO 12_4_14_patch1 with GT 124X_dataRun3_v15 (22Sep2023 is only a re-MiniAOD). Pixel templates/GenError/LA change IOV exactly at run 357538 (first 2022D run), again at 357883, and at 356478 in C. User hypothesis: aging / radiation damage. 2022F/G MiniAOD are Prompt reco (other conditions than C/D/E). conddb needs `PYTHONNOUSERSITE=1`.
-- **crab production (Track-v20261019, IIHE)**, submitted 2026-11-16 (`submitData.sh` now on the 2022EE block): JetMET 2022E/F/G (100 lumis/job), ZeroBias 2022E/F/G (150 lumis/job), and recovery tasks `..._ver0_recovery` for the failed ZeroBias 2022C/D lumis (lumiMask = `results/notFinishedLumis.json`, 50 lumis/job; `crab resubmit` refused with < 7 days task life left). Recovery output lands in a NEW timestamp dir under the same era dir. State 2026-11-17: ZeroBias 2022 complete (E/F/G 100 %; C/D recovery 450/450 and 150/150 lumis, no notFinishedLumis); JetMET E 216/217, F 349/515, G 44/83 running; 3 failed F jobs (2× 8901, 1× 50660) resubmitted by the user.
+- **σ_PV vs pT/η** for ZeroBias and JetHT 2022C (10 files; `ZeroBias/studies/sigpv_hists.C`, `plot_sigpv.py`): σ_PV depends on η only (dz), flat in pT for ZeroBias; JetHT σ_PV is 2–3× smaller and falls with pT. So σ_PV flatness does not constrain the pT bins.
+- **Binning (user decisions)**: fixed piecewise pT bins (see IP resolution above), the JetHT 9 |η| slices for ZeroBias, η/φ pT ranges 0.1–1 / 1–3 / 3–10 (/ 10–15 JetHT), ZeroBias without φ and without > 10 GeV.
+- **JetHT**: old 2022C/2022D results snapshot in `JetHT/snapshots/2022CD_quantile50/` (binning.json, ip_res jsons, range/fill.root); old ip_res figures deleted. Code: `binning.py` (fixed PT_EDGES), `fill_hists.cc` (lopt/vhpt categories, per-binning bin counts), `ip_res.cc/.py`. 1-file regression vs the old code: identical. Full 2022C rerun: ungrouped DSCB identical to the snapshot; grouped results changed because the old 2022C fill had used pre-rerun pulls (old open item fixed for 2022C); unconverged 3G fits change by up to 9.5 % on identical histograms.
+- **ZeroBias**: pipeline copied from JetHT (paths, σ_PV group edges, PV bins 3–25 GeV, pull placeholder + `pull_source` guard, `pv_res.py` queue from binning), new `binning.json` (old one in `ZeroBias/snapshots/old_binning/`), tuplelist 2022C/2022D with original + recovery dirs. 2022C: range → fill (placeholder) → pv_res (pulls 0.99–1.06) → fill → ip_res, all jobs OK.
+- **Stat. errors**: `halfwidth_error` now treats a parameter at its limit (DSCB n = 100 in the forward slices) as fixed instead of returning −1 (error then ≈ 1/√N). ip_res for 2022C RESUBMITTED for both samples (JetHT cluster 20068889, ZeroBias 20068890).
+- hadd: I do all merges now (user, 2026-11-17); fill.root merged with `hadd -j 8` to local disk, cp + cmp, sampled histograms = sum of chunks.
+- Figures: `<sample>/test_figures/2022C/results/` (`JetHT/studies/plot_results.py <sample> <period> <outdir> [lumi]`, handles missing pt keys).
 
 **Open items for next session:**
-- crab status of JetMET 2022E/F/G; when done, `crab report` must show no notFinishedLumis. Then tuplelist entries (ZeroBias C/D: both timestamp dirs; suggested E, F, G as separate periods) and range → fill → pv_res → fill → ip_res with the same binning.json (never rerun binning.py).
-- Run-split test (early/late C, early/late D around runs 356478 / 357538 / 357883; `ev_run` in the tree) to tell a step from a gradual change.
-- DSCB errors invalid where n hits 100: proposal: treat n as fixed in the error when at its limit (needs ip_res rerun).
-- Group-closure plots per slice with the new groups.
-- Plot scripts broken by the new category names / moved inputs: `plotting/plot_common.cc`, `compare_*`, `list_ip_results.py`, `pipeline/plots/*`, `pipeline/convfit/*`, `studies/plot_sigpv_pt.py`.
-- 2022C fill used the old (n ≤ 10) pulls for the group assignment (≤ 0.3 % off).
-- Event-level PV cut (pv_NTracks ≥ 20) not done; ZeroBias analysis not migrated; beam-spot cross-check, legacy MC scripts; 2023/2023BPix/2024 production.
+- Check the ip_res reruns (20068889/20068890): reso values unchanged, pt_eta8 errors valid; replot `test_figures/2022C/results/`.
+- 2022D for both samples (JetHT: range → fill → merge → ip_res; ZeroBias: range → fill (placeholder) → merge → pv_res → fill → merge → ip_res). Then JetHT vs ZeroBias comparison (identical bins up to 5 GeV) and C vs D again.
+- Unexplained: d0 vs η at 0.1–1 GeV plateau at |η| 1.0–1.3 (both samples); ZeroBias dz vs η bump at η = 0; JetHT dz vs φ zig-zag at low pT; vs-φ dz histograms mix σ_PV,dz ×4 (φ deferred).
+- pv_res DSCB n lower limit 0.5 allows non-normalizable tails (seen once with 1 test file; pull check 0.5–2 catches it).
+- Plot scripts assume 50 pT bins and a `pt` key in every json: `studies/compare_eras.py`, `plotting/*`, `list_ip_results.py`, `pipeline/*`, `studies/plot_*`. Condor jobs leave `.root_hist` in the macro dirs (untracked; maybe .gitignore).
+- From before: JetMET 2022E/F/G crab status + `crab report`; run-split test around runs 356478 / 357538 / 357883; group-closure plots; pv_NTracks ≥ 20 cut not done; beam-spot cross-check; legacy MC scripts; 2023/2023BPix/2024 production.

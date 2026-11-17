@@ -3,6 +3,9 @@ import subprocess
 import os;
 
 def submit_jobs(period):
+    # one job per sqrt(SumPt2) bin (ZeroBias: 50; the JetHT copy had 56 hard-coded)
+    import json
+    n_pv = len(json.load(open("/eos/home-k/kakang/IPres/analysis/ZeroBias/json/binning.json"))["pv_SumTrackPt2_sqrt"]) - 1
 
     os.makedirs(f"/eos/home-k/kakang/IPres/analysis/ZeroBias/logs/{period}/pv_res/", exist_ok=True)
     os.makedirs(f"/eos/home-k/kakang/IPres/analysis/ZeroBias/json/{period}/pv_res/", exist_ok=True)
@@ -31,7 +34,7 @@ notify_user = kai.kang@cern.ch
 notification = error
 max_retries = 1
 should_transfer_files = NO
-queue 50
+queue {n_pv}
 """
     subprocess.run(["condor_submit"], input=submit_description.encode())
 

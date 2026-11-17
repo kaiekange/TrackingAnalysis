@@ -4,8 +4,9 @@ import os;
 import json
 
 def submit_jobs(period):
-    # one job per pt/eta/phi bin
-    nbins = len(json.load(open("/eos/home-k/kakang/IPres/analysis/JetHT/json/binning.json"))["pv_trk_pt"]) - 1
+    # one job per bin index; the pt / eta / phi binnings may differ in size: as many jobs as the largest
+    binning = json.load(open("/eos/home-k/kakang/IPres/analysis/JetHT/json/binning.json"))
+    nbins = max(len(binning[k]) - 1 for k in ("pv_trk_pt", "pv_trk_eta", "pv_trk_phi"))
 
     os.makedirs(f"/eos/home-k/kakang/IPres/analysis/JetHT/logs/{period}/ip_res/", exist_ok=True)
     os.makedirs(f"/eos/home-k/kakang/IPres/analysis/JetHT/json/{period}/ip_res/", exist_ok=True)

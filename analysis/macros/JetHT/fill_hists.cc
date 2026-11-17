@@ -8,7 +8,9 @@
 //   fill_hists.cc+("2022_22Sep", "fill", <chunk>, 10)   -> hists/<period>/fill/fill_<chunk>.root
 //       histograms with ranges mean +- 8 RMS from range.root; hadd -> fill.root
 //
-// Probe tracks: 1 < pT < 15 GeV, |eta| < 2.5 (pt/eta/phi binnings of binning.json). In every IP histogram,
+// Probe tracks: |eta| < 2.5; vs pT: the pt binning of binning.json (1-15 GeV); vs eta / phi: 0.1 < pT < 15 GeV in
+// the ranges 0.1-1, 1-3, 3-10, 10-15 GeV. The pt, eta and phi binnings may have different numbers of bins: the
+// index idx runs up to the largest, a category exists only where its own binning has bin idx. In every IP histogram,
 // separately for d0 and dz, the 1 % of tracks with the largest PV error (no pull; 99 % quantile of the
 // histogram's distribution in range.root) are dropped from the histogram, the PV error sums and the groups.
 // This removes the rare outliers from poorly constrained, low-multiplicity PVs (sigma_PV up to mm; < 0.1 % per
@@ -56,15 +58,23 @@ namespace fill
     const Double_t pv_init_max[N_PV] = {300, 300, 300, 10, 10, 10};
 
     // vs pT: one category per |eta| slice (pv_trk_abseta_slices of binning.json, N_SLICE slices) + all |eta| < 2.5;
-    // vs eta and vs phi: 1 < pT < 3 GeV (hipt) and 3 < pT < 10 GeV (ulpt)
+    // vs eta and vs phi: 1 < pT < 3 GeV (hipt), 3 < pT < 10 GeV (ulpt), 0.1 < pT < 1 GeV (lopt), 10 < pT < 15 GeV (vhpt)
     const Int_t N_SLICE = 9;
-    enum IpComb { PT_SLICE0 = 0, PT_ALLETA = N_SLICE, ETA_HIPT, ETA_ULPT, PHI_HIPT, PHI_ULPT, N_IP };
+    enum IpComb { PT_SLICE0 = 0, PT_ALLETA = N_SLICE, ETA_HIPT, ETA_ULPT, PHI_HIPT, PHI_ULPT,
+                  ETA_LOPT, ETA_VHPT, PHI_LOPT, PHI_VHPT, N_IP };
     const char *IP_SUFFIX[N_IP] = {"pt_eta0", "pt_eta1", "pt_eta2", "pt_eta3", "pt_eta4", "pt_eta5", "pt_eta6",
-                                   "pt_eta7", "pt_eta8", "pt_alleta", "eta_hipt", "eta_ulpt", "phi_hipt", "phi_ulpt"};
-    const Double_t init_d0_min[N_IP] = {-2000, -2000, -2000, -2000, -2000, -2000, -2000, -2000, -2000, -2000, -1000, -400, -500, -400};
-    const Double_t init_d0_max[N_IP] = {2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 1000, 400, 500, 400};
-    const Double_t init_dz_min[N_IP] = {-4000, -4000, -4000, -4000, -4000, -4000, -4000, -4000, -4000, -4000, -4000, -2000, -1500, -600};
-    const Double_t init_dz_max[N_IP] = {4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 2000, 1500, 600};
+                                   "pt_eta7", "pt_eta8", "pt_alleta", "eta_hipt", "eta_ulpt", "phi_hipt", "phi_ulpt",
+                                   "eta_lopt", "eta_vhpt", "phi_lopt", "phi_vhpt"};
+    // initial windows; lopt much wider (sigma_IP ~ 1/pT: at 1 GeV sigma_dz is already ~600 um at |eta| 2.3-2.5),
+    // vhpt as ulpt
+    const Double_t init_d0_min[N_IP] = {-2000, -2000, -2000, -2000, -2000, -2000, -2000, -2000, -2000, -2000, -1000, -400, -500, -400,
+                                        -10000, -400, -10000, -400};
+    const Double_t init_d0_max[N_IP] = {2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 1000, 400, 500, 400,
+                                        10000, 400, 10000, 400};
+    const Double_t init_dz_min[N_IP] = {-4000, -4000, -4000, -4000, -4000, -4000, -4000, -4000, -4000, -4000, -4000, -2000, -1500, -600,
+                                        -30000, -2000, -30000, -600};
+    const Double_t init_dz_max[N_IP] = {4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 2000, 1500, 600,
+                                        30000, 2000, 30000, 600};
 
     enum CovTerm { XX = 0, YY, ZZ, XY, XZ, YZ, NTRK, N_TERM };
 
@@ -178,12 +188,9 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
     const auto phi_edges = binning["pv_trk_phi"].get<std::vector<Float_t>>();
     const auto slice_edges = binning["pv_trk_abseta_slices"].get<std::vector<Float_t>>();
     const Int_t n_pv = pv_edges.size() - 1;
-    const Int_t n_ip = pt_edges.size() - 1;
-    if ((Int_t)eta_edges.size() - 1 != n_ip || (Int_t)phi_edges.size() - 1 != n_ip)
-    {
-        std::cerr << "[ERROR] fill_hists: pt/eta/phi binnings must have the same number of bins" << std::endl;
-        gSystem->Exit(1);
-    }
+    // the bin index idx runs over the largest of the three binnings; each category only up to its own
+    const Int_t n_pt = pt_edges.size() - 1, n_eta = eta_edges.size() - 1, n_phi = phi_edges.size() - 1;
+    const Int_t n_ip = std::max({n_pt, n_eta, n_phi});
     if ((Int_t)slice_edges.size() - 1 != N_SLICE)
     {
         std::cerr << "[ERROR] fill_hists: binning.json has " << slice_edges.size() - 1 << " |eta| slices, the code " << N_SLICE << std::endl;
@@ -313,6 +320,8 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
 
                 const Bool_t hipt = (tpt > 1.0 && tpt < 3.0);
                 const Bool_t ulpt = (tpt > 3.0 && tpt < 10.0);
+                const Bool_t lopt = (tpt > 0.1 && tpt < 1.0);
+                const Bool_t vhpt = (tpt > 10.0 && tpt < 15.0);
 
                 s_phi = std::sin((*phi)[it]);
                 c_phi = std::cos((*phi)[it]);
@@ -341,6 +350,11 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
 
                 if (i_phi >= 0 && hipt) ip_action(i_phi, PHI_HIPT, it);
                 if (i_phi >= 0 && ulpt) ip_action(i_phi, PHI_ULPT, it);
+
+                if (i_eta >= 0 && lopt) ip_action(i_eta, ETA_LOPT, it);
+                if (i_eta >= 0 && vhpt) ip_action(i_eta, ETA_VHPT, it);
+                if (i_phi >= 0 && lopt) ip_action(i_phi, PHI_LOPT, it);
+                if (i_phi >= 0 && vhpt) ip_action(i_phi, PHI_VHPT, it);
             }
         }
     };
@@ -521,11 +535,13 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
     }
     for (Int_t i = 0; i < n_ip; ++i)
     {
-        TString ptcut = Form("%.3f<#it{p_{T}}<%.3f GeV", pt_edges[i], pt_edges[i + 1]);
-        TString etacut = Form("%.2f<#it{#eta}<%.2f", eta_edges[i], eta_edges[i + 1]);
-        TString phicut = Form("%.2f<#it{#phi}<%.2f", phi_edges[i], phi_edges[i + 1]);
+        // a category without bin i in its own binning has no entries and is not booked (below); its title stays empty
+        TString ptcut = i < n_pt ? Form("%.3f<#it{p_{T}}<%.3f GeV", pt_edges[i], pt_edges[i + 1]) : "";
+        TString etacut = i < n_eta ? Form("%.2f<#it{#eta}<%.2f", eta_edges[i], eta_edges[i + 1]) : "";
+        TString phicut = i < n_phi ? Form("%.2f<#it{#phi}<%.2f", phi_edges[i], phi_edges[i + 1]) : "";
         auto two = [](TString a, TString b) { return "#splitline{" + a + "}{" + b + "}"; };
         const TString hipt = "1<#it{p_{T}}<3 GeV", ulpt = "3<#it{p_{T}}<10 GeV";
+        const TString lopt = "0.1<#it{p_{T}}<1 GeV", vhpt = "10<#it{p_{T}}<15 GeV";
         TString title[N_IP];
         for (Int_t s = 0; s < N_SLICE; ++s)
             title[PT_SLICE0 + s] = two(ptcut, Form("%.1f<|#it{#eta}|<%.1f", slice_edges[s], slice_edges[s + 1]));
@@ -534,6 +550,10 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
         title[ETA_ULPT] = two(etacut, ulpt);
         title[PHI_HIPT] = two(phicut, two(hipt, Form("|#it{#eta}|<%.1f", eta_max)));
         title[PHI_ULPT] = two(phicut, two(ulpt, Form("|#it{#eta}|<%.1f", eta_max)));
+        title[ETA_LOPT] = two(etacut, lopt);
+        title[ETA_VHPT] = two(etacut, vhpt);
+        title[PHI_LOPT] = two(phicut, two(lopt, Form("|#it{#eta}|<%.1f", eta_max)));
+        title[PHI_VHPT] = two(phicut, two(vhpt, Form("|#it{#eta}|<%.1f", eta_max)));
         for (Int_t c = 0; c < N_IP; ++c)
         {
             // as before: no histogram (fit result 0) unless both d0 and dz have entries

@@ -36,11 +36,13 @@ const Int_t sample_mod = 1;
 
 
 // must match IP_SUFFIX in fill_hists.cc: vs pT per |eta| slice (pv_trk_abseta_slices of binning.json) and for
-// all |eta| < 2.5; vs eta and vs phi for 1 < pT < 3 GeV (hipt) and 3 < pT < 10 GeV (ulpt)
-const Int_t NCOMB = 14;
+// all |eta| < 2.5; vs eta and vs phi for 1 < pT < 3 GeV (hipt), 3 < pT < 10 GeV (ulpt), 0.1 < pT < 1 GeV (lopt)
+// and 10 < pT < 15 GeV (vhpt). The pt / eta / phi binnings may have different numbers of bins: job idx fits only
+// the categories whose binning has bin idx, and writes the pt / eta / phi key only for those binnings.
+const Int_t NCOMB = 18;
 const char *COMB_SUFFIX[NCOMB] = {
     "pt_eta0", "pt_eta1", "pt_eta2", "pt_eta3", "pt_eta4", "pt_eta5", "pt_eta6", "pt_eta7", "pt_eta8",
-    "pt_alleta", "eta_hipt", "eta_ulpt", "phi_hipt", "phi_ulpt"};
+    "pt_alleta", "eta_hipt", "eta_ulpt", "phi_hipt", "phi_ulpt", "eta_lopt", "eta_vhpt", "phi_lopt", "phi_vhpt"};
 
 const Double_t HW_TOL = 1e-3;     // bisection tolerance of the reported 68% half-widths [um]
 const Double_t HW_TOL_ERR = 1e-6; // ... of the half-widths in the numerical derivatives of the error
@@ -77,16 +79,21 @@ Bool_t at_limit(const RooRealVar &p)
 
 // Statistical error of the half-width of a symmetric pdf: gradient in its shape parameters `par` (not the mean,
 // which drops out) by central differences, times the fit covariance of these parameters. Restores the parameters.
-// -1 if the covariance is not accurate (covQual < 3) or a parameter is at a limit.
+// A parameter at a limit (e.g. the DSCB n at 100: tails lighter than a power law) is treated as fixed: its Hesse
+// error is unreliable there and the half-width hardly depends on it (2026-11-17: n 100 -> 50 changes it by 0.2-0.5 %).
+// -1 if the covariance is not accurate (covQual < 3) or every parameter is at a limit.
 // Not included: the error of the subtracted PV error, the fit-model uncertainty.
-Double_t halfwidth_error(RooAbsPdf &pdf, RooRealVar &x, RooRealVar &mu, const RooArgList &par, const RooFitResult *res)
+Double_t halfwidth_error(RooAbsPdf &pdf, RooRealVar &x, RooRealVar &mu, const RooArgList &par_all, const RooFitResult *res)
 {
-    const Int_t np = par.getSize();
     if (res->covQual() < 3)
         return -1.0;
-    for (Int_t i = 0; i < np; ++i)
-        if (at_limit(*(RooRealVar *)par.at(i)))
-            return -1.0;
+    RooArgList par;
+    for (Int_t i = 0; i < par_all.getSize(); ++i)
+        if (!at_limit(*(RooRealVar *)par_all.at(i)))
+            par.add(*par_all.at(i));
+    const Int_t np = par.getSize();
+    if (np == 0)
+        return -1.0;
     const TMatrixDSym cov = res->reducedCovarianceMatrix(par);
     std::vector<Double_t> grad(np);
     for (Int_t i = 0; i < np; ++i)
@@ -392,12 +399,23 @@ Int_t ip_res(TString period, Int_t idx)
         return ntrk > 0 ? sum / ntrk : 0.0;
     };
 
+    // bin idx exists in a binning only if idx < its number of bins
+    auto has_bin = [&](const std::vector<Float_t> &edges) { return idx >= 0 && idx + 1 < (Int_t)edges.size(); };
+    const Bool_t has_pt = has_bin(pv_trk_pt_edges), has_eta = has_bin(pv_trk_eta_edges), has_phi = has_bin(pv_trk_phi_edges);
+    if (!has_pt && !has_eta && !has_phi)
+    {
+        std::cerr << "[ERROR] ip_res: job index " << idx << " is outside all binnings" << std::endl;
+        return 1;
+    }
     nlohmann::json resojson;
-    resojson["pt"] = (pv_trk_pt_edges[idx] + pv_trk_pt_edges[idx + 1]) / 2.0;
-    resojson["eta"] = (pv_trk_eta_edges[idx] + pv_trk_eta_edges[idx + 1]) / 2.0;
+    if (has_pt)
+        resojson["pt"] = (pv_trk_pt_edges[idx] + pv_trk_pt_edges[idx + 1]) / 2.0;
+    if (has_eta)
+        resojson["eta"] = (pv_trk_eta_edges[idx] + pv_trk_eta_edges[idx + 1]) / 2.0;
     // |eta| slice edges of the categories pt_eta0..8 (slice s: [edges[s], edges[s+1]))
     resojson["abseta_slices"] = binning["pv_trk_abseta_slices"];
-    resojson["phi"] = (pv_trk_phi_edges[idx] + pv_trk_phi_edges[idx + 1]) / 2.0;
+    if (has_phi)
+        resojson["phi"] = (pv_trk_phi_edges[idx] + pv_trk_phi_edges[idx + 1]) / 2.0;
 
     const char *VAR[2] = {"d0", "dz"};
     const char *FIGSUB[2] = {"ippv_xy_fit", "ippv_z_fit"};
@@ -494,6 +512,9 @@ Int_t ip_res(TString period, Int_t idx)
     for (Int_t cid = 0; cid < NCOMB; ++cid)
     {
         TString suffix = COMB_SUFFIX[cid];
+        // no bin idx in this category's binning: no keys at all (readers must not see a 0 result)
+        if ((suffix.BeginsWith("pt_") && !has_pt) || (suffix.BeginsWith("eta_") && !has_eta) || (suffix.BeginsWith("phi_") && !has_phi))
+            continue;
         for (Int_t v = 0; v < 2; ++v)
         {
             // all tracks of the bin

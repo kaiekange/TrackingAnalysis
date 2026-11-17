@@ -15,44 +15,52 @@ def get_quantile_edges_from_hist(hist, nbins, low, high):
     return qs.tolist()
 
 
-def binning() -> int:
+NBINS = 50         # eta quantile bins (= ip_res jobs; the pT bins share the job index, at most NBINS); no phi
+# eta quantiles from all vs-eta probe tracks: 0.1 < pT < 10 GeV
+PT_MIN, PT_MAX = 0.1, 10.0
+# pT: fixed piecewise equal-width bins (user 2026-11-17): 1-3 GeV in 0.1, 3-5 in 0.25, 5-10 in 1 GeV (33 bins;
+# JetHT: the same up to 5 GeV, then 0.5 GeV to 10 and 1 GeV to 15)
+PT_EDGES = ([round(1.0 + 0.1 * i, 2) for i in range(20)] + [round(3.0 + 0.25 * i, 2) for i in range(8)] +
+            [float(x) for x in range(5, 11)])
+ETA_MAX = 2.5
+# |eta| slices of the IP-vs-pT categories: wide where sigma_PV,dz is flat, narrow where it rises
+# (max/min of sigma_PV,dz <= 1.15 inside a slice, 2022C, 3-10 GeV)
+ABSETA_SLICES = [0.0, 0.8, 1.1, 1.3, 1.5, 1.7, 1.9, 2.1, 2.3, 2.5]
+N_FILES = 10       # first files of the period's file list (fill_hists.py) used for the quantiles
 
-    os.makedirs(f"/eos/home-k/kakang/IPres/analysis/ZeroBias/json/", exist_ok=True)
 
-    data_in = ["/eos/cms/store/group/phys_tracking/kakang/Run3TrackingAnalysis/Ntuple/Track-v20260210/ZeroBias/Run2022C_27Jun2023_v1_MINIAOD_S1M0/260210_144107/0000/*.root", "/eos/cms/store/group/phys_tracking/kakang/Run3TrackingAnalysis/Ntuple/Track-v20260210/ZeroBias/Run2022D_27Jun2023_v1_MINIAOD_S1M0/260210_144111/0000/*.root"]
+def binning(period="2022C") -> int:
+    """Track binnings: pT fixed (PT_EDGES); eta quantiles of the tracks in 0.1 < pT < 10 GeV, |eta| < 2.5,
+    from the first N_FILES ntuples of <period>.
+    The sqrt(SumPt2) PV binning is copied unchanged from the existing binning.json: the PV pulls of
+    pv_res.cc are per PV bin, so changing it would invalidate them.
+    Needs cmsenv (xrootd 5.7.2) and the grid proxy: the ntuples are read from T2_BE_IIHE."""
+    storage = "/eos/home-k/kakang/IPres/analysis/ZeroBias"
+    out_json = f"{storage}/json/binning.json"
+    pv_edges = json.load(open(out_json))["pv_SumTrackPt2_sqrt"]
 
+    data_in = [l.strip() for l in open(f"{storage}/hists/{period}/files.txt") if l.strip()][:N_FILES]
     df_data = ROOT.RDataFrame("residuals/tree", data_in)
+    sel = f"pv_trk_pt > {PT_MIN} && pv_trk_pt < {PT_MAX} && abs(pv_trk_eta) < {ETA_MAX}"
+    df_sel = df_data.Define("sel_pt", f"pv_trk_pt[{sel}]").Define("sel_eta", f"pv_trk_eta[{sel}]")
 
-    sumpt_model = ROOT.RDF.TH1DModel("sumpt_hist", "", 100000, 3.0, 25.0)
-    sumpt_hist = df_data.Define("pv_SumTrackPt2_sqrt", "sqrt(pv_SumTrackPt2)").Histo1D(sumpt_model, "pv_SumTrackPt2_sqrt").GetValue()
-    pv_SumTrackPt_binedges = get_quantile_edges_from_hist(sumpt_hist, 50, 3.0, 25.0)
-
-    trk_pt_model = ROOT.RDF.TH1DModel("trk_pt_hist", "", 100000, 0.1, 10.0)
-    trk_pt_hist = df_data.Histo1D(trk_pt_model, "pv_trk_pt").GetValue()
-    pv_trk_pt_binedges = get_quantile_edges_from_hist(trk_pt_hist, 200, 0.1, 10.0)
-
-    trk_pt_uleta_model = ROOT.RDF.TH1DModel("trk_pt_uleta_hist", "", 100000, 1, 10.0)
-    df_sel = df_data.Define("pv_trk_pt_uleta", "pv_trk_pt[abs(pv_trk_eta)>2.5 && abs(pv_trk_eta)<3.0]")
-    trk_pt_uleta_hist = df_sel.Histo1D(trk_pt_uleta_model, "pv_trk_pt_uleta").GetValue()
-    pv_trk_pt_uleta_binedges = get_quantile_edges_from_hist(trk_pt_uleta_hist, 200, 1, 10.0)
-
-    trk_eta_model = ROOT.RDF.TH1DModel("trk_eta_hist", "", 100000, -3.0, 3.0)
-    trk_eta_hist = df_data.Histo1D(trk_eta_model, "pv_trk_eta").GetValue()
-    pv_trk_eta_binedges = get_quantile_edges_from_hist(trk_eta_hist, 200, -3.0, 3.0)
-
-    trk_phi_model = ROOT.RDF.TH1DModel("trk_phi_hist", "", 100000, -np.pi, np.pi)
-    trk_phi_hist = df_data.Histo1D(trk_phi_model, "pv_trk_phi").GetValue()
-    pv_trk_phi_binedges = get_quantile_edges_from_hist(trk_phi_hist, 200, -np.pi, np.pi)
+    trk_pt_hist = df_sel.Histo1D(ROOT.RDF.TH1DModel("trk_pt_hist", "", 100000, PT_MIN, PT_MAX), "sel_pt")
+    trk_eta_hist = df_sel.Histo1D(ROOT.RDF.TH1DModel("trk_eta_hist", "", 100000, -ETA_MAX, ETA_MAX), "sel_eta")
+    # fail loud: an unreadable file must not silently shrink the sample
+    n_events = df_data.Count()
+    n_trk = trk_pt_hist.GetEntries()
+    print(f"{len(data_in)} files, {n_events.GetValue()} events, {n_trk:.0f} selected tracks")
+    if n_trk < 1e6:
+        print("[ERROR] binning: too few tracks")
+        return 1
 
     splitparams = {
-        "pv_SumTrackPt2_sqrt": pv_SumTrackPt_binedges,
-        "pv_trk_pt": pv_trk_pt_binedges,
-        "pv_trk_pt_uleta": pv_trk_pt_uleta_binedges,
-        "pv_trk_eta": pv_trk_eta_binedges,
-        "pv_trk_phi": pv_trk_phi_binedges,
+        "pv_SumTrackPt2_sqrt": pv_edges,
+        "pv_trk_pt": PT_EDGES,
+        "pv_trk_eta": get_quantile_edges_from_hist(trk_eta_hist.GetValue(), NBINS, -ETA_MAX, ETA_MAX),
+        "pv_trk_abseta_slices": ABSETA_SLICES,
     }
 
-    out_json = f"/eos/home-k/kakang/IPres/analysis/ZeroBias/json/binning.json"
     with open(out_json, "w") as outfile:
         json.dump(splitparams, outfile, indent=4)
 

@@ -15,8 +15,12 @@ def get_quantile_edges_from_hist(hist, nbins, low, high):
     return qs.tolist()
 
 
-NBINS = 50         # pT / eta / phi bins (= ip_res jobs); they share the bin index, so the same number
+NBINS = 50         # eta / phi quantile bins (= ip_res jobs; the pT bins share the job index, at most NBINS)
 PT_MIN, PT_MAX = 1.0, 15.0
+# pT: fixed piecewise equal-width bins (user 2026-11-17): 1-3 GeV in 0.1, 3-5 in 0.25, 5-10 in 0.5, 10-15 in 1 GeV
+# (43 bins; ZeroBias uses the same edges up to 5 GeV, then 1 GeV steps to 10 GeV)
+PT_EDGES = ([round(1.0 + 0.1 * i, 2) for i in range(20)] + [round(3.0 + 0.25 * i, 2) for i in range(8)] +
+            [round(5.0 + 0.5 * i, 2) for i in range(10)] + [float(x) for x in range(10, 16)])
 ETA_MAX = 2.5
 # |eta| slices of the IP-vs-pT categories: wide where sigma_PV,dz is flat, narrow where it rises
 # (max/min of sigma_PV,dz <= 1.15 inside a slice, 2022C, 3-10 GeV)
@@ -25,7 +29,8 @@ N_FILES = 10       # first files of the period's file list (fill_hists.py) used 
 
 
 def binning(period="2022C") -> int:
-    """Track binnings (quantiles in 1 < pT < 15 GeV, |eta| < 2.5) from the first N_FILES ntuples of <period>.
+    """Track binnings: pT fixed (PT_EDGES); eta / phi quantiles of the tracks in 1 < pT < 15 GeV, |eta| < 2.5,
+    from the first N_FILES ntuples of <period>.
     The sqrt(SumPt2) PV binning is copied unchanged from the existing binning.json: the PV pulls of
     pv_res.cc are per PV bin, so changing it would invalidate them.
     Needs cmsenv (xrootd 5.7.2) and the grid proxy: the ntuples are read from T2_BE_IIHE."""
@@ -51,7 +56,7 @@ def binning(period="2022C") -> int:
 
     splitparams = {
         "pv_SumTrackPt2_sqrt": pv_edges,
-        "pv_trk_pt": get_quantile_edges_from_hist(trk_pt_hist.GetValue(), NBINS, PT_MIN, PT_MAX),
+        "pv_trk_pt": PT_EDGES,
         "pv_trk_eta": get_quantile_edges_from_hist(trk_eta_hist.GetValue(), NBINS, -ETA_MAX, ETA_MAX),
         "pv_trk_phi": get_quantile_edges_from_hist(trk_phi_hist.GetValue(), NBINS, -np.pi, np.pi),
         "pv_trk_abseta_slices": ABSETA_SLICES,

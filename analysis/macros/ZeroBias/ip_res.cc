@@ -1,4 +1,6 @@
 #include <vector>
+#include <map>
+#include <string>
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -7,6 +9,7 @@
 #include <TChain.h>
 #include <TString.h>
 #include <TH1.h>
+#include <TH2.h>
 #include <TMath.h>
 
 #include <RooRealVar.h>
@@ -16,6 +19,9 @@
 #include <RooPlot.h>
 #include <RooFitResult.h>
 #include <RooFormulaVar.h>
+#include <RooCrystalBall.h>
+#include <RooFFTConvPdf.h>
+#include <TMatrixDSym.h>
 
 #include <nlohmann/json.hpp>
 
@@ -28,134 +34,140 @@ const TString storage_dir = "/eos/home-k/kakang/IPres/analysis/ZeroBias";
 
 const Int_t sample_mod = 1;
 
-const Int_t nbins = 200;
-const Float_t nsigma = 8.0;
-const Float_t sqrt_2 = sqrt(2);
 
-enum CombId
-{
-    PT_LOETA = 0,
-    PT_HIETA,
-    PT_ULETA,
-    PT_ALLETA,
-    ETA_LOPT,
-    ETA_HIPT,
-    ETA_ULPT,
-    ETA_ALLPT,
-    PHI_LOPT,
-    PHI_HIPT,
-    PHI_ULPT,
-    PHI_ALLPT,
-    NCOMB
-};
-
+// must match IP_SUFFIX in fill_hists.cc: vs pT per |eta| slice (pv_trk_abseta_slices of binning.json) and for
+// all |eta| < 2.5; vs eta for 1 < pT < 3 GeV (hipt), 3 < pT < 10 GeV (ulpt), 0.1 < pT < 1 GeV (lopt); no vs phi
+// for ZeroBias. The pt / eta binnings may have different numbers of bins: job idx fits only the categories whose
+// binning has bin idx, and writes the pt / eta key only for those binnings.
+const Int_t NCOMB = 13;
 const char *COMB_SUFFIX[NCOMB] = {
-    "pt_loeta",
-    "pt_hieta",
-    "pt_uleta",
-    "pt_alleta",
-    "eta_lopt",
-    "eta_hipt",
-    "eta_ulpt",
-    "eta_allpt",
-    "phi_lopt",
-    "phi_hipt",
-    "phi_ulpt",
-    "phi_allpt"};
+    "pt_eta0", "pt_eta1", "pt_eta2", "pt_eta3", "pt_eta4", "pt_eta5", "pt_eta6", "pt_eta7", "pt_eta8",
+    "pt_alleta", "eta_hipt", "eta_ulpt", "eta_lopt"};
 
-struct Stat
+const Double_t HW_TOL = 1e-3;     // bisection tolerance of the reported 68% half-widths [um]
+const Double_t HW_TOL_ERR = 1e-6; // ... of the half-widths in the numerical derivatives of the error
+const Int_t CONV_NCACHE = 8192;   // FFT cache bins of the convolution fit
+
+// 68% half-width of pdf around mean (normalisation range mean +- 1e6), bisection to tol
+Double_t halfwidth(RooAbsPdf &pdf, RooRealVar &x, Double_t mean, Double_t tol)
 {
-    Int_t n = 0;
-    Float_t sum = 0.0;
-    Float_t sum2 = 0.0;
-
-    void Fill(Float_t x)
+    x.setRange("normRange", mean - 1e6, mean + 1e6);
+    RooAbsReal *denom = pdf.createIntegral(x, RooFit::Range("normRange"));
+    const Double_t den = denom->getVal();
+    delete denom;
+    Double_t low = 0.0, high = x.getMax() - mean;
+    while (high - low > tol)
     {
-        n++;
-        sum += x;
-        sum2 += x * x;
-    }
-
-    Bool_t Valid() const { return n > 0; }
-
-    Float_t Mean() const
-    {
-        return n > 0 ? sum / Float_t(n) : 0.0;
-    }
-
-    Float_t Sigma() const
-    {
-        if (n <= 0)
-            return 0.0;
-        Float_t m = sum / Float_t(n);
-        Float_t v = sum2 / Float_t(n) - m * m;
-        return v > 0.0 ? std::sqrt(v) : 0.0;
-    }
-};
-
-struct HistInfo
-{
-    TString title;
-    TString dataFigPath;
-    TString mcFigPath;
-};
-
-Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath, Float_t tolerance = 1e-4)
-{
-    Int_t filledBins = 0;
-    for (Int_t i = 1; i <= hist->GetNbinsX(); i++)
-    {
-        if (hist->GetBinContent(i) > 0)
-            filledBins++;
-    }
-    if ((Double_t)filledBins / hist->GetNbinsX() < 0.1)
-        return -1.f;
-
-    setTDRStyle();
-    lumi_sqrtS = period + " (13.6 TeV)";
-
-    RooRealVar ip_var("ip_var", "ip_var", hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax());
-    ip_var.setBins(hist->GetNbinsX());
-
-    Float_t hist_mean = hist->GetMean();
-    Float_t hist_rms = hist->GetRMS();
-
-    RooRealVar mu("mu", "mu", hist_mean, hist_mean - hist_rms, hist_mean + hist_rms);
-    RooRealVar sigma("sigma", "sigma", 0.5 * hist_rms, 0.1 * hist_rms, hist_rms);
-    RooRealVar alpha("alpha", "alpha", 2.0, 0.5, 5.0);
-    RooRealVar n("n", "n", 2.0, 0.5, 10.0);
-    RooCrystalBall model("model", "Double Crystal Ball", ip_var, mu, sigma, alpha, n, alpha, n);
-
-    RooDataHist hdatahist("hdatahist", "", ip_var, hist);
-    RooFitResult *fitResult = model.fitTo(hdatahist, RooFit::Save(true));
-    if (fitResult->status() != 0)
-        std::cerr << "[WARN] fit_res: RooFit did not converge (status=" << fitResult->status() << ") for " << hist->GetName() << std::endl;
-    fitResult->Print();
-    delete fitResult;
-
-    Float_t ip_var_max = ip_var.getMax();
-    Float_t mean = mu.getVal();
-    Float_t low = 0.0;
-    Float_t high = ip_var_max - mean;
-
-    ip_var.setRange("normRange", mean - 1e6, mean + 1e6);
-    // ip_var.setRange("normRange", mean - 8 * hist_rms, mean + 8 * hist_rms);
-    RooAbsReal *denom = model.createIntegral(ip_var, RooFit::Range("normRange"));
-    while (high - low > tolerance)
-    {
-        Float_t mid = 0.5 * (low + high);
-        ip_var.setRange("intRange", mean - mid, mean + mid);
-        RooAbsReal *num = model.createIntegral(ip_var, RooFit::Range("intRange"));
-        Float_t prob = num->getVal() / denom->getVal();
-        if (prob < 0.68)
+        const Double_t mid = 0.5 * (low + high);
+        x.setRange("intRange", mean - mid, mean + mid);
+        RooAbsReal *num = pdf.createIntegral(x, RooFit::Range("intRange"));
+        if (num->getVal() / den < 0.68)
             low = mid;
         else
             high = mid;
         delete num;
     }
-    delete denom;
-    Float_t reso = 0.5 * (low + high);
+    return 0.5 * (low + high);
+}
 
+// true if a parameter is within 1e-3 of its range from a limit (its Hesse error is then unreliable)
+Bool_t at_limit(const RooRealVar &p)
+{
+    const Double_t d = 1e-3 * (p.getMax() - p.getMin());
+    return p.getVal() - p.getMin() < d || p.getMax() - p.getVal() < d;
+}
+
+// Statistical error of the half-width of a symmetric pdf: gradient in its shape parameters `par` (not the mean,
+// which drops out) by central differences, times the fit covariance of these parameters. Restores the parameters.
+// A parameter at a limit (e.g. the DSCB n at 100: tails lighter than a power law) is treated as fixed: its Hesse
+// error is unreliable there and the half-width hardly depends on it (2026-11-17: n 100 -> 50 changes it by 0.2-0.5 %).
+// -1 if the covariance is not accurate (covQual < 3) or every parameter is at a limit.
+// Not included: the error of the subtracted PV error, the fit-model uncertainty.
+Double_t halfwidth_error(RooAbsPdf &pdf, RooRealVar &x, RooRealVar &mu, const RooArgList &par_all, const RooFitResult *res)
+{
+    if (res->covQual() < 3)
+        return -1.0;
+    RooArgList par;
+    for (Int_t i = 0; i < par_all.getSize(); ++i)
+        if (!at_limit(*(RooRealVar *)par_all.at(i)))
+            par.add(*par_all.at(i));
+    const Int_t np = par.getSize();
+    if (np == 0)
+        return -1.0;
+    const TMatrixDSym cov = res->reducedCovarianceMatrix(par);
+    std::vector<Double_t> grad(np);
+    for (Int_t i = 0; i < np; ++i)
+    {
+        RooRealVar *p = (RooRealVar *)par.at(i);
+        const Double_t v0 = p->getVal();
+        const Double_t h = std::max(1e-3 * std::sqrt(cov(i, i)), 1e-6 * std::fabs(v0));
+        const Double_t vp = std::min(v0 + h, p->getMax()), vm = std::max(v0 - h, p->getMin());
+        p->setVal(vp);
+        const Double_t fp = halfwidth(pdf, x, mu.getVal(), HW_TOL_ERR);
+        p->setVal(vm);
+        const Double_t fm = halfwidth(pdf, x, mu.getVal(), HW_TOL_ERR);
+        p->setVal(v0);
+        grad[i] = (fp - fm) / (vp - vm);
+    }
+    Double_t var = 0;
+    for (Int_t i = 0; i < np; ++i)
+        for (Int_t j = 0; j < np; ++j)
+            var += grad[i] * cov(i, j) * grad[j];
+    return var > 0 ? std::sqrt(var) : -1.0;
+}
+
+struct FitOut
+{
+    Float_t reso = -1, err = -1;          // fit: 68% half-width and its stat. error (-1: not valid)
+    Int_t status = -1, covqual = -1;      // RooFit status (0 = converged; -1: not fitted, too few filled bins), covQual
+    Float_t conv = -1, conv_err = -1;     // convolution fit model (x) Gauss(0, s_PV): half-width of the model alone
+    Int_t conv_status = -1, conv_covqual = -1;
+};
+
+// model-free 68% half-width: counted around the median, all entries (incl. under/overflow) in the total,
+// linear interpolation inside the bins
+Double_t counted_halfwidth(TH1F *h)
+{
+    const Int_t nb = h->GetNbinsX();
+    const Double_t tot = h->Integral(0, nb + 1);
+    if (tot <= 0)
+        return -1.0;
+    std::vector<Double_t> edge(nb + 1), cum(nb + 1);
+    cum[0] = h->GetBinContent(0);
+    for (Int_t b = 0; b <= nb; ++b)
+        edge[b] = h->GetBinLowEdge(b + 1);
+    for (Int_t b = 1; b <= nb; ++b)
+        cum[b] = cum[b - 1] + h->GetBinContent(b);
+    auto F = [&](Double_t v) // cumulative count at v
+    {
+        if (v <= edge[0]) return cum[0];
+        if (v >= edge[nb]) return cum[nb];
+        const Int_t b = Int_t(std::upper_bound(edge.begin(), edge.end(), v) - edge.begin()) - 1;
+        return cum[b] + (cum[b + 1] - cum[b]) * (v - edge[b]) / (edge[b + 1] - edge[b]);
+    };
+    Double_t lo = edge[0], hi = edge[nb];
+    while (hi - lo > HW_TOL) // median
+    {
+        const Double_t mid = 0.5 * (lo + hi);
+        (F(mid) < 0.5 * tot ? lo : hi) = mid;
+    }
+    const Double_t med = 0.5 * (lo + hi);
+    lo = 0.0;
+    hi = edge[nb] - edge[0];
+    while (hi - lo > HW_TOL)
+    {
+        const Double_t mid = 0.5 * (lo + hi);
+        (F(med + mid) - F(med - mid) < 0.68 * tot ? lo : hi) = mid;
+    }
+    return 0.5 * (lo + hi);
+}
+
+// figure of a fit (data and model), as before
+void draw_fit(TH1F *hist, RooRealVar &ip_var, RooDataHist &hdatahist, RooAbsPdf &model, TString period,
+              TString sampletype, TString figpath, Float_t reso, TString model_text)
+{
+    setTDRStyle();
+    lumi_sqrtS = period + " (13.6 TeV)";
     TCanvas *canvas = new TCanvas("canvas", "canvas", 800, 600);
     canvas_setup(canvas);
     canvas->SetBottomMargin(0.15);
@@ -173,7 +185,6 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
                      RooFit::DrawOption("ep"));
     model.plotOn(frame,
                  RooFit::Name("model"),
-                 RooFit::Components("model"),
                  RooFit::LineStyle(9),
                  RooFit::LineColor(kRed),
                  RooFit::LineWidth(2.0),
@@ -189,454 +200,354 @@ Float_t fit_res(TH1F *hist, TString period, TString sampletype, TString figpath,
 
     write_text(0.6, 0.88, datatype_text);
     write_text(0.6, 0.8, hist->GetTitle());
-    write_text(0.6, 0.7, sampletype + " fit results:");
+    write_text(0.6, 0.7, sampletype + " fit results (" + model_text + "):");
     write_text(0.6, 0.65, Form("reso = %.*f", std::max(0, 2 - (Int_t)floor(log10(reso))), reso));
     CMS_lumi(canvas);
 
     canvas->Update();
     canvas->SaveAs(figpath + ".png");
     delete canvas;
-
-    return reso;
 }
 
-template <typename F>
-void process_tree_tracks(TChain *tree,
-                         Bool_t isData,
-                         Long64_t nEntries,
-                         Int_t idx,
-                         const std::vector<Float_t> &pv_trk_pt_edges,
-                         const std::vector<Float_t> &pv_trk_pt_uleta_edges,
-                         const std::vector<Float_t> &pv_trk_eta_edges,
-                         const std::vector<Float_t> &pv_trk_phi_edges,
-                         const std::vector<Float_t> &PU_weights,
-                         const std::vector<Float_t> &pv_trk_pt,
-                         const std::vector<Float_t> &pv_trk_eta,
-                         const std::vector<Float_t> &pv_trk_phi,
-                         const std::vector<Float_t> &pv_trk_d0,
-                         const std::vector<Float_t> &pv_trk_dz,
-                         const Int_t &NumTrueInts,
-                         F &&action)
+// Fits hist with a symmetric double-sided Crystal Ball (half-width = measured resolution) and, if s_pv > 0,
+// with the same DSCB convolved with a Gaussian of width s_pv (the mean PV error of the tracks): the half-width
+// of the DSCB alone is then the resolution with the PV error removed. The convolution fit starts from the DSCB
+// fit. The figure shows the DSCB fit.
+FitOut fit_res(TH1F *hist, TString period, TString sampletype, TString figpath, Double_t s_pv = -1)
 {
-    const Float_t pt_lo = pv_trk_pt_edges[idx];
-    const Float_t pt_hi = pv_trk_pt_edges[idx + 1];
-    const Float_t pt_uleta_lo = pv_trk_pt_uleta_edges[idx];
-    const Float_t pt_uleta_hi = pv_trk_pt_uleta_edges[idx + 1];
-    const Float_t eta_lo = pv_trk_eta_edges[idx];
-    const Float_t eta_hi = pv_trk_eta_edges[idx + 1];
-    const Float_t phi_lo = pv_trk_phi_edges[idx];
-    const Float_t phi_hi = pv_trk_phi_edges[idx + 1];
-
-    for (Long64_t ie = 0; ie < nEntries; ++ie)
+    FitOut out;
+    Int_t filledBins = 0;
+    for (Int_t i = 1; i <= hist->GetNbinsX(); i++)
     {
-        tree->GetEntry(ie);
-
-        const size_t nTrk = pv_trk_pt.size();
-        for (size_t it = 0; it < nTrk; ++it)
-        {
-            Float_t pt = pv_trk_pt[it];
-            Float_t eta = pv_trk_eta[it];
-            Float_t phi = pv_trk_phi[it];
-            Float_t d0 = pv_trk_d0[it];
-            Float_t dz = pv_trk_dz[it];
-            Float_t w = 1.0;
-            if (!isData)
-            {
-                if ((NumTrueInts < 1) || (NumTrueInts > PU_weights.size()))
-                    w = 0.0;
-                else
-                    w = PU_weights[NumTrueInts - 1];
-            }
-
-            const Float_t aeta = std::fabs(eta);
-
-            Bool_t in_ptbin = (pt > pt_lo && pt < pt_hi);
-            Bool_t in_ptuletabin = (pt > pt_uleta_lo && pt < pt_uleta_hi);
-            Bool_t in_etabin = (eta > eta_lo && eta < eta_hi);
-            Bool_t in_phibin = (phi > phi_lo && phi < phi_hi);
-
-            Bool_t loeta = (aeta < 1.3);
-            Bool_t hieta = (aeta > 1.3 && aeta < 2.5);
-            Bool_t uleta = (aeta > 2.5 && aeta < 3.0);
-            Bool_t alleta = (aeta < 10.0);
-
-            Bool_t lopt = (pt > 0.1 && pt < 1.0);
-            Bool_t hipt = (pt > 1.0 && pt < 3.0);
-            Bool_t ulpt = (pt > 3.0 && pt < 10.0);
-            Bool_t allpt = (pt > 0);
-
-            // pt × eta
-            if (in_ptbin && loeta)
-                action(PT_LOETA, d0, dz, w);
-            if (in_ptbin && hieta)
-                action(PT_HIETA, d0, dz, w);
-            if (in_ptuletabin && uleta)
-                action(PT_ULETA, d0, dz, w);
-            if (in_ptbin && alleta)
-                action(PT_ALLETA, d0, dz, w);
-
-            // eta × pt
-            if (in_etabin && lopt)
-                action(ETA_LOPT, d0, dz, w);
-            if (in_etabin && hipt)
-                action(ETA_HIPT, d0, dz, w);
-            if (in_etabin && ulpt)
-                action(ETA_ULPT, d0, dz, w);
-            if (in_etabin && allpt)
-                action(ETA_ALLPT, d0, dz, w);
-
-            // phi × pt
-            if (in_phibin && lopt)
-                action(PHI_LOPT, d0, dz, w);
-            if (in_phibin && hipt)
-                action(PHI_HIPT, d0, dz, w);
-            if (in_phibin && ulpt)
-                action(PHI_ULPT, d0, dz, w);
-            if (in_phibin && allpt)
-                action(PHI_ALLPT, d0, dz, w);
-        }
+        if (hist->GetBinContent(i) > 0)
+            filledBins++;
     }
+    if ((Double_t)filledBins / hist->GetNbinsX() < 0.1)
+        return out;
+
+    RooRealVar ip_var("ip_var", "ip_var", hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax());
+    ip_var.setBins(hist->GetNbinsX());
+
+    Float_t hist_mean = hist->GetMean();
+    Float_t hist_rms = hist->GetRMS();
+
+    RooRealVar mu("mu", "mu", hist_mean, hist_mean - hist_rms, hist_mean + hist_rms);
+    RooRealVar sigma("sigma", "sigma", 0.5 * hist_rms, 0.1 * hist_rms, hist_rms);
+    RooRealVar alpha("alpha", "alpha", 2.0, 0.5, 5.0);
+    // n up to 100: with the old limit 10 the dz fits stopped at n = 10 (optimum 11-17), which biased the
+    // half-width low by 0.2-0.6 % and left no valid covariance (2022C, checked 2026-11-13)
+    RooRealVar n("n", "n", 2.0, 0.5, 100.0);
+    RooCrystalBall model("model", "Double Crystal Ball", ip_var, mu, sigma, alpha, n, alpha, n);
+
+    RooDataHist hdatahist("hdatahist", "", ip_var, hist);
+    RooFitResult *fitResult = model.fitTo(hdatahist, RooFit::Save(true));
+    out.status = fitResult->status();
+    out.covqual = fitResult->covQual();
+    if (fitResult->status() != 0)
+        std::cerr << "[WARN] fit_res: RooFit did not converge (status=" << fitResult->status() << ") for " << hist->GetName() << std::endl;
+    fitResult->Print();
+
+    Float_t reso = halfwidth(model, ip_var, mu.getVal(), HW_TOL);
+    out.reso = reso;
+    out.err = halfwidth_error(model, ip_var, mu, RooArgList(sigma, alpha, n), fitResult);
+    delete fitResult;
+
+    draw_fit(hist, ip_var, hdatahist, model, period, sampletype, figpath, reso, "DSCB");
+
+    // convolution fit, starting from the DSCB fit
+    if (s_pv > 0)
+    {
+        ip_var.setBins(CONV_NCACHE, "cache");
+        RooRealVar zero("zero", "zero", 0.0);
+        RooRealVar s("s", "s", s_pv, 1e-3, 1e9);
+        s.setConstant(true);
+        RooGaussian pvgauss("pvgauss", "PV error", ip_var, zero, s);
+        RooFFTConvPdf conv("conv", "DSCB (x) PV error", ip_var, model, pvgauss);
+        RooFitResult *convResult = conv.fitTo(hdatahist, RooFit::Save(true), RooFit::PrintLevel(-1));
+        out.conv_status = convResult->status();
+        out.conv_covqual = convResult->covQual();
+        if (convResult->status() != 0)
+            std::cerr << "[WARN] fit_res: convolution fit status " << convResult->status() << " for " << hist->GetName() << std::endl;
+        out.conv = halfwidth(model, ip_var, mu.getVal(), HW_TOL);
+        out.conv_err = halfwidth_error(model, ip_var, mu, RooArgList(sigma, alpha, n), convResult);
+        delete convResult;
+    }
+    return out;
+}
+
+// The same with a sum of 3 Gaussians with a common mean (widths s1..s3, recursive fractions f1, f2). The
+// convolution with the PV-error Gaussian is analytic: each width becomes sqrt(s_i^2 + s_pv^2); the half-width of
+// the sum with the widths s_i is then the resolution with the PV error removed. The figure shows the plain fit.
+FitOut fit_3g(TH1F *hist, TString period, TString sampletype, TString figpath, Double_t s_pv = -1)
+{
+    FitOut out;
+    Int_t filledBins = 0;
+    for (Int_t i = 1; i <= hist->GetNbinsX(); i++)
+        if (hist->GetBinContent(i) > 0)
+            filledBins++;
+    if ((Double_t)filledBins / hist->GetNbinsX() < 0.1)
+        return out;
+
+    RooRealVar ip_var("ip_var", "ip_var", hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax());
+    ip_var.setBins(hist->GetNbinsX());
+    const Double_t m = hist->GetMean(), r = hist->GetRMS();
+    RooRealVar mu("mu", "mu", m, m - r, m + r);
+    RooRealVar s1("s1", "s1", 0.4 * r, 0.05 * r, 10 * r), s2("s2", "s2", 1.0 * r, 0.05 * r, 10 * r),
+        s3("s3", "s3", 2.5 * r, 0.05 * r, 10 * r);
+    RooRealVar f1("f1", "f1", 0.6, 0.0, 1.0), f2("f2", "f2", 0.3, 0.0, 1.0);
+    RooGaussian g1("g1", "", ip_var, mu, s1), g2("g2", "", ip_var, mu, s2), g3("g3", "", ip_var, mu, s3);
+    RooAddPdf model("model3", "3 Gaussians", RooArgList(g1, g2, g3), RooArgList(f1, f2), true);
+    // fractions refer to the full observable range, not to the sub-ranges integrated in halfwidth()
+    model.fixCoefNormalization(RooArgSet(ip_var));
+
+    RooDataHist hdatahist("hdatahist", "", ip_var, hist);
+    RooFitResult *fitResult = model.fitTo(hdatahist, RooFit::Save(true), RooFit::PrintLevel(-1));
+    out.status = fitResult->status();
+    out.covqual = fitResult->covQual();
+    if (fitResult->status() != 0)
+        std::cerr << "[WARN] fit_3g: status " << fitResult->status() << " for " << hist->GetName() << std::endl;
+    const RooArgList shape(s1, s2, s3, f1, f2);
+    out.reso = halfwidth(model, ip_var, mu.getVal(), HW_TOL);
+    out.err = halfwidth_error(model, ip_var, mu, shape, fitResult);
+    delete fitResult;
+
+    draw_fit(hist, ip_var, hdatahist, model, period, sampletype, figpath, out.reso, "3 Gaussians");
+
+    if (s_pv > 0)
+    {
+        RooRealVar s("s", "s", s_pv);
+        s.setConstant(true);
+        // start from the plain fit: s_i -> sqrt(s_i^2 - s_pv^2) (at least the lower limit)
+        for (RooRealVar *si : {&s1, &s2, &s3})
+            si->setVal(std::max(std::sqrt(std::max(si->getVal() * si->getVal() - s_pv * s_pv, 0.0)), 1.01 * si->getMin()));
+        RooFormulaVar w1("w1", "sqrt(@0*@0+@1*@1)", RooArgList(s1, s)), w2("w2", "sqrt(@0*@0+@1*@1)", RooArgList(s2, s)),
+            w3("w3", "sqrt(@0*@0+@1*@1)", RooArgList(s3, s));
+        RooGaussian c1("c1", "", ip_var, mu, w1), c2("c2", "", ip_var, mu, w2), c3("c3", "", ip_var, mu, w3);
+        RooAddPdf conv("conv3", "3 Gaussians (x) PV error", RooArgList(c1, c2, c3), RooArgList(f1, f2), true);
+        conv.fixCoefNormalization(RooArgSet(ip_var));
+        RooFitResult *convResult = conv.fitTo(hdatahist, RooFit::Save(true), RooFit::PrintLevel(-1));
+        out.conv_status = convResult->status();
+        out.conv_covqual = convResult->covQual();
+        if (convResult->status() != 0)
+            std::cerr << "[WARN] fit_3g: convolution fit status " << convResult->status() << " for " << hist->GetName() << std::endl;
+        out.conv = halfwidth(model, ip_var, mu.getVal(), HW_TOL);
+        out.conv_err = halfwidth_error(model, ip_var, mu, shape, convResult);
+        delete convResult;
+    }
+    return out;
 }
 
 Int_t ip_res(TString period, Int_t idx)
 {
     TString figdir = storage_dir + "/figures/" + period + "/ip_res/";
 
-    // ---------- Read JSONs ----------
-    std::ifstream tuplelist_file("/afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_16/src/TrackingAnalysis/analysis/macros/ZeroBias/tuplelist.json");
-    nlohmann::json tuplelist;
-    tuplelist_file >> tuplelist;
-    tuplelist_file.close();
-
     std::ifstream infile(storage_dir + "/json/binning.json");
     nlohmann::json binning;
     infile >> binning;
     infile.close();
 
-    std::ifstream pileup_weightfile(storage_dir + "/pileup/" + period + "/pileup_ratio.json");
-    nlohmann::json pu_weights_json;
-    pileup_weightfile >> pu_weights_json;
-    pileup_weightfile.close();
-
-    // ---------- Build lookup tables ----------
     std::vector<Float_t> pv_trk_pt_edges = binning["pv_trk_pt"].get<std::vector<Float_t>>();
-    std::vector<Float_t> pv_trk_pt_uleta_edges = binning["pv_trk_pt_uleta"].get<std::vector<Float_t>>();
     std::vector<Float_t> pv_trk_eta_edges = binning["pv_trk_eta"].get<std::vector<Float_t>>();
-    std::vector<Float_t> pv_trk_phi_edges = binning["pv_trk_phi"].get<std::vector<Float_t>>();
+    const Int_t n_pv = binning["pv_SumTrackPt2_sqrt"].size() - 1;
 
-    std::vector<Float_t> PU_weights(pu_weights_json.size());
-    for (const auto &item : pu_weights_json)
+    // ---------- PV pulls per sqrt(SumPt2) bin (from pv_res.cc) ----------
+    std::vector<Double_t> pull_x(n_pv), pull_y(n_pv), pull_z(n_pv);
+    for (Int_t k = 0; k < n_pv; ++k)
     {
-        Int_t bin = item["bin"];
-        PU_weights[bin - 1] = item["content"].get<Float_t>();
-    }
-
-    // ---------- Branch variables ----------
-    std::vector<Float_t> *pv_trk_pt = nullptr;
-    std::vector<Float_t> *pv_trk_eta = nullptr;
-    std::vector<Float_t> *pv_trk_phi = nullptr;
-    std::vector<Float_t> *pv_trk_d0 = nullptr;
-    std::vector<Float_t> *pv_trk_dz = nullptr;
-    Int_t NumTrueInts;
-
-    auto bind_common_branches = [&](TChain *tree)
-    {
-        tree->SetBranchAddress("pv_trk_pt", &pv_trk_pt);
-        tree->SetBranchAddress("pv_trk_eta", &pv_trk_eta);
-        tree->SetBranchAddress("pv_trk_phi", &pv_trk_phi);
-        tree->SetBranchAddress("pv_trk_d0_pvunbiased", &pv_trk_d0);
-        tree->SetBranchAddress("pv_trk_dz_pvunbiased", &pv_trk_dz);
-    };
-
-    // ---------- Build data TChain ----------
-    TChain *datatree = new TChain("residuals/tree");
-    for (auto &entry : tuplelist[period.Data()]["data"])
-    {
-        std::string path = entry["path"];
-        if (!path.empty())
-            datatree->Add(TString(path) + "/*.root");
-    }
-    bind_common_branches(datatree);
-    Long64_t nData = datatree->GetEntries();
-
-    // ---------- Histogram info ----------
-    TString ptcut_title = Form("%.3f<#it{p_{T}}<%.3f GeV", pv_trk_pt_edges[idx], pv_trk_pt_edges[idx + 1]);
-    TString ptcut_uleta_title = Form("%.3f<#it{p_{T}}<%.3f GeV", pv_trk_pt_uleta_edges[idx], pv_trk_pt_uleta_edges[idx + 1]);
-    TString etacut_title = Form("%.2f<#it{#eta}<%.2f", pv_trk_eta_edges[idx], pv_trk_eta_edges[idx + 1]);
-    TString phicut_title = Form("%.2f<#it{#phi}<%.2f", pv_trk_phi_edges[idx], pv_trk_phi_edges[idx + 1]);
-
-    TString lopt_title = "0.1<#it{p_{T}}<1 GeV";
-    TString hipt_title = "1<#it{p_{T}}<3 GeV";
-    TString ulpt_title = "3<#it{p_{T}}<10 GeV";
-
-    TString loeta_title = "|#it{#eta}|<1.3";
-    TString hieta_title = "1.3<|#it{#eta}|<2.5";
-    TString uleta_title = "2.5<|#it{#eta}|<3.0";
-
-    HistInfo info_d0[NCOMB];
-    HistInfo info_dz[NCOMB];
-
-    info_d0[PT_LOETA].title = "#splitline{" + ptcut_title + "}{" + loeta_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[PT_LOETA].dataFigPath = figdir + Form("ippv_xy_fit/data_pt_loeta_%d", idx);
-    info_d0[PT_LOETA].mcFigPath = figdir + Form("ippv_xy_fit/mc_pt_loeta_%d", idx);
-    info_dz[PT_LOETA].title = "#splitline{" + ptcut_title + "}{" + loeta_title + "};Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[PT_LOETA].dataFigPath = figdir + Form("ippv_z_fit/data_pt_loeta_%d", idx);
-    info_dz[PT_LOETA].mcFigPath = figdir + Form("ippv_z_fit/mc_pt_loeta_%d", idx);
-
-    info_d0[PT_HIETA].title = "#splitline{" + ptcut_title + "}{" + hieta_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[PT_HIETA].dataFigPath = figdir + Form("ippv_xy_fit/data_pt_hieta_%d", idx);
-    info_d0[PT_HIETA].mcFigPath = figdir + Form("ippv_xy_fit/mc_pt_hieta_%d", idx);
-    info_dz[PT_HIETA].title = "#splitline{" + ptcut_title + "}{" + hieta_title + "};Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[PT_HIETA].dataFigPath = figdir + Form("ippv_z_fit/data_pt_hieta_%d", idx);
-    info_dz[PT_HIETA].mcFigPath = figdir + Form("ippv_z_fit/mc_pt_hieta_%d", idx);
-
-    info_d0[PT_ULETA].title = "#splitline{" + ptcut_uleta_title + "}{" + uleta_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[PT_ULETA].dataFigPath = figdir + Form("ippv_xy_fit/data_pt_uleta_%d", idx);
-    info_d0[PT_ULETA].mcFigPath = figdir + Form("ippv_xy_fit/mc_pt_uleta_%d", idx);
-    info_dz[PT_ULETA].title = "#splitline{" + ptcut_uleta_title + "}{" + uleta_title + "};Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[PT_ULETA].dataFigPath = figdir + Form("ippv_z_fit/data_pt_uleta_%d", idx);
-    info_dz[PT_ULETA].mcFigPath = figdir + Form("ippv_z_fit/mc_pt_uleta_%d", idx);
-
-    info_d0[PT_ALLETA].title = ptcut_title + ";Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[PT_ALLETA].dataFigPath = figdir + Form("ippv_xy_fit/data_pt_alleta_%d", idx);
-    info_d0[PT_ALLETA].mcFigPath = figdir + Form("ippv_xy_fit/mc_pt_alleta_%d", idx);
-    info_dz[PT_ALLETA].title = ptcut_title + ";Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[PT_ALLETA].dataFigPath = figdir + Form("ippv_z_fit/data_pt_alleta_%d", idx);
-    info_dz[PT_ALLETA].mcFigPath = figdir + Form("ippv_z_fit/mc_pt_alleta_%d", idx);
-
-    info_d0[ETA_LOPT].title = "#splitline{" + etacut_title + "}{" + lopt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[ETA_LOPT].dataFigPath = figdir + Form("ippv_xy_fit/data_eta_lopt_%d", idx);
-    info_d0[ETA_LOPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_eta_lopt_%d", idx);
-    info_dz[ETA_LOPT].title = "#splitline{" + etacut_title + "}{" + lopt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[ETA_LOPT].dataFigPath = figdir + Form("ippv_z_fit/data_eta_lopt_%d", idx);
-    info_dz[ETA_LOPT].mcFigPath = figdir + Form("ippv_z_fit/mc_eta_lopt_%d", idx);
-
-    info_d0[ETA_HIPT].title = "#splitline{" + etacut_title + "}{" + hipt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[ETA_HIPT].dataFigPath = figdir + Form("ippv_xy_fit/data_eta_hipt_%d", idx);
-    info_d0[ETA_HIPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_eta_hipt_%d", idx);
-    info_dz[ETA_HIPT].title = "#splitline{" + etacut_title + "}{" + hipt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[ETA_HIPT].dataFigPath = figdir + Form("ippv_z_fit/data_eta_hipt_%d", idx);
-    info_dz[ETA_HIPT].mcFigPath = figdir + Form("ippv_z_fit/mc_eta_hipt_%d", idx);
-
-    info_d0[ETA_ULPT].title = "#splitline{" + etacut_title + "}{" + ulpt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[ETA_ULPT].dataFigPath = figdir + Form("ippv_xy_fit/data_eta_ulpt_%d", idx);
-    info_d0[ETA_ULPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_eta_ulpt_%d", idx);
-    info_dz[ETA_ULPT].title = "#splitline{" + etacut_title + "}{" + ulpt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[ETA_ULPT].dataFigPath = figdir + Form("ippv_z_fit/data_eta_ulpt_%d", idx);
-    info_dz[ETA_ULPT].mcFigPath = figdir + Form("ippv_z_fit/mc_eta_ulpt_%d", idx);
-
-    info_d0[ETA_ALLPT].title = etacut_title + ";Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[ETA_ALLPT].dataFigPath = figdir + Form("ippv_xy_fit/data_eta_allpt_%d", idx);
-    info_d0[ETA_ALLPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_eta_allpt_%d", idx);
-    info_dz[ETA_ALLPT].title = etacut_title + ";Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[ETA_ALLPT].dataFigPath = figdir + Form("ippv_z_fit/data_eta_allpt_%d", idx);
-    info_dz[ETA_ALLPT].mcFigPath = figdir + Form("ippv_z_fit/mc_eta_allpt_%d", idx);
-
-    info_d0[PHI_LOPT].title = "#splitline{" + phicut_title + "}{" + lopt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[PHI_LOPT].dataFigPath = figdir + Form("ippv_xy_fit/data_phi_lopt_%d", idx);
-    info_d0[PHI_LOPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_phi_lopt_%d", idx);
-    info_dz[PHI_LOPT].title = "#splitline{" + phicut_title + "}{" + lopt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[PHI_LOPT].dataFigPath = figdir + Form("ippv_z_fit/data_phi_lopt_%d", idx);
-    info_dz[PHI_LOPT].mcFigPath = figdir + Form("ippv_z_fit/mc_phi_lopt_%d", idx);
-
-    info_d0[PHI_HIPT].title = "#splitline{" + phicut_title + "}{" + hipt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[PHI_HIPT].dataFigPath = figdir + Form("ippv_xy_fit/data_phi_hipt_%d", idx);
-    info_d0[PHI_HIPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_phi_hipt_%d", idx);
-    info_dz[PHI_HIPT].title = "#splitline{" + phicut_title + "}{" + hipt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[PHI_HIPT].dataFigPath = figdir + Form("ippv_z_fit/data_phi_hipt_%d", idx);
-    info_dz[PHI_HIPT].mcFigPath = figdir + Form("ippv_z_fit/mc_phi_hipt_%d", idx);
-
-    info_d0[PHI_ULPT].title = "#splitline{" + phicut_title + "}{" + ulpt_title + "};Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[PHI_ULPT].dataFigPath = figdir + Form("ippv_xy_fit/data_phi_ulpt_%d", idx);
-    info_d0[PHI_ULPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_phi_ulpt_%d", idx);
-    info_dz[PHI_ULPT].title = "#splitline{" + phicut_title + "}{" + ulpt_title + "};Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[PHI_ULPT].dataFigPath = figdir + Form("ippv_z_fit/data_phi_ulpt_%d", idx);
-    info_dz[PHI_ULPT].mcFigPath = figdir + Form("ippv_z_fit/mc_phi_ulpt_%d", idx);
-
-    info_d0[PHI_ALLPT].title = phicut_title + ";Track IP #it{d_{xy}} [#mum];# tracks";
-    info_d0[PHI_ALLPT].dataFigPath = figdir + Form("ippv_xy_fit/data_phi_allpt_%d", idx);
-    info_d0[PHI_ALLPT].mcFigPath = figdir + Form("ippv_xy_fit/mc_phi_allpt_%d", idx);
-    info_dz[PHI_ALLPT].title = phicut_title + ";Track IP #it{d_{z}} [#mum];# tracks";
-    info_dz[PHI_ALLPT].dataFigPath = figdir + Form("ippv_z_fit/data_phi_allpt_%d", idx);
-    info_dz[PHI_ALLPT].mcFigPath = figdir + Form("ippv_z_fit/mc_phi_allpt_%d", idx);
-
-    // 初始裁剪范围（照搬你原来的 lowbound/highbound）
-    Float_t init_d0_min[NCOMB] = {
-        // pt × eta
-        -2000, -4000, -6000, -4000,
-        // eta × pt
-        -2000, -1000, -400, -2000,
-        // phi × pt
-        -2000, -500, -400, -1500};
-    Float_t init_d0_max[NCOMB] = {
-        // pt × eta
-        2000, 4000, 6000, 4000,
-        // eta × pt
-        2000, 1000, 400, 2000,
-        // phi × pt
-        2000, 500, 400, 1500};
-    Float_t init_dz_min[NCOMB] = {
-        // pt × eta
-        -2000, -10000, -10000, -10000,
-        // eta × pt
-        -8000, -4000, -2000, -5000,
-        // phi × pt
-        -3000, -1500, -600, -2000};
-    Float_t init_dz_max[NCOMB] = {
-        // pt × eta
-        2000, 10000, 10000, 10000,
-        // eta × pt
-        8000, 4000, 2000, 5000,
-        // phi × pt
-        3000, 1500, 600, 2000};
-
-    // ---------- First pass on data: compute histogram ranges ----------
-    Stat stats_d0_data[NCOMB];
-    Stat stats_dz_data[NCOMB];
-    auto stat_action_data = [&](Int_t cid, Float_t d0, Float_t dz, Float_t w)
-    {
-        if (d0 >= init_d0_min[cid] && d0 <= init_d0_max[cid])
-            stats_d0_data[cid].Fill(d0);
-        if (dz >= init_dz_min[cid] && dz <= init_dz_max[cid])
-            stats_dz_data[cid].Fill(dz);
-    };
-
-    process_tree_tracks(datatree, true, nData, idx,
-                        pv_trk_pt_edges, pv_trk_pt_uleta_edges, pv_trk_eta_edges, pv_trk_phi_edges, PU_weights,
-                        *pv_trk_pt, *pv_trk_eta, *pv_trk_phi,
-                        *pv_trk_d0, *pv_trk_dz,
-                        NumTrueInts,
-                        stat_action_data);
-
-    // ---------- Build histograms ----------
-    TH1F *h_d0_data[NCOMB] = {nullptr};
-    TH1F *h_d0_mc[NCOMB] = {nullptr};
-    TH1F *h_dz_data[NCOMB] = {nullptr};
-    TH1F *h_dz_mc[NCOMB] = {nullptr};
-
-    for (Int_t cid = 0; cid < NCOMB; ++cid)
-    {
-        if (!stats_d0_data[cid].Valid() || !stats_dz_data[cid].Valid())
-            continue;
-        Float_t mean_d0 = stats_d0_data[cid].Mean();
-        Float_t sigma_d0 = stats_d0_data[cid].Sigma();
-        Float_t mean_dz = stats_dz_data[cid].Mean();
-        Float_t sigma_dz = stats_dz_data[cid].Sigma();
-        if (sigma_d0 <= 0.0)
+        std::ifstream pvfile(storage_dir + "/json/" + period + Form("/pv_res/fit_%d.json", k));
+        if (!pvfile)
         {
-            mean_d0 = 0.5f * (init_d0_min[cid] + init_d0_max[cid]);
-            sigma_d0 = (init_d0_max[cid] - init_d0_min[cid]) / (2.f * nsigma);
+            std::cerr << "[ERROR] ip_res: missing PV result " << storage_dir + "/json/" + period + Form("/pv_res/fit_%d.json", k) << std::endl;
+            return 1;
         }
-        if (sigma_dz <= 0.0)
+        nlohmann::json pv;
+        pvfile >> pv;
+        pull_x[k] = pv["reso_data_pullx"];
+        pull_y[k] = pv["reso_data_pully"];
+        pull_z[k] = pv["reso_data_pullz"];
+        // a failed pull fit (0, or far from 1) would silently distort the subtraction
+        auto bad = [](Double_t p) { return p < 0.5 || p > 2.0; };
+        if (bad(pull_x[k]) || bad(pull_y[k]) || bad(pull_z[k]))
         {
-            mean_dz = 0.5f * (init_dz_min[cid] + init_dz_max[cid]);
-            sigma_dz = (init_dz_max[cid] - init_dz_min[cid]) / (2.f * nsigma);
+            std::cerr << "[ERROR] ip_res: implausible PV pull (" << pull_x[k] << ", " << pull_y[k] << ", " << pull_z[k]
+                      << ") in sqrt(SumPt2) bin " << k << std::endl;
+            return 1;
         }
-        Float_t d0_min = mean_d0 - nsigma * sigma_d0;
-        Float_t d0_max = mean_d0 + nsigma * sigma_d0;
-        Float_t dz_min = mean_dz - nsigma * sigma_dz;
-        Float_t dz_max = mean_dz + nsigma * sigma_dz;
-        // if (abs(pv_trk_eta_edges[idx] + pv_trk_eta_edges[idx + 1]) / 2 > 2.4 && (cid >= 5) && (cid <= 7))
-        // {
-        //     dz_min = -1000.f;
-        //     dz_max = 1000.f;
-        // }
-        h_d0_data[cid] = new TH1F(Form("h_d0_data_%d_%d", idx, cid), info_d0[cid].title, nbins, d0_min, d0_max);
-        h_d0_mc[cid] = new TH1F(Form("h_d0_mc_%d_%d", idx, cid), info_d0[cid].title, nbins, d0_min, d0_max);
-        h_dz_data[cid] = new TH1F(Form("h_dz_data_%d_%d", idx, cid), info_dz[cid].title, nbins, dz_min, dz_max);
-        h_dz_mc[cid] = new TH1F(Form("h_dz_mc_%d_%d", idx, cid), info_dz[cid].title, nbins, dz_min, dz_max);
-        h_d0_data[cid]->Sumw2();
-        h_d0_mc[cid]->Sumw2();
-        h_dz_data[cid]->Sumw2();
-        h_dz_mc[cid]->Sumw2();
     }
 
-    // ---------- Second pass on data: fill ----------
-    auto fill_action_data = [&](Int_t cid, Float_t d0, Float_t dz, Float_t w)
+    // histograms filled by fill_hists.cc
+    TFile *histfile = TFile::Open(storage_dir + "/hists/" + period + "/fill.root");
+    if (!histfile || histfile->IsZombie())
     {
-        if (h_d0_data[cid])
-            h_d0_data[cid]->Fill(d0);
-        if (h_dz_data[cid])
-            h_dz_data[cid]->Fill(dz);
-    };
-    process_tree_tracks(datatree, true, nData, idx,
-                        pv_trk_pt_edges, pv_trk_pt_uleta_edges, pv_trk_eta_edges, pv_trk_phi_edges, PU_weights,
-                        *pv_trk_pt, *pv_trk_eta, *pv_trk_phi,
-                        *pv_trk_d0, *pv_trk_dz,
-                        NumTrueInts,
-                        fill_action_data);
-
-    // ---------- MC: process per entry ----------
-    TChain *mctree = new TChain("residuals/tree");
-    for (auto &entry : tuplelist[period.Data()]["mc"])
+        std::cerr << "[ERROR] ip_res: cannot open " << storage_dir + "/hists/" + period + "/fill.root" << std::endl;
+        return 1;
+    }
+    // the PV-error groups of fill.root must use this period's pv_res pulls, not the placeholder of the first fill
+    TNamed *pull_source = (TNamed *)histfile->Get("pull_source");
+    if (!pull_source || TString(pull_source->GetTitle()) != "pv_res")
     {
-        std::string path = entry["path"];
-        TString mcpath = TString(path) + "/*.root";
-        mctree->Add(mcpath);
+        std::cerr << "[ERROR] ip_res: fill.root was made with pull source \"" << (pull_source ? pull_source->GetTitle() : "missing")
+                  << "\": run pv_res, then fill again" << std::endl;
+        return 1;
     }
 
-    bind_common_branches(mctree);
-    mctree->SetBranchAddress("NumTrueInts", &NumTrueInts);
-    Long64_t nMC = mctree->GetEntries();
-
-    auto fill_action_mc = [&](Int_t cid, Float_t d0, Float_t dz, Float_t w)
+    // Mean PV error^2 of the tracks in one IP histogram, from the projected unbiased-PV covariance
+    // sums of fill_hists.cc (x: sqrt(SumPt2) bin; y: xx yy zz xy xz yz ntrk), with or without pulls.
+    auto mean_pverr2 = [&](TH2D *e, Bool_t use_pull)
     {
-        if (h_d0_mc[cid])
-            h_d0_mc[cid]->Fill(d0, w);
-        if (h_dz_mc[cid])
-            h_dz_mc[cid]->Fill(dz, w);
+        Double_t sum = 0, ntrk = 0;
+        for (Int_t k = 0; k < n_pv; ++k)
+        {
+            const Double_t px = use_pull ? pull_x[k] : 1, py = use_pull ? pull_y[k] : 1, pz = use_pull ? pull_z[k] : 1;
+            sum += px * px * e->GetBinContent(k + 1, 1) + py * py * e->GetBinContent(k + 1, 2) + pz * pz * e->GetBinContent(k + 1, 3) +
+                   px * py * e->GetBinContent(k + 1, 4) + px * pz * e->GetBinContent(k + 1, 5) + py * pz * e->GetBinContent(k + 1, 6);
+            ntrk += e->GetBinContent(k + 1, 7);
+        }
+        return ntrk > 0 ? sum / ntrk : 0.0;
     };
-    process_tree_tracks(mctree, false, nMC, idx,
-                        pv_trk_pt_edges, pv_trk_pt_uleta_edges, pv_trk_eta_edges, pv_trk_phi_edges, PU_weights,
-                        *pv_trk_pt, *pv_trk_eta, *pv_trk_phi,
-                        *pv_trk_d0, *pv_trk_dz,
-                        NumTrueInts,
-                        fill_action_mc);
 
-    // ---------- Fit & write JSON ----------
+    // bin idx exists in a binning only if idx < its number of bins
+    auto has_bin = [&](const std::vector<Float_t> &edges) { return idx >= 0 && idx + 1 < (Int_t)edges.size(); };
+    const Bool_t has_pt = has_bin(pv_trk_pt_edges), has_eta = has_bin(pv_trk_eta_edges);
+    if (!has_pt && !has_eta)
+    {
+        std::cerr << "[ERROR] ip_res: job index " << idx << " is outside all binnings" << std::endl;
+        return 1;
+    }
     nlohmann::json resojson;
-    resojson["pt"] = (pv_trk_pt_edges[idx] + pv_trk_pt_edges[idx + 1]) / 2.0;
-    resojson["pt_uleta"] = (pv_trk_pt_uleta_edges[idx] + pv_trk_pt_uleta_edges[idx + 1]) / 2.0;
-    resojson["eta"] = (pv_trk_eta_edges[idx] + pv_trk_eta_edges[idx + 1]) / 2.0;
-    resojson["phi"] = (pv_trk_phi_edges[idx] + pv_trk_phi_edges[idx + 1]) / 2.0;
+    if (has_pt)
+        resojson["pt"] = (pv_trk_pt_edges[idx] + pv_trk_pt_edges[idx + 1]) / 2.0;
+    if (has_eta)
+        resojson["eta"] = (pv_trk_eta_edges[idx] + pv_trk_eta_edges[idx + 1]) / 2.0;
+    // |eta| slice edges of the categories pt_eta0..8 (slice s: [edges[s], edges[s+1]))
+    resojson["abseta_slices"] = binning["pv_trk_abseta_slices"];
 
-    Float_t reso_data_d0[NCOMB] = {0.0};
-    Float_t reso_data_dz[NCOMB] = {0.0};
-    Float_t reso_mc_d0[NCOMB] = {0.0};
-    Float_t reso_mc_dz[NCOMB] = {0.0};
+    const char *VAR[2] = {"d0", "dz"};
+    const char *FIGSUB[2] = {"ippv_xy_fit", "ippv_z_fit"};
+    const Double_t GRP_MIN_ENTRIES = 2000;  // PV-error groups with fewer tracks are not fitted
+
+    // Fit one histogram; remove its mean (pull-corrected) PV error^2 by quadrature subtraction and by the
+    // convolution fit. Writes (k = <var>_<tag>):
+    //   reso_data_k, reso_data_k_err          DSCB 68% half-width (measured) and its stat. error
+    //   reso_data_k_pvsub, reso_data_k_pvsub_err  quadrature-subtracted (error: reso/reso_pvsub * err; the error
+    //                                         of the PV error is not included)
+    //   reso_data_k_conv, reso_data_k_conv_err    convolution fit with s = sqrt(pverr2)
+    //   pverr2_data_k, pverr2nopull_data_k, ntrk_data_k
+    //   fitstatus_data_k, fitstatus_conv_data_k  RooFit status (0 = converged; -1: too few filled bins; -2: not
+    //                                         fitted, no histogram or fewer than min_entries entries)
+    //   covqual_data_k, covqual_conv_data_k   Minuit covariance quality (3 = accurate)
+    // Errors are -1 when not valid (covQual < 3 or a DSCB parameter at its limit).
+    auto measure = [&](const char *var, Int_t v, TString tag, TString figname, Double_t min_entries = 1)
+    {
+        TH1F *h = (TH1F *)histfile->Get(Form("ip_%s_%d_%s", var, idx, tag.Data()));
+        TH2D *e = (TH2D *)histfile->Get(Form("pverr_%s_%d_%s", var, idx, tag.Data()));
+
+        Double_t pverr2 = e ? mean_pverr2(e, kTRUE) : 0.0;
+        Double_t pverr2_nopull = e ? mean_pverr2(e, kFALSE) : 0.0;
+        Double_t ntrk = 0;
+        for (Int_t k = 0; e && k < n_pv; ++k)
+            ntrk += e->GetBinContent(k + 1, 7);
+
+        FitOut fo, fo3;
+        Int_t status = -2, conv_status = -2, status3 = -2, conv_status3 = -2;
+        Double_t counted = -1.0;
+        if (h && h->GetEntries() >= min_entries)
+        {
+            const Double_t s_pv = pverr2 > 0 ? std::sqrt(pverr2) : -1.0;
+            fo = fit_res(h, period, "Data", figdir + FIGSUB[v] + "/" + figname, s_pv);
+            status = fo.status;
+            conv_status = fo.conv_status;
+            fo3 = fit_3g(h, period, "Data", figdir + FIGSUB[v] + "_3g/" + figname, s_pv);
+            status3 = fo3.status;
+            conv_status3 = fo3.conv_status;
+            counted = counted_halfwidth(h);
+        }
+        // as before: 0 if not fitted, -1 if too few filled bins
+        const Float_t reso = status == -2 ? 0.0 : fo.reso;
+
+        Double_t reso_sub = -1.0, reso_sub_err = -1.0;
+        if (reso > 0 && reso * reso > pverr2)
+        {
+            reso_sub = std::sqrt(reso * reso - pverr2);
+            if (fo.err > 0)
+                reso_sub_err = reso / reso_sub * fo.err;
+        }
+        else if (reso > 0)
+            std::cerr << "[WARN] ip_res: PV error^2 " << pverr2 << " >= measured reso^2 " << reso * reso
+                      << " for " << var << " " << tag << " bin " << idx << std::endl;
+
+        const std::string key = std::string(var) + "_" + tag.Data();
+        resojson["reso_data_" + key] = reso;
+        resojson["reso_data_" + key + "_err"] = fo.err;
+        resojson["reso_data_" + key + "_pvsub"] = reso_sub;
+        resojson["reso_data_" + key + "_pvsub_err"] = reso_sub_err;
+        resojson["reso_data_" + key + "_conv"] = fo.conv;
+        resojson["reso_data_" + key + "_conv_err"] = fo.conv_err;
+        resojson["pverr2_data_" + key] = pverr2;
+        resojson["pverr2nopull_data_" + key] = pverr2_nopull;
+        resojson["ntrk_data_" + key] = ntrk;
+        resojson["fitstatus_data_" + key] = status;
+        resojson["fitstatus_conv_data_" + key] = conv_status;
+        resojson["covqual_data_" + key] = fo.covqual;
+        resojson["covqual_conv_data_" + key] = fo.conv_covqual;
+
+        // the same with the sum of 3 Gaussians (suffix _3g, not _g3: that is PV-error group 3; status keys fitstatus_3g_, fitstatus_3gconv_, covqual_3g_,
+        // covqual_3gconv_), and the model-free counted half-width of the measured distribution
+        const Float_t reso3 = status3 == -2 ? 0.0 : fo3.reso;
+        Double_t reso3_sub = -1.0, reso3_sub_err = -1.0;
+        if (reso3 > 0 && reso3 * reso3 > pverr2)
+        {
+            reso3_sub = std::sqrt(reso3 * reso3 - pverr2);
+            if (fo3.err > 0)
+                reso3_sub_err = reso3 / reso3_sub * fo3.err;
+        }
+        resojson["reso_data_" + key + "_3g"] = reso3;
+        resojson["reso_data_" + key + "_3g_err"] = fo3.err;
+        resojson["reso_data_" + key + "_3g_pvsub"] = reso3_sub;
+        resojson["reso_data_" + key + "_3g_pvsub_err"] = reso3_sub_err;
+        resojson["reso_data_" + key + "_3g_conv"] = fo3.conv;
+        resojson["reso_data_" + key + "_3g_conv_err"] = fo3.conv_err;
+        resojson["fitstatus_3g_data_" + key] = status3;
+        resojson["fitstatus_3gconv_data_" + key] = conv_status3;
+        resojson["covqual_3g_data_" + key] = fo3.covqual;
+        resojson["covqual_3gconv_data_" + key] = fo3.conv_covqual;
+        resojson["reso_data_" + key + "_counted"] = counted;
+    };
 
     for (Int_t cid = 0; cid < NCOMB; ++cid)
     {
-        if (h_d0_data[cid] && h_d0_data[cid]->GetEntries() > 0)
-            reso_data_d0[cid] = fit_res(h_d0_data[cid], period, "Data", info_d0[cid].dataFigPath, 0.1);
-        if (h_dz_data[cid] && h_dz_data[cid]->GetEntries() > 0)
-            reso_data_dz[cid] = fit_res(h_dz_data[cid], period, "Data", info_dz[cid].dataFigPath, 0.1);
-        if (h_d0_mc[cid] && h_d0_mc[cid]->GetEntries() > 0)
-            reso_mc_d0[cid] = fit_res(h_d0_mc[cid], period, "Simulation", info_d0[cid].mcFigPath, 0.1);
-        if (h_dz_mc[cid] && h_dz_mc[cid]->GetEntries() > 0)
-            reso_mc_dz[cid] = fit_res(h_dz_mc[cid], period, "Simulation", info_dz[cid].mcFigPath, 0.1);
-
         TString suffix = COMB_SUFFIX[cid];
-        resojson[Form("reso_data_d0_%s", suffix.Data())] = reso_data_d0[cid];
-        resojson[Form("reso_data_dz_%s", suffix.Data())] = reso_data_dz[cid];
-        resojson[Form("reso_mc_d0_%s", suffix.Data())] = reso_mc_d0[cid];
-        resojson[Form("reso_mc_dz_%s", suffix.Data())] = reso_mc_dz[cid];
+        // no bin idx in this category's binning: no keys at all (readers must not see a 0 result)
+        if ((suffix.BeginsWith("pt_") && !has_pt) || (suffix.BeginsWith("eta_") && !has_eta))
+            continue;
+        for (Int_t v = 0; v < 2; ++v)
+        {
+            // all tracks of the bin
+            measure(VAR[v], v, suffix, Form("data_%s_%d", suffix.Data(), idx));
+
+            // the same bin split into groups of the track's own PV error (edges: with pull, lower and upper
+            // included, from fill_hists.cc; n groups = n edges - 1)
+            TH1D *edges = (TH1D *)histfile->Get(Form("grpedges_%s_%d_%s", VAR[v], idx, suffix.Data()));
+            const Int_t ngroups = edges ? edges->GetNbinsX() - 1 : 0;
+            resojson[Form("ngroups_data_%s_%s", VAR[v], suffix.Data())] = ngroups;
+            if (!edges)
+            {
+                std::cerr << "[WARN] ip_res: no PV-error groups for " << VAR[v] << " " << suffix << " bin " << idx << std::endl;
+                continue;
+            }
+            std::vector<Double_t> ev;
+            for (Int_t j = 1; j <= edges->GetNbinsX(); ++j)
+                ev.push_back(edges->GetBinContent(j));
+            resojson[Form("sigpv_edges_%s_%s", VAR[v], suffix.Data())] = ev;
+            for (Int_t g = 0; g < ngroups; ++g)
+                measure(VAR[v], v, suffix + Form("_g%d", g), Form("data_%s_g%d_%d", suffix.Data(), g, idx), GRP_MIN_ENTRIES);
+        }
     }
 
     std::ofstream outFile(storage_dir + "/json/" + period + Form("/ip_res/fit_%d.json", idx));
     outFile << resojson.dump(4);
     outFile.close();
 
-    // ---------- Cleanup ----------
-    for (Int_t cid = 0; cid < NCOMB; ++cid)
-    {
-        delete h_d0_data[cid];
-        delete h_d0_mc[cid];
-        delete h_dz_data[cid];
-        delete h_dz_mc[cid];
-    }
-    delete datatree;
-    delete mctree;
-
+    histfile->Close();
     return 0;
 }
