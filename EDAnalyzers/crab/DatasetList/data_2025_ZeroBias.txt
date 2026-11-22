@@ -1,0 +1,8 @@
+# dataset  globaltag (CMSSW_15_0_15_patch4)
+/ZeroBias/Run2025C-PromptReco-v1/MINIAOD 150X_dataRun3_Prompt_v1
+/ZeroBias/Run2025C-PromptReco-v2/MINIAOD 150X_dataRun3_Prompt_v1
+/ZeroBias/Run2025D-PromptReco-v1/MINIAOD 150X_dataRun3_Prompt_v1
+/ZeroBias/Run2025E-PromptReco-v1/MINIAOD 150X_dataRun3_Prompt_v1
+/ZeroBias/Run2025F-PromptReco-v1/MINIAOD 150X_dataRun3_Prompt_v1
+/ZeroBias/Run2025F-PromptReco-v2/MINIAOD 150X_dataRun3_Prompt_v1
+/ZeroBias/Run2025G-PromptReco-v1/MINIAOD 150X_dataRun3_Prompt_v1
