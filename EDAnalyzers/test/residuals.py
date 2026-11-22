@@ -43,6 +43,6 @@ process.residuals.SampleType = cms.string(options.SampleType)
 
 process.TFileService = cms.Service("TFileService", fileName=cms.string("output.root"), closeFileFast=cms.untracked.bool(True))
 
-process.options = cms.untracked.PSet(wantSummary=cms.untracked.bool(False), TryToContinue=cms.untracked.vstring("ProductNotFound"))
+process.options = cms.untracked.PSet(wantSummary=cms.untracked.bool(False), SkipEvent=cms.untracked.vstring("ProductNotFound"))
 
 process.p = cms.Path(process.residuals)
