@@ -5,24 +5,15 @@ source /cvmfs/cms.cern.ch/crab3/crab.sh
 SAMPLETYPE="ZeroBias"
 # SAMPLETYPE="JetHT"
 
-# 2022: the global tag is given per dataset in the dataset list (2nd column)
-# YEAR="2022"
-# LUMIMASK="JSON/Cert_Collisions2022_355100_362760_Golden.json"
+# CMSSW_13_0_13: the global tag is given per dataset in the dataset list (2nd column)
+YEAR="2023BPix"  # one of: 2022 2022EE 2023 2023BPix
 
-YEAR="2022EE"
-LUMIMASK="JSON/Cert_Collisions2022_355100_362760_Golden.json"
-
-# YEAR="2023"
-# GLOBALTAG="130X_dataRun3_PromptAnalysis_v1"
-# LUMIMASK="JSON/Cert_Collisions2023_366442_370790_Golden.json"
-
-# YEAR="2023BPix"
-# GLOBALTAG="130X_dataRun3_PromptAnalysis_v1"
-# LUMIMASK="JSON/Cert_Collisions2023_366442_370790_Golden.json"
-
-# YEAR="2024"
-# GLOBALTAG="150X_dataRun3_v2"
-# LUMIMASK="JSON/Cert_Collisions2024_378981_386951_Golden.json"
+# golden JSON per YEAR (2022-2024: official versions after the TrkML2026 review)
+case "${YEAR}" in
+    2022|2022EE) LUMIMASK="JSON/Cert_Collisions2022_355100_362760_Golden.json" ;;
+    2023|2023BPix) LUMIMASK="JSON/Cert_Collisions2023_366442_370790_Golden.json" ;;
+    *) echo "ERROR: unknown YEAR ${YEAR}" >&2; exit 1 ;;
+esac
 
 datasetlist="DatasetList/data_${YEAR}_${SAMPLETYPE}.txt"
 
