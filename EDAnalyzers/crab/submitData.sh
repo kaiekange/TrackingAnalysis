@@ -5,12 +5,11 @@ source /cvmfs/cms.cern.ch/crab3/crab.sh
 SAMPLETYPE="ZeroBias"
 # SAMPLETYPE="JetHT"
 
+# 2022: the global tag is given per dataset in the dataset list (2nd column)
 # YEAR="2022"
-# GLOBALTAG="130X_dataRun3_v2"  # 22Sep2023 ReReco (CMSSW_13_0_X); check PdmV recommendation
 # LUMIMASK="JSON/Cert_Collisions2022_355100_362760_Golden.json"
 
 YEAR="2022EE"
-GLOBALTAG="130X_dataRun3_v2"  # 22Sep2023 ReReco (CMSSW_13_0_X); check PdmV recommendation
 LUMIMASK="JSON/Cert_Collisions2022_355100_362760_Golden.json"
 
 # YEAR="2023"
@@ -28,7 +27,7 @@ LUMIMASK="JSON/Cert_Collisions2022_355100_362760_Golden.json"
 datasetlist="DatasetList/data_${YEAR}_${SAMPLETYPE}.txt"
 
 configtemplate="crabConfigTemplateData.py"
-ver="Track-v20261019"
+ver="Track-v20261122"
 # prodv="/store/group/phys_tracking/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
 prodv="/store/user/kakang/Run3TrackingAnalysis/Ntuple/${ver}"
 pver="0"
@@ -37,16 +36,23 @@ EVENTMODULO=0
 UNITSPERJOB=150  # lumis per job; ~100 for JetMET, ~150 for ZeroBias at EventScale=0
 
 datasets=()
-while read -r name; do
-  if [[ ${name:0:1} == '#' ]]; then
+globaltags=()
+while read -r name gt; do
+  if [[ -z ${name} || ${name:0:1} == '#' ]]; then
     continue
   fi
+  if [[ -z ${gt} ]]; then
+    echo "ERROR: no global tag for ${name} in ${datasetlist}" >&2
+    exit 1
+  fi
   datasets+=("$name")
+  globaltags+=("$gt")
 done < "$datasetlist"
 
 for i in "${!datasets[@]}"; do
 
     dataset=${datasets[i]}
+    GLOBALTAG=${globaltags[i]}
 
     split=(${dataset//\// })
     content=${split[0]}
