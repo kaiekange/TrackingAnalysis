@@ -383,6 +383,15 @@ Int_t ip_res(TString period, Int_t idx)
         std::cerr << "[ERROR] ip_res: cannot open " << storage_dir + "/hists/" + period + "/fill.root" << std::endl;
         return 1;
     }
+    // the PV-error groups of fill.root must use this period's pv_res pulls, not the placeholder of a first fill.
+    // JetHT fill.root files from before 2026-11-18 have no pull_source but always used pv_res pulls: accepted.
+    TNamed *pull_source = (TNamed *)histfile->Get("pull_source");
+    if (pull_source && TString(pull_source->GetTitle()) != "pv_res")
+    {
+        std::cerr << "[ERROR] ip_res: fill.root was made with pull source \"" << pull_source->GetTitle()
+                  << "\": run pv_res, then fill again" << std::endl;
+        return 1;
+    }
 
     // Mean PV error^2 of the tracks in one IP histogram, from the projected unbiased-PV covariance
     // sums of fill_hists.cc (x: sqrt(SumPt2) bin; y: xx yy zz xy xz yz ntrk), with or without pulls.

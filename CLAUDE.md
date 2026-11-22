@@ -135,21 +135,18 @@ At the end of each session, update the "Last Session" section below.
 
 ### Last Session
 
-**Date:** 2026-11-17. ZeroBias moved onto the JetHT pipeline, JetHT pT rebinned + new η/φ pT ranges, 2022C rerun for both samples. Details in memory `project_zerobias_migration.md` (decisions, numbers), also `project_stat_errors.md`, `feedback_hadd_by_user.md`. Previous session (2026-11-16: 2022D, C vs D, conditions, 2022EE crab) is in `project_category_redesign.md` / `project_ntuples_on_iihe.md`.
+**Date:** 2026-11-18 (summarized 2026-11-22). All 2022 ZeroBias eras and JetHT C/D/E run on the new binning; era comparison. Details in memory `project_zerobias_migration.md` (pipeline state, chain script) and `project_era_comparison.md` (numbers, exclusions, hypothesis). Previous session (2026-11-17: ZeroBias migration, pT rebinning) is in the same memory files.
 
 **What was done:**
-- **σ_PV vs pT/η** for ZeroBias and JetHT 2022C (10 files; `ZeroBias/studies/sigpv_hists.C`, `plot_sigpv.py`): σ_PV depends on η only (dz), flat in pT for ZeroBias; JetHT σ_PV is 2–3× smaller and falls with pT. So σ_PV flatness does not constrain the pT bins.
-- **Binning (user decisions)**: fixed piecewise pT bins (see IP resolution above), the JetHT 9 |η| slices for ZeroBias, η/φ pT ranges 0.1–1 / 1–3 / 3–10 (/ 10–15 JetHT), ZeroBias without φ and without > 10 GeV.
-- **JetHT**: old 2022C/2022D results snapshot in `JetHT/snapshots/2022CD_quantile50/` (binning.json, ip_res jsons, range/fill.root); old ip_res figures deleted. Code: `binning.py` (fixed PT_EDGES), `fill_hists.cc` (lopt/vhpt categories, per-binning bin counts), `ip_res.cc/.py`. 1-file regression vs the old code: identical. Full 2022C rerun: ungrouped DSCB identical to the snapshot; grouped results changed because the old 2022C fill had used pre-rerun pulls (old open item fixed for 2022C); unconverged 3G fits change by up to 9.5 % on identical histograms.
-- **ZeroBias**: pipeline copied from JetHT (paths, σ_PV group edges, PV bins 3–25 GeV, pull placeholder + `pull_source` guard, `pv_res.py` queue from binning), new `binning.json` (old one in `ZeroBias/snapshots/old_binning/`), tuplelist 2022C/2022D with original + recovery dirs. 2022C: range → fill (placeholder) → pv_res (pulls 0.99–1.06) → fill → ip_res, all jobs OK.
-- **Stat. errors**: `halfwidth_error` now treats a parameter at its limit (DSCB n = 100 in the forward slices) as fixed instead of returning −1 (error then ≈ 1/√N). ip_res for 2022C RESUBMITTED for both samples (JetHT cluster 20068889, ZeroBias 20068890).
-- hadd: I do all merges now (user, 2026-11-17); fill.root merged with `hadd -j 8` to local disk, cp + cmp, sampled histograms = sum of chunks.
-- Figures: `<sample>/test_figures/2022C/results/` (`JetHT/studies/plot_results.py <sample> <period> <outdir> [lumi]`, handles missing pt keys).
+- **2022C ip_res reruns checked** (error rule "parameter at limit = fixed"): ungrouped DSCB identical to the snapshot, pt_eta8 errors valid (err/(σ/√2N) 1.27–1.72); remaining −1 errors are all covQual 2. Figures replotted.
+- **ZeroBias 2022D/E/F/G** (E/F/G as separate periods; tuplelist, gitignored) and **JetHT 2022D/E** run with an automatic chain outside the repo: `/afs/cern.ch/work/k/kakang/IPres/chain/chain.sh <sample> <period> ["steps"]` (range → fill (placeholder) → merge → pv_res + pull check → fill → merge → ip_res, stops at the first failed check; ~1h45 per period). JetHT D reused its 11-13 pv_res; old JetHT D quantile jsons deleted (copies in the snapshot).
+- **JetHT pull placeholder**: `fill_hists.cc` writes pulls = 1 + `pull_source` when a period has no pv_res yet (as ZeroBias); `ip_res.cc` refuses `pull_source != "pv_res"` (a missing `pull_source`, i.e. pre-11-18 fill.root, is accepted).
+- **`studies/compare_eras.py` rewritten**: N eras, any sample, any binning, ratio to the first era (`<sample> <dscb|3g> <outdir> <era[:lumi]>...`). Figures `<sample>/test_figures/compare_eras/`.
+- **Result**: C and E good; D, F, G 10–25 % worse (ratio grows with pT; same in ZeroBias and JetHT; PV resolution too). Not the fit (DSCB = 3G = counted half-width), not pileup, not the hit pattern; reco-reported track errors also larger. dz D/C ≈ 1 at η = 0 → pixel charge-sharing hit position suspected (pixel template / GenError / LA IOV change at run 357538). Cause study stopped by the user.
 
 **Open items for next session:**
-- Check the ip_res reruns (20068889/20068890): reso values unchanged, pt_eta8 errors valid; replot `test_figures/2022C/results/`.
-- 2022D for both samples (JetHT: range → fill → merge → ip_res; ZeroBias: range → fill (placeholder) → merge → pv_res → fill → merge → ip_res). Then JetHT vs ZeroBias comparison (identical bins up to 5 GeV) and C vs D again.
-- Unexplained: d0 vs η at 0.1–1 GeV plateau at |η| 1.0–1.3 (both samples); ZeroBias dz vs η bump at η = 0; JetHT dz vs φ zig-zag at low pT; vs-φ dz histograms mix σ_PV,dz ×4 (φ deferred).
-- pv_res DSCB n lower limit 0.5 allows non-normalizable tails (seen once with 1 test file; pull check 0.5–2 catches it).
-- Plot scripts assume 50 pT bins and a `pt` key in every json: `studies/compare_eras.py`, `plotting/*`, `list_ip_results.py`, `pipeline/*`, `studies/plot_*`. Condor jobs leave `.root_hist` in the macro dirs (untracked; maybe .gitignore).
-- From before: JetMET 2022E/F/G crab status + `crab report`; run-split test around runs 356478 / 357538 / 357883; group-closure plots; pv_NTracks ≥ 20 cut not done; beam-spot cross-check; legacy MC scripts; 2023/2023BPix/2024 production.
+- JetHT 2022F/G: `crab report` (F 507/515, G 79/83 files on IIHE), then `chain.sh JetHT 2022F` / `2022G`. 2023/2023BPix/2024 production.
+- Unexplained: d0 vs η at 0.1–1 GeV plateau at |η| 1.0–1.3; dz vs η bump at η = 0 (maybe single-pixel z clusters, see memory); vs-φ dz histograms mix σ_PV,dz ×4 (φ deferred); 2022D DSCB wiggle in dz 2.3<|η|<2.5, 1.9–2.3 GeV (fit 3–5 % above the counted width).
+- pv_res DSCB n lower limit 0.5 allows non-normalizable tails (pull check 0.5–2 catches it).
+- Old plot scripts assume 50 pT bins and a `pt` key: `plotting/*`, `list_ip_results.py`, `pipeline/*`, `studies/plot_*`. `ip_res.cc` comment near the error function still states the old at-limit rule. `.root_hist` left in the macro dirs.
+- From before: group-closure plots; pv_NTracks ≥ 20 cut not done; beam-spot cross-check; legacy MC scripts.

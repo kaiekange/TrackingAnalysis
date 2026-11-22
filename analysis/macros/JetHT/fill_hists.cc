@@ -40,6 +40,7 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TSystem.h>
+#include <TNamed.h>
 
 #include <nlohmann/json.hpp>
 
@@ -472,15 +473,26 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
         rf->Close();
     }
 
-    // PV pulls per sqrt(SumPt2) bin, for the grouping (pv_res.cc output of this period, as in ip_res.cc)
-    std::vector<Double_t> pull_x(n_pv), pull_y(n_pv), pull_z(n_pv);
+    // PV pulls per sqrt(SumPt2) bin, for the grouping (pv_res.cc output of this period, as in ip_res.cc).
+    // Before the first pv_res of a period there are no pulls: then pulls = 1 as a placeholder (as ZeroBias,
+    // 2026-11-18). That first fill only serves pv_res; fill.root records the pull source ("pull_source") and
+    // ip_res.cc refuses a fill.root made with the placeholder. Some but not all pv_res files: error.
+    std::vector<Double_t> pull_x(n_pv, 1.0), pull_y(n_pv, 1.0), pull_z(n_pv, 1.0);
+    Int_t n_pvfiles = 0;
     for (Int_t k = 0; k < n_pv; ++k)
+        if (!gSystem->AccessPathName(storage_dir + "/json/" + period + Form("/pv_res/fit_%d.json", k)))
+            n_pvfiles++;
+    const Bool_t pull_placeholder = (n_pvfiles == 0);
+    if (pull_placeholder)
+        std::cout << "[WARN] fill_hists: no pv_res results for " << period
+                  << ": pulls = 1 placeholder (run pv_res, then fill again before ip_res)" << std::endl;
+    for (Int_t k = 0; k < n_pv && !pull_placeholder; ++k)
     {
         std::ifstream pvfile(storage_dir + "/json/" + period + Form("/pv_res/fit_%d.json", k));
         if (!pvfile)
         {
             std::cerr << "[ERROR] fill_hists: missing PV result " << storage_dir + "/json/" + period + Form("/pv_res/fit_%d.json", k)
-                      << " (the grouping needs the pulls: run pv_res first)" << std::endl;
+                      << " (" << n_pvfiles << " of " << n_pv << " present)" << std::endl;
             gSystem->Exit(1);
         }
         nlohmann::json pv;
@@ -688,6 +700,9 @@ Int_t fill_hists(TString period, TString step, Int_t chunk, Int_t files_per_job)
         h.Write();
     };
     outfile->cd();
+    // pulls used for the grouping (checked by ip_res.cc); once, hadd cannot merge a TNamed
+    if (chunk == 0)
+        TNamed("pull_source", pull_placeholder ? "placeholder" : "pv_res").Write();
     for (Int_t v = 0; v < 2; ++v)
     {
         Double_t nc = 0, na = 0;
