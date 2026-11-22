@@ -1,3 +1,0 @@
-# dataset  globaltag (CMSSW_13_0_13)
-/ZeroBias/Run2022C-22Sep2023-v1/MINIAOD 130X_dataRun3_v2
-/ZeroBias/Run2022D-22Sep2023-v1/MINIAOD 130X_dataRun3_v2

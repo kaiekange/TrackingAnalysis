@@ -1,21 +1,20 @@
 # CLAUDE.md
 
-Branch `CMSSW_13_0_13`: ntuple production (EDAnalyzer + crab) for the CMS IP/PV resolution analysis in release **CMSSW_13_0_13** (`el8_amd64_gcc11`). The analysis macros (`analysis/`) and the full documentation live on `master` (CMSSW_15_0_16); see `master:CLAUDE.md` for the EDAnalyzer description.
+Branch `CMSSW_15_0_2`: ntuple production (EDAnalyzer + crab) for the CMS IP/PV resolution analysis in release **CMSSW_15_0_2** (`el8_amd64_gcc12`). The analysis macros (`analysis/`) and the full documentation live on `master` (CMSSW_15_0_16); see `master:CLAUDE.md` for the EDAnalyzer description.
 
 ## Rules for this branch
 
-- Keep `EDAnalyzers/` identical to `master` except for changes the release forces, so analyzer fixes on `master` can be cherry-picked. Release-specific changes so far:
-  - `test/residuals.py`, `test/residuals_condor_group.py`: `options.SkipEvent` instead of `TryToContinue` (not known in 13_0).
-- The offline PV configuration (`offlinePrimaryVertices`) of 13_0_13 is identical to 15_0_16, so `residuals_cfi.py` / `VertexReProducer` need no change.
+- Keep `EDAnalyzers/` identical to `master` except for changes the release forces, so analyzer fixes on `master` can be cherry-picked. Release-specific changes so far: none.
+- The offline PV configuration (`offlinePrimaryVertices`) of this release is identical to 13_0_13 / 15_0_16, so `residuals_cfi.py` / `VertexReProducer` need no change.
 
 ## Setup and build (el8 host only: lxplus8 or `cmssw-el8`)
 
 ```bash
 source /cvmfs/cms.cern.ch/cmsset_default.sh
-cd /afs/cern.ch/work/k/kakang/IPres/CMSSW_13_0_13/src
+cd /afs/cern.ch/work/k/kakang/IPres/CMSSW_15_0_2/src
 cmsenv
 scram b -j8
-objdump -T ../lib/el8_amd64_gcc11/*TrackingAnalysis*.so | grep -o 'GLIBC_2\.[0-9]*' | sort -uV | tail -1   # must be <= GLIBC_2.28
+objdump -T ../lib/el8_amd64_gcc12/*TrackingAnalysis*.so | grep -o 'GLIBC_2\.[0-9]*' | sort -uV | tail -1   # must be <= GLIBC_2.28
 ```
 
 ## Crab production
@@ -25,10 +24,8 @@ From `EDAnalyzers/crab/` after `cmsenv` in this area (crab ships the current rel
 - Dataset lists `DatasetList/data_<YEAR>_<SAMPLETYPE>.txt` (force-added): `<dataset> <globaltag>` per line; the global tag is per dataset.
 - Version tag `Track-v20261122`, output `/store/user/kakang/Run3TrackingAnalysis/Ntuple/Track-v20261122/<PD>/<era>/` on T2_BE_IIHE.
 
-| Period | Datasets (22Sep2023 MINIAOD) | Global tag |
+| Period | Datasets (MINIv6NANOv15 MINIAOD, made in 15_0_2 with this GT) | Global tag |
 |---|---|---|
-| 2022 (preEE) | C, D | 130X_dataRun3_v2 |
-| 2022EE (postEE) | E | 130X_dataRun3_v2 |
-| 2022EE (postEE) | F, G | 130X_dataRun3_PromptAnalysis_v1 |
+| 2024 | C–I, JetMET0+1 / ZeroBias (I: MINIv6NANOv15 + MINIv6NANOv15_v2) | 150X_dataRun3_v2 |
 
-Lumi mask: `JSON/Cert_Collisions2022_355100_362760_Golden.json`.
+Lumi mask: `JSON/Cert_Collisions2024_378981_386951_Golden.json` (official version after the TrkML2026 review).
